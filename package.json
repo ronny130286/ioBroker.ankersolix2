@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.1.6",
-    "typescript": "~5.0.4",
+    "typescript": "~5.6.2",
     "axios": "1.7.7",
     "node-fetch": "3.3.2",
     "async-mqtt": "^2.6.3",
@@ -60,7 +60,7 @@
     "sinon-chai": "^4.0.0",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
-    "typescript": "~5.0.4"
+    "typescript": "~5.6.2"
   },
   "main": "build/main.js",
   "files": [
