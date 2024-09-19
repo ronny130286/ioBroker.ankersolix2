@@ -1,5 +1,10 @@
 {
-    "ankersolix2 adapter settings": "ankersolix2的适配器设置",
-    "option1": "选项1",
-    "option2": "选项2"
+    "ankersolix2 adapter settings": "ankersolix2 的适配器设置",
+    "Solix Username": "索利克斯用户名",
+    "Solix Password": "索利克斯密码",
+    "Country": "国家",
+    "German": "德语",
+    "English": "英语",
+    "Polltime in secounds": "轮询时间（以秒为单位）",
+    "Please use a Family-Acoount how can only watch, dont use your main account.": "请使用家庭帐户，这样只能观看，不要使用您的主帐户。"
 }

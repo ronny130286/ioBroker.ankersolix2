@@ -2,15 +2,16 @@
     "i18n": true,
     "type": "panel",
     "items": {
-        "S2M_User": {
+        "Username": {
             "newLine": true,
             "type": "text",
             "sm": 12,
             "md": 6,
             "lg": 6,
-            "label": "Solix Username"
+            "label": "Solix Username",
+            "help": "Please use a Family-Acoount how can only watch, dont use your main account."
         },
-        "S2M_Pass": {
+        "Password": {
             "type": "password",
             "repeat": false,
             "visible": false,
@@ -19,7 +20,7 @@
             "lg": 6,
             "label": "Solix Password"
         },
-        "S2M_COUNTRY": {
+        "COUNTRY": {
             "type": "select",
             "label": "Country",
             "options": [
@@ -34,19 +35,15 @@
             ],
             "newLine": true
         },
-        "S2M_POLL_INTERVAL": {
+        "POLL_INTERVAL": {
+            "default": "60",
             "type": "number",
             "sm": 12,
             "md": 6,
             "lg": 6,
             "min": 30,
             "max": 180,
-            "label": "Poll Time in Secounds",
-            "newLine": true
-        },
-        "S2M_VERBOSE": {
-            "type": "checkbox",
-            "label": "Verbosen",
+            "label": "Polltime in secounds",
             "newLine": true
         }
     }

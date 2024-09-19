@@ -26,9 +26,6 @@ var import_fs = __toESM(require("fs"));
 var import_api = require("./api.js");
 var import_persistence = require("./persistence.js");
 var import_utils = require("./utils.js");
-function isLoginValid(loginData, now = /* @__PURE__ */ new Date()) {
-  return new Date(loginData.token_expires_at * 1e3).getTime() > now.getTime();
-}
 class Ankersolix2 extends utils.Adapter {
   constructor(options = {}) {
     super({
@@ -43,24 +40,13 @@ class Ankersolix2 extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    await this.setObjectNotExistsAsync("testVariable", {
-      type: "state",
-      common: {
-        name: "testVariable",
-        type: "boolean",
-        role: "indicator",
-        read: true,
-        write: true
-      },
-      native: {}
-    });
-    if (!this.config.S2M_User || !this.config.S2M_Pass) {
+    if (!this.config.Username || !this.config.Password) {
       this.log.error(
         `User name and/or user password empty - please check instance configuration of ${this.namespace}`
       );
       return;
     }
-    if (!this.config.S2M_POLL_INTERVAL || this.config.S2M_POLL_INTERVAL < 30) {
+    if (!this.config.POLL_INTERVAL || this.config.POLL_INTERVAL < 30) {
       this.log.error(
         `The poll intervall must be greater than 30 - please check instance configuration of ${this.namespace}`
       );
@@ -86,25 +72,25 @@ class Ankersolix2 extends utils.Adapter {
       this.log.warn("Failed fetching or publishing printer data" + e);
     } finally {
       const end = (/* @__PURE__ */ new Date()).getTime() - start;
-      const sleepInterval = this.config.S2M_POLL_INTERVAL * 1e3 - end;
-      this.log.info(`Sleeping for ${sleepInterval}ms...`);
+      const sleepInterval = this.config.POLL_INTERVAL * 1e3 - end;
+      this.log.debug(`Sleeping for ${sleepInterval}ms...`);
       await (0, import_utils.sleep)(sleepInterval);
       this.refreshDate();
     }
   }
   async fetchAndPublish() {
     var _a;
-    this.log.info("Fetching data");
+    this.log.debug("Fetching data");
     const api = new import_api.SolixApi({
-      username: this.config.S2M_User,
-      password: this.config.S2M_Pass,
-      country: this.config.S2M_COUNTRY,
+      username: this.config.Username,
+      password: this.config.Password,
+      country: this.config.COUNTRY,
       log: this.log
     });
     const storeDir = utils.getAbsoluteInstanceDataDir(this);
     const persistence = new import_persistence.FilePersistence(storeDir + "/session.data", this.log);
     let loginData = await persistence.retrieve();
-    if (loginData == null || !isLoginValid(loginData)) {
+    if (loginData == null || !this.isLoginValid(loginData)) {
       const loginResponse = await api.login();
       loginData = (_a = loginResponse.data) != null ? _a : null;
       if (loginData) {
@@ -113,7 +99,7 @@ class Ankersolix2 extends utils.Adapter {
         this.log.error(`Could not log in: ${loginResponse.msg} (${loginResponse.code})`);
       }
     } else {
-      this.log.info("Using cached auth data");
+      this.log.debug("Using cached auth data");
     }
     if (loginData) {
       const loggedInApi = api.withLogin(loginData);
@@ -133,25 +119,24 @@ class Ankersolix2 extends utils.Adapter {
           const [key, value] = entries;
           const type = this.whatIsIt(value);
           if (type === "object") {
-            this.isAnObject(value, key);
+            this.isObject(value, key);
           } else if (type === "array") {
             const array = JSON.parse(JSON.stringify(value));
             let i = 0;
             array.forEach((elem, item) => {
               if (this.whatIsIt(array[item]) === "object") {
-                this.isAnObject(array[item], key + "." + i);
+                this.isObject(array[item], key + "." + i);
               } else if (this.whatIsIt(array[item]) === "string") {
-                this.isAnString(array[item], key + "." + i);
+                this.isString(array[item], key + "." + i);
               }
               i++;
             });
           } else {
-            this.isAnString(value, key);
+            this.isString(value, key);
           }
         });
-        import_fs.default.writeFileSync(utils.getAbsoluteInstanceDataDir(this) + "/scenInfo.json", message, "utf8");
       }
-      this.log.info("Published.");
+      this.log.debug("Published.");
     } else {
       this.log.error("Not logged in");
     }
@@ -172,83 +157,156 @@ class Ankersolix2 extends utils.Adapter {
     if (typeof obj === "boolean") {
       return "boolean";
     }
-    if (typeof obj === "number" || typeof obj === "bigint") {
+    if (typeof obj === "number") {
       return "number";
     }
     if (obj != null && typeof obj === "object") {
       return "object";
     }
   }
-  isAnArray(value, arrayname) {
+  isArray(value, key) {
     const array = JSON.parse(JSON.stringify(value));
     array.forEach(async (elem, item) => {
       const type = this.whatIsIt(array[item]);
       if (type === "object") {
-        this.isAnObject(array[item], arrayname);
+        this.isObject(array[item], key);
       } else if (type === "string") {
-        this.isAnString(array[item], arrayname);
+        this.isString(array[item], key);
       }
     });
   }
-  isAnObject(value, subname) {
+  isObject(value, key) {
     Object.entries(value).forEach((subentries) => {
-      const [subkey, subvalue] = subentries;
-      const type = this.whatIsIt(subvalue);
+      const [objkey, objvalue] = subentries;
+      const type = this.whatIsIt(objvalue);
       if (type === "array") {
-        this.isAnArray(subvalue, subname + "." + subkey);
+        this.isArray(objvalue, key + "." + objkey);
       } else {
-        this.isAnString(subvalue, subname + "." + subkey);
+        this.isString(objvalue, key + "." + objkey);
       }
     });
   }
-  async isAnString(value, name) {
-    this.log.info("Name: " + name + "ValueTyp: " + typeof value);
-    let typeNValue = typeof value;
-    let typeObj = "string";
-    if (typeNValue === "string") {
-      await this.setObjectNotExistsAsync(name, {
+  async isString(value, key) {
+    let parmType = "string";
+    let parmRole = "value";
+    const valType = this.whatIsIt(value);
+    if (valType === "boolean") {
+      parmType = "boolean";
+    }
+    if (valType === "number") {
+      parmType = "number";
+    }
+    if (key.includes("time")) {
+      parmType = "string";
+      parmRole = "value.time";
+      if (valType === "number") {
+        value = new Date(value * 1e3).toUTCString();
+      }
+    }
+    if (key.includes("unit")) {
+      switch (value) {
+        case "kWh":
+          parmRole = "value.energy";
+          break;
+        case "W":
+          parmRole = "value.energy";
+          break;
+        default:
+          break;
+      }
+    }
+    let parmUnit = void 0;
+    if (key.includes("_power")) {
+      parmUnit = "W";
+    }
+    this.CreateOrUpdateState(key, key, parmType, parmRole, true, parmUnit);
+    this.setState(key, { val: value, ack: true });
+  }
+  async CreateOrUpdateState(path, name, type, role, writable, unit = void 0, min = void 0, max = void 0, step = void 0) {
+    const obj = await this.getObjectAsync(path);
+    if (obj == null) {
+      this.log.debug(path + " doesnt exist => create");
+      const newObj = {
         type: "state",
         common: {
+          name,
+          type,
+          role,
+          read: true,
+          write: writable,
+          unit,
+          min,
+          max,
+          step
+        },
+        native: {}
+      };
+      await this.setObjectAsync(path, newObj);
+    } else {
+      this.log.debug(path + " exist => looking for update");
+      let changed = false;
+      if (obj.common == null) {
+        obj.common = {
           name,
           type: "string",
-          role: "value",
+          role,
           read: true,
-          write: false
-        },
-        native: {}
-      }).catch((e) => {
-        this.log.error(`setObjectNotExists:${e}`);
-      });
-    } else if (typeNValue === "boolean") {
-      await this.setObjectNotExistsAsync(name, {
-        type: "state",
-        common: {
-          name,
-          type: "boolean",
-          role: "value",
-          read: true,
-          write: false
-        },
-        native: {}
-      }).catch((e) => {
-        this.log.error(`setObjectNotExists:${e}`);
-      });
-    } else if (typeNValue === "number") {
-      await this.setObjectNotExistsAsync(name, {
-        type: "state",
-        common: {
-          name,
-          type: "number",
-          role: "value",
-          read: true,
-          write: false
-        },
-        native: {}
-      }).catch((e) => {
-        this.log.error(`setObjectNotExists:${e}`);
-      });
+          write: writable,
+          unit,
+          min,
+          max,
+          step
+        };
+        changed = true;
+      } else {
+        if (obj.common.name != name) {
+          obj.common.name = name;
+          changed = true;
+        }
+        if (obj.common.type != type) {
+          obj.common.type = type;
+          changed = true;
+        }
+        if (obj.common.role != role) {
+          obj.common.role = role;
+          changed = true;
+        }
+        if (obj.common.read != true) {
+          obj.common.read = true;
+          changed = true;
+        }
+        if (obj.common.write != writable) {
+          obj.common.write = writable;
+          changed = true;
+        }
+        if (obj.common.unit != unit) {
+          obj.common.unit = unit;
+          changed = true;
+        }
+        if (obj.common.min != min) {
+          obj.common.min = min;
+          changed = true;
+        }
+        if (obj.common.max != max) {
+          obj.common.max = max;
+          changed = true;
+        }
+        if (obj.common.step != step) {
+          obj.common.step = step;
+          changed = true;
+        }
+        if (changed) {
+          this.log.debug(path + " => has been updated");
+          await this.setObjectAsync(path, obj);
+        }
+      }
     }
-    this.setState(name, { val: value, ack: true });
+  }
+  getJSON(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+  isLoginValid(loginData, now = /* @__PURE__ */ new Date()) {
+    return new Date(loginData.token_expires_at * 1e3).getTime() > now.getTime();
   }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances!
@@ -257,6 +315,7 @@ class Ankersolix2 extends utils.Adapter {
     try {
       callback();
     } catch (e) {
+      this.log.error("onUnload: " + e);
       callback();
     }
   }

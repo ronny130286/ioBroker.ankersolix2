@@ -1,5 +1,10 @@
 {
-    "ankersolix2 adapter settings": "Adaptereinstellungen für ankersolix2",
-    "option1": "Option1",
-    "option2": "Option2"
+    "ankersolix2 adapter settings": "Adaptereinstellungen für Ankersolix2",
+    "Solix Username": "Solix-Benutzername",
+    "Solix Password": "Solix-Passwort",
+    "Country": "Land",
+    "German": "Deutsch",
+    "English": "Englisch",
+    "Polltime in secounds": "Abfragezeit in Sekunden",
+    "Please use a Family-Acoount how can only watch, dont use your main account.": "Bitte verwenden Sie ein Familienkonto, damit Sie nur zuschauen können, verwenden Sie nicht Ihr Hauptkonto."
 }
