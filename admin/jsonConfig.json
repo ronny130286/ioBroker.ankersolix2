@@ -1,0 +1,53 @@
+{
+    "i18n": true,
+    "type": "panel",
+    "items": {
+        "S2M_User": {
+            "newLine": true,
+            "type": "text",
+            "sm": 12,
+            "md": 6,
+            "lg": 6,
+            "label": "Solix Username"
+        },
+        "S2M_Pass": {
+            "type": "password",
+            "repeat": false,
+            "visible": false,
+            "sm": 12,
+            "md": 6,
+            "lg": 6,
+            "label": "Solix Password"
+        },
+        "S2M_COUNTRY": {
+            "type": "select",
+            "label": "Country",
+            "options": [
+                {
+                    "label": "German",
+                    "value": "DE"
+                },
+                {
+                    "label": "English",
+                    "value": "EN"
+                }
+            ],
+            "newLine": true
+        },
+        "S2M_POLL_INTERVAL": {
+            "type": "number",
+            "sm": 12,
+            "md": 6,
+            "lg": 6,
+            "min": 30,
+            "max": 180,
+            "label": "Poll Time in Secounds",
+            "newLine": true
+        },
+        "S2M_VERBOSE": {
+            "type": "checkbox",
+            "label": "Verbosen",
+            "newLine": true
+        }
+    }
+}

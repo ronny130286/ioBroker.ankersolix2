@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}\\main.js",
+            "args": ["--debug"]
+        },
+        {
+            "name": "Attach to Process",
+            "type": "node",
+            "request": "attach",
+            "address": "127.0.0.1",
+            "port": 9229
+        }
+    ]
+}

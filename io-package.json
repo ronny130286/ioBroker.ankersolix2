@@ -1,0 +1,95 @@
+{
+    "common": {
+        "name": "ankersolix2",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "uk": "Початкова версія",
+                "zh-cn": "首次出版"
+            }
+        },
+        "title": "Anker Solix 2",
+        "titleLang": {
+            "en": "Anker Solix 2",
+            "de": "Anker Solix 2",
+            "ru": "Анкер Соликс 2",
+            "pt": "Anker Solix 2",
+            "nl": "Anker Solix 2",
+            "fr": "Anker Solix 2",
+            "it": "Anker Solix 2",
+            "es": "Anker Solix 2",
+            "pl": "Anker Solix 2",
+            "uk": "Анкер Солікс 2",
+            "zh-cn": "安克索利克斯 2"
+        },
+        "desc": {
+            "en": "Integrade Anker Solix 2",
+            "de": "Integrieren Sie Anker Solix 2",
+            "ru": "Интеграция Анкер Соликс 2",
+            "pt": "Integração Anker Solix 2",
+            "nl": "Integreer Anker Solix 2",
+            "fr": "Intégrer Anker Solix 2",
+            "it": "Integrato Anker Solix 2",
+            "es": "Integrar Anker Solix 2",
+            "pl": "Zintegruj Anker Solix 2",
+            "uk": "Інтеграція Anker Solix 2",
+            "zh-cn": "集成 Anker Solix 2"
+        },
+        "authors": [
+            "ronny130286 <ronnymatthei@gmx.de>"
+        ],
+        "keywords": [
+            "Anker",
+            "Solix",
+            "Solarbank",
+            "Solarbank 2",
+            "IoT"
+        ],
+        "license": "MIT",
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "main": "build/main.js",
+        "icon": "ankersolix2.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/ronny130286/ioBroker.ankersolix2/main/admin/ankersolix2.png",
+        "readme": "https://github.com/ronny130286/ioBroker.ankersolix2/blob/main/README.md",
+        "loglevel": "info",
+        "tier": 3,
+        "mode": "daemon",
+        "type": "iot-systems",
+        "compact": true,
+        "connectionType": "cloud",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "json"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=3.3.22"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=5.1.13"
+            }
+        ]
+    },
+    "native": {
+        "option1": true,
+        "option2": "42"
+    },
+    "objects": [],
+    "instanceObjects": []
+}
