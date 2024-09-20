@@ -1,6 +1,6 @@
 {
   "name": "iobroker.ankersolix2",
-  "version": "0.0.1",
+  "version": "0.0.2-alpha.0",
   "description": "Integrade Anker Solix 2",
   "author": {
     "name": "ronny130286",
@@ -28,7 +28,7 @@
     "axios": "1.7.7",
     "node-fetch": "3.3.2",
     "async-mqtt": "^2.6.3",
-    "dotenv" : "^16.4.5"
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^3.8.0",
