@@ -67,7 +67,7 @@ class Ankersolix2 extends utils.Adapter {
             await this.fetchAndPublish();
         } catch (e) {
             //looking for session.data, delete if exist, so get a new token. Problem happen if use the same account in App
-            if (!fs.existsSync(this.storeDir + '/session.data')) {
+            if (fs.existsSync(this.storeDir + '/session.data')) {
                 fs.unlinkSync(this.storeDir + '/session.data');
             }
             this.log.warn('Failed fetching or publishing printer data' + e);
