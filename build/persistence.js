@@ -30,12 +30,12 @@ class FilePersistence {
   }
   log;
   async store(data) {
-    this.log.info("Write Data to File: " + this.path);
+    this.log.debug("Write Data to File: " + this.path);
     await import_fs.promises.writeFile(this.path, JSON.stringify(data), "utf8");
   }
   async retrieve() {
     try {
-      this.log.info("Try to restore data from File:" + this.path);
+      this.log.debug("Try to restore data from File:" + this.path);
       const data = await import_fs.promises.readFile(this.path, "utf8");
       return JSON.parse(data);
     } catch (err) {

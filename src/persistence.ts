@@ -18,13 +18,13 @@ export class FilePersistence<T> implements Persistence<T> {
     private log: Logger;
 
     async store(data: T): Promise<void> {
-        this.log.info('Write Data to File: ' + this.path);
+        this.log.debug('Write Data to File: ' + this.path);
         await fs.writeFile(this.path, JSON.stringify(data), 'utf8');
     }
 
     async retrieve(): Promise<T | null> {
         try {
-            this.log.info('Try to restore data from File:' + this.path);
+            this.log.debug('Try to restore data from File:' + this.path);
             const data = await fs.readFile(this.path, 'utf8');
             return JSON.parse(data) as T;
         } catch (err) {

@@ -1,50 +1,68 @@
 {
     "i18n": true,
-    "type": "panel",
+    "type": "tabs",
+    "iconPosition": "top",
     "items": {
-        "Username": {
-            "newLine": true,
-            "type": "text",
-            "sm": 12,
-            "md": 6,
-            "lg": 6,
-            "label": "Solix Username",
-            "help": "Please use a Family-Acoount how can only watch, dont use your main account."
-        },
-        "Password": {
-            "type": "password",
-            "repeat": false,
-            "visible": false,
-            "sm": 12,
-            "md": 6,
-            "lg": 6,
-            "label": "Solix Password"
-        },
-        "COUNTRY": {
-            "type": "select",
-            "label": "Country",
-            "options": [
-                {
-                    "label": "German",
-                    "value": "DE"
+        "_options": {
+            "type": "panel",
+            "label": "Options",
+            "items": {
+                "Username": {
+                    "newLine": true,
+                    "type": "text",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 6,
+                    "label": "Solix Username",
+                    "help": "Please use a Family-Acoount how can only watch, dont use your main account."
                 },
-                {
-                    "label": "English",
-                    "value": "EN"
+                "Password": {
+                    "type": "password",
+                    "repeat": false,
+                    "visible": false,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 6,
+                    "label": "Solix Password"
+                },
+                "COUNTRY": {
+                    "type": "select",
+                    "label": "Country Code",
+                    "options": [
+                        {
+                            "label": "DE",
+                            "value": "DE"
+                        },
+                        {
+                            "label": "EN",
+                            "value": "EN"
+                        },
+                        {
+                            "label": "ES",
+                            "value": "ES"
+                        },
+                        {
+                            "label": "FR",
+                            "value": "FR"
+                        }
+                    ],
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 4,
+                    "newLine": true
+                },
+                "POLL_INTERVAL": {
+                    "default": "60",
+                    "type": "number",
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 4,
+                    "min": 30,
+                    "max": 180,
+                    "label": "Polltime in secounds",
+                    "newLine": true
                 }
-            ],
-            "newLine": true
-        },
-        "POLL_INTERVAL": {
-            "default": "60",
-            "type": "number",
-            "sm": 12,
-            "md": 6,
-            "lg": 6,
-            "min": 30,
-            "max": 180,
-            "label": "Polltime in secounds",
-            "newLine": true
+            }
         }
     }
 }

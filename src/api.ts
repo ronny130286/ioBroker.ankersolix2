@@ -318,7 +318,7 @@ export class SolixApi {
     }
 
     private md5(s: string) {
-        this.log.info(s);
+        this.log.debug(s);
         return createHash('md5').update(Buffer.from(s)).digest('hex');
     }
 

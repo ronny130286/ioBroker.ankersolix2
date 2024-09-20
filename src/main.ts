@@ -13,6 +13,8 @@ import { sleep } from './utils.js';
 // Load your modules here, e.g.:
 
 class Ankersolix2 extends utils.Adapter {
+    storeDir = utils.getAbsoluteInstanceDataDir(this);
+
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -45,15 +47,14 @@ class Ankersolix2 extends utils.Adapter {
             return;
         }
 
-        const storeDir = utils.getAbsoluteInstanceDataDir(this);
         try {
             // create directory to store fetch data
-            if (!fs.existsSync(storeDir)) {
-                fs.mkdirSync(storeDir);
-                this.log.info('Folder created: ' + storeDir);
+            if (!fs.existsSync(this.storeDir)) {
+                fs.mkdirSync(this.storeDir);
+                this.log.debug('Folder created: ' + this.storeDir);
             }
         } catch (err) {
-            this.log.error('Could not create storage directory (' + storeDir + '): ' + err);
+            this.log.error('Could not create storage directory (' + this.storeDir + '): ' + err);
             return;
         }
 
@@ -65,6 +66,10 @@ class Ankersolix2 extends utils.Adapter {
         try {
             await this.fetchAndPublish();
         } catch (e) {
+            //looking for session.data, delete if exist, so get a new token. Problem happen if use the same account in App
+            if (!fs.existsSync(this.storeDir + '/session.data')) {
+                fs.unlinkSync(this.storeDir + '/session.data');
+            }
             this.log.warn('Failed fetching or publishing printer data' + e);
         } finally {
             const end = new Date().getTime() - start;
@@ -86,9 +91,10 @@ class Ankersolix2 extends utils.Adapter {
             log: this.log,
         });
 
-        const storeDir = utils.getAbsoluteInstanceDataDir(this);
-
-        const persistence: Persistence<LoginResultResponse> = new FilePersistence(storeDir + '/session.data', this.log);
+        const persistence: Persistence<LoginResultResponse> = new FilePersistence(
+            this.storeDir + '/session.data',
+            this.log,
+        );
 
         let loginData = await persistence.retrieve();
         if (loginData == null || !this.isLoginValid(loginData)) {
@@ -116,32 +122,37 @@ class Ankersolix2 extends utils.Adapter {
             } else {
                 sites = siteHomepage.data.site_list;
             }
+
             for (const site of sites) {
                 const scenInfo = await loggedInApi.scenInfo(site.site_id);
 
                 const message = JSON.stringify(scenInfo.data);
                 const jsonparse = JSON.parse(message);
 
+                this.CreateOrUpdateFolder(site.site_id, jsonparse.home_info.home_name, 'device');
+
                 Object.entries(jsonparse).forEach((entries) => {
-                    const [key, value] = entries;
+                    const [id, value] = entries;
 
                     const type = this.whatIsIt(value);
 
+                    const key = site.site_id + '.' + id;
+
                     if (type === 'object') {
-                        this.isObject(value, key);
+                        this.isObject(key, value);
                     } else if (type === 'array') {
                         const array = JSON.parse(JSON.stringify(value));
                         let i = 0;
                         array.forEach((elem: any, item: any) => {
                             if (this.whatIsIt(array[item]) === 'object') {
-                                this.isObject(array[item], key + '.' + i);
+                                this.isObject(key + '.' + i, array[item]);
                             } else if (this.whatIsIt(array[item]) === 'string') {
-                                this.isString(array[item], key + '.' + i);
+                                this.isString(key + '.' + i, array[item]);
                             }
                             i++;
                         });
                     } else {
-                        this.isString(value, key);
+                        this.isString(key, value);
                     }
                 });
 
@@ -177,32 +188,34 @@ class Ankersolix2 extends utils.Adapter {
         }
     }
 
-    isArray(value: any, key: string): void {
+    isArray(key: string, value: any): void {
         const array = JSON.parse(JSON.stringify(value));
         array.forEach(async (elem: any, item: any) => {
             const type = this.whatIsIt(array[item]);
 
             if (type === 'object') {
-                this.isObject(array[item], key);
+                this.isObject(key, array[item]);
             } else if (type === 'string') {
-                this.isString(array[item], key);
+                this.isString(key, array[item]);
             }
         });
     }
 
-    isObject(value: any, key: string): void {
+    isObject(key: string, value: any): void {
+        const name = key.split('.').pop()?.replaceAll('_', ' ');
+        this.CreateOrUpdateFolder(key, name, 'folder');
         Object.entries(value).forEach((subentries) => {
             const [objkey, objvalue] = subentries;
             const type = this.whatIsIt(objvalue);
             if (type === 'array') {
-                this.isArray(objvalue, key + '.' + objkey);
+                this.isArray(key + '.' + objkey, objvalue);
             } else {
-                this.isString(objvalue, key + '.' + objkey);
+                this.isString(key + '.' + objkey, objvalue);
             }
         });
     }
 
-    async isString(value: any, key: string): Promise<void> {
+    async isString(key: string, value: any): Promise<void> {
         let parmType: ioBroker.CommonType = 'string';
         let parmRole: string = 'value';
         const valType = this.whatIsIt(value);
@@ -233,17 +246,51 @@ class Ankersolix2 extends utils.Adapter {
             }
         }
         let parmUnit = undefined;
-        if (key.includes('_power')) {
+        if (key.includes('_power') && !key.includes('display')) {
             parmUnit = 'W';
         }
 
-        this.CreateOrUpdateState(key, key, parmType, parmRole, true, parmUnit);
+        const name = key.split('.').pop()?.replaceAll('_', ' ');
+
+        await this.CreateOrUpdateState(key, name, parmType, parmRole, false, parmUnit);
         this.setState(key, { val: value, ack: true });
+    }
+
+    async CreateOrUpdateFolder(
+        path: string,
+        name: string | undefined = 'error',
+        type: 'folder' | 'device' | 'channel',
+    ): Promise<void> {
+        const obj = await this.getObjectAsync(path);
+        if (obj == null) {
+            this.log.debug(path + ' doesnt exist => create');
+            const newObj: ioBroker.SettableObject = {
+                type: type,
+                common: { name: name },
+                native: {},
+            };
+            await this.setObjectAsync(path, newObj);
+        } else {
+            this.log.debug(path + ' exist => looking for update');
+            let changed: boolean = false;
+            if (obj.common.name != name) {
+                obj.common.name = name;
+                changed = true;
+            }
+            if (obj.common.type != type) {
+                obj.common.type = type;
+                changed = true;
+            }
+            if (changed) {
+                this.log.debug(path + ' => has been updated');
+                await this.setObjectAsync(path, obj);
+            }
+        }
     }
 
     async CreateOrUpdateState(
         path: string,
-        name: string,
+        name: string | undefined = 'Error',
         type: ioBroker.CommonType,
         role: string,
         writable: boolean,
