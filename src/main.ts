@@ -66,10 +66,6 @@ class Ankersolix2 extends utils.Adapter {
         try {
             await this.fetchAndPublish();
         } catch (e) {
-            //looking for session.data, delete if exist, so get a new token. Problem happen if use the same account in App
-            if (fs.existsSync(this.storeDir + '/session.data')) {
-                fs.unlinkSync(this.storeDir + '/session.data');
-            }
             this.log.warn('Failed fetching or publishing printer data' + e);
         } finally {
             const end = new Date().getTime() - start;
@@ -100,10 +96,19 @@ class Ankersolix2 extends utils.Adapter {
         if (loginData == null || !this.isLoginValid(loginData)) {
             const loginResponse = await api.login();
             loginData = loginResponse.data ?? null;
-            if (loginData) {
+            this.log.error(`${loginResponse.msg} (${loginResponse.code})`);
+            if (loginData && loginResponse.code == 0) {
                 await persistence.store(loginData);
             } else {
                 this.log.error(`Could not log in: ${loginResponse.msg} (${loginResponse.code})`);
+
+                //looking for session.data, delete if exist, so get a new token. Problem happen if use the same account in App
+                if (loginResponse.code === 100053) {
+                    if (fs.existsSync(this.storeDir + '/session.data')) {
+                        fs.unlinkSync(this.storeDir + '/session.data');
+                    }
+                    loginData = null;
+                }
             }
         } else {
             this.log.debug('Using cached auth data');

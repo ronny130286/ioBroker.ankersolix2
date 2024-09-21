@@ -69,9 +69,6 @@ class Ankersolix2 extends utils.Adapter {
     try {
       await this.fetchAndPublish();
     } catch (e) {
-      if (!import_fs.default.existsSync(this.storeDir + "/session.data")) {
-        import_fs.default.unlinkSync(this.storeDir + "/session.data");
-      }
       this.log.warn("Failed fetching or publishing printer data" + e);
     } finally {
       const end = (/* @__PURE__ */ new Date()).getTime() - start;
@@ -98,10 +95,17 @@ class Ankersolix2 extends utils.Adapter {
     if (loginData == null || !this.isLoginValid(loginData)) {
       const loginResponse = await api.login();
       loginData = (_a = loginResponse.data) != null ? _a : null;
-      if (loginData) {
+      this.log.error(`${loginResponse.msg} (${loginResponse.code})`);
+      if (loginData && loginResponse.code == 0) {
         await persistence.store(loginData);
       } else {
         this.log.error(`Could not log in: ${loginResponse.msg} (${loginResponse.code})`);
+        if (loginResponse.code === 100053) {
+          if (import_fs.default.existsSync(this.storeDir + "/session.data")) {
+            import_fs.default.unlinkSync(this.storeDir + "/session.data");
+          }
+          loginData = null;
+        }
       }
     } else {
       this.log.debug("Using cached auth data");

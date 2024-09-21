@@ -56,7 +56,6 @@ class SolixApi {
     this.ecdh.generateKeys();
   }
   md5(s) {
-    this.log.debug(s);
     return (0, import_crypto.createHash)("md5").update(Buffer.from(s)).digest("hex");
   }
   getTimezoneGMTString() {

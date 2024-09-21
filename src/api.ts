@@ -25,7 +25,7 @@ export interface LoginRequest {
 }
 
 export interface SuccessResponse<T> {
-    code: 0;
+    code: 0 | number;
     msg: 'success!';
     data: T;
 }
@@ -317,8 +317,8 @@ export class SolixApi {
         this.ecdh.generateKeys();
     }
 
-    private md5(s: string) {
-        this.log.debug(s);
+    private md5(s: string): string {
+        //this.log.debug(s);
         return createHash('md5').update(Buffer.from(s)).digest('hex');
     }
 
@@ -338,7 +338,7 @@ export class SolixApi {
         return cipher.update(data, 'utf8', 'base64') + cipher.final('base64');
     }
 
-    private async axios(endpoint: string, data?: any, headers?: Record<string, string>) {
+    private async axios(endpoint: string, data?: any, headers?: Record<string, string>): Promise<axios.AxiosResponse> {
         this.log.debug(JSON.stringify(data));
         const urlBuilder = new URL(endpoint, 'https://ankerpower-api-eu.anker.com');
         const url = urlBuilder.href;
@@ -359,7 +359,7 @@ export class SolixApi {
         });
     }
 
-    public withLogin(login: LoginResultResponse) {
+    public withLogin(login: LoginResultResponse): any {
         const headers = { ['X-Auth-Token']: login.auth_token, gtoken: this.md5(login.user_id) };
         const authFetch = async <T>(endpoint: string, data?: any): Promise<ResultResponse<T>> => {
             const response = await this.axios(endpoint, data, headers);
