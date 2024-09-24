@@ -27,12 +27,14 @@ var import_api = require("./api.js");
 var import_persistence = require("./persistence.js");
 var import_utils = require("./utils.js");
 class Ankersolix2 extends utils.Adapter {
-  storeDir = utils.getAbsoluteInstanceDataDir(this);
+  storeDir = "";
+  sleepInterval;
   constructor(options = {}) {
     super({
       ...options,
       name: "ankersolix2"
     });
+    this.storeDir = utils.getAbsoluteInstanceDataDir(this);
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
@@ -57,6 +59,7 @@ class Ankersolix2 extends utils.Adapter {
       if (!import_fs.default.existsSync(this.storeDir)) {
         import_fs.default.mkdirSync(this.storeDir);
         this.log.debug("Folder created: " + this.storeDir);
+        (0, import_utils.sleep)(2e3);
       }
     } catch (err) {
       this.log.error("Could not create storage directory (" + this.storeDir + "): " + err);
@@ -72,9 +75,9 @@ class Ankersolix2 extends utils.Adapter {
       this.log.warn("Failed fetching or publishing printer data" + e);
     } finally {
       const end = (/* @__PURE__ */ new Date()).getTime() - start;
-      const sleepInterval = this.config.POLL_INTERVAL * 1e3 - end;
-      this.log.debug(`Sleeping for ${sleepInterval}ms...`);
-      await (0, import_utils.sleep)(sleepInterval);
+      this.sleepInterval = this.config.POLL_INTERVAL * 1e3 - end;
+      this.log.debug(`Sleeping for ${this.sleepInterval}ms...`);
+      await (0, import_utils.sleep)(this.sleepInterval);
       this.refreshDate();
     }
   }
@@ -92,20 +95,16 @@ class Ankersolix2 extends utils.Adapter {
       this.log
     );
     let loginData = await persistence.retrieve();
+    if ((loginData == null ? void 0 : loginData.email) != this.config.Username || (loginData == null ? void 0 : loginData.auth_token) == null || (loginData == null ? void 0 : loginData.token_expires_at) == null) {
+      loginData = null;
+    }
     if (loginData == null || !this.isLoginValid(loginData)) {
       const loginResponse = await api.login();
       loginData = (_a = loginResponse.data) != null ? _a : null;
-      this.log.error(`${loginResponse.msg} (${loginResponse.code})`);
       if (loginData && loginResponse.code == 0) {
         await persistence.store(loginData);
       } else {
-        this.log.error(`Could not log in: ${loginResponse.msg} (${loginResponse.code})`);
-        if (loginResponse.code === 100053) {
-          if (import_fs.default.existsSync(this.storeDir + "/session.data")) {
-            import_fs.default.unlinkSync(this.storeDir + "/session.data");
-          }
-          loginData = null;
-        }
+        this.log.error(`${loginResponse.msg} (${loginResponse.code})`);
       }
     } else {
       this.log.debug("Using cached auth data");
@@ -234,6 +233,12 @@ class Ankersolix2 extends utils.Adapter {
     if (key.includes("_power") && !key.includes("display")) {
       parmUnit = "W";
     }
+    if (key.includes("total_battery_power")) {
+      value = value * 100;
+      parmRole = "value.fill";
+      parmUnit = "%";
+      parmType = "number";
+    }
     const name = (_a = key.split(".").pop()) == null ? void 0 : _a.replaceAll("_", " ");
     await this.CreateOrUpdateState(key, name, parmType, parmRole, false, parmUnit);
     this.setState(key, { val: value, ack: true });
@@ -241,7 +246,6 @@ class Ankersolix2 extends utils.Adapter {
   async CreateOrUpdateFolder(path, name = "error", type) {
     const obj = await this.getObjectAsync(path);
     if (obj == null) {
-      this.log.debug(path + " doesnt exist => create");
       const newObj = {
         type,
         common: { name },
@@ -249,7 +253,6 @@ class Ankersolix2 extends utils.Adapter {
       };
       await this.setObjectAsync(path, newObj);
     } else {
-      this.log.debug(path + " exist => looking for update");
       let changed = false;
       if (obj.common.name != name) {
         obj.common.name = name;
@@ -356,6 +359,7 @@ class Ankersolix2 extends utils.Adapter {
    */
   onUnload(callback) {
     try {
+      clearTimeout(this.sleepInterval);
       callback();
     } catch (e) {
       this.log.error("onUnload: " + e);

@@ -13,13 +13,17 @@ import { sleep } from './utils.js';
 // Load your modules here, e.g.:
 
 class Ankersolix2 extends utils.Adapter {
-    storeDir = utils.getAbsoluteInstanceDataDir(this);
+    private storeDir: string = '';
+    private sleepInterval: number | undefined;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
             name: 'ankersolix2',
         });
+
+        this.storeDir = utils.getAbsoluteInstanceDataDir(this);
+
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
@@ -52,6 +56,7 @@ class Ankersolix2 extends utils.Adapter {
             if (!fs.existsSync(this.storeDir)) {
                 fs.mkdirSync(this.storeDir);
                 this.log.debug('Folder created: ' + this.storeDir);
+                sleep(2000);
             }
         } catch (err) {
             this.log.error('Could not create storage directory (' + this.storeDir + '): ' + err);
@@ -69,9 +74,9 @@ class Ankersolix2 extends utils.Adapter {
             this.log.warn('Failed fetching or publishing printer data' + e);
         } finally {
             const end = new Date().getTime() - start;
-            const sleepInterval = this.config.POLL_INTERVAL * 1000 - end;
-            this.log.debug(`Sleeping for ${sleepInterval}ms...`);
-            await sleep(sleepInterval);
+            this.sleepInterval = this.config.POLL_INTERVAL * 1000 - end;
+            this.log.debug(`Sleeping for ${this.sleepInterval}ms...`);
+            await sleep(this.sleepInterval);
 
             this.refreshDate();
         }
@@ -93,22 +98,24 @@ class Ankersolix2 extends utils.Adapter {
         );
 
         let loginData = await persistence.retrieve();
+        if (
+            loginData?.email != this.config.Username ||
+            loginData?.auth_token == null ||
+            loginData?.token_expires_at == null
+        ) {
+            //this.log.warn('Conifg Email Adresse are not the same in storedata or auth_token or token_expires_at are null');
+            loginData = null;
+        }
+
         if (loginData == null || !this.isLoginValid(loginData)) {
             const loginResponse = await api.login();
             loginData = loginResponse.data ?? null;
-            this.log.error(`${loginResponse.msg} (${loginResponse.code})`);
+
             if (loginData && loginResponse.code == 0) {
                 await persistence.store(loginData);
             } else {
-                this.log.error(`Could not log in: ${loginResponse.msg} (${loginResponse.code})`);
-
                 //looking for session.data, delete if exist, so get a new token. Problem happen if use the same account in App
-                if (loginResponse.code === 100053) {
-                    if (fs.existsSync(this.storeDir + '/session.data')) {
-                        fs.unlinkSync(this.storeDir + '/session.data');
-                    }
-                    loginData = null;
-                }
+                this.log.error(`${loginResponse.msg} (${loginResponse.code})`);
             }
         } else {
             this.log.debug('Using cached auth data');
@@ -254,6 +261,13 @@ class Ankersolix2 extends utils.Adapter {
         if (key.includes('_power') && !key.includes('display')) {
             parmUnit = 'W';
         }
+        if (key.includes('total_battery_power')) {
+            //Battery_power Level in %
+            value = value * 100;
+            parmRole = 'value.fill';
+            parmUnit = '%';
+            parmType = 'number';
+        }
 
         const name = key.split('.').pop()?.replaceAll('_', ' ');
 
@@ -268,7 +282,7 @@ class Ankersolix2 extends utils.Adapter {
     ): Promise<void> {
         const obj = await this.getObjectAsync(path);
         if (obj == null) {
-            this.log.debug(path + ' doesnt exist => create');
+            //this.log.debug(path + ' doesnt exist => create');
             const newObj: ioBroker.SettableObject = {
                 type: type,
                 common: { name: name },
@@ -276,7 +290,7 @@ class Ankersolix2 extends utils.Adapter {
             };
             await this.setObjectAsync(path, newObj);
         } else {
-            this.log.debug(path + ' exist => looking for update');
+            //this.log.debug(path + ' exist => looking for update');
             let changed: boolean = false;
             if (obj.common.name != name) {
                 obj.common.name = name;
@@ -402,6 +416,8 @@ class Ankersolix2 extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
+
+            clearTimeout(this.sleepInterval);
 
             callback();
         } catch (e) {

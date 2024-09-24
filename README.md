@@ -15,12 +15,30 @@
 
 Integrade Anker Solix 2
 
+## Description
+
+This project is derived from https://github.com/tomquist/solix2mqtt and brings information from the anker api directly into ioBroker.
+
+## Config
+
+1. Create a familie-account in anker app and add it to your main-account
+2. install the adapter
+3. go to adapter setting and set your credentials
+4. at first time, pleas use a high poll time (180sec), so you have enought time to stop the adapter if everything goes wrong.
+   Normally you can see in logfile that you have an site_id and you got the message: Published.
+
+## Helps
+
+If you have errors like 401, than please check you credentials.
+If you have erros again and cant login, stop the adapter and delete the session.data under the iobroker-data/ankersolix2.0 (e.g. /opt/iobroker/iobroker-data/ankersolix2/), after this start adapter again.
+
 ## Changelog
 
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
 ### 0.0.2-alpha.0 (2024-09-20)
 
 -   (ronny130286) initial release
@@ -48,3 +66,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Acknowledgements
