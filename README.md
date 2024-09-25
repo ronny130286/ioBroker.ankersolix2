@@ -36,10 +36,13 @@ If you have erros again and cant login, stop the adapter and delete the session.
 
 <!--
     Placeholder for the next version (at the beginning of the line):
-
+    ### **WORK IN PROGRESS**
 -->
 
 ### **WORK IN PROGRESS**
+
+-   (ronny130286) fix session.data
+-   (ronny130286) npm release
 
 ### 0.0.2-alpha.0 (2024-09-20)
 
