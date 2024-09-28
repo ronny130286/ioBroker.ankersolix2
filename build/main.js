@@ -49,7 +49,7 @@ class Ankersolix2 extends utils.Adapter {
       );
       return;
     }
-    if (!this.config.POLL_INTERVAL || this.config.POLL_INTERVAL < 30) {
+    if (!this.config.POLL_INTERVAL || this.config.POLL_INTERVAL < 10) {
       this.log.error(
         `The poll intervall must be greater than 30 - please check instance configuration of ${this.namespace}`
       );
@@ -72,7 +72,9 @@ class Ankersolix2 extends utils.Adapter {
     try {
       await this.fetchAndPublish();
     } catch (e) {
-      this.log.warn("Failed fetching or publishing printer data" + e);
+      this.log.warn("Failed fetching or publishing printer data " + e);
+      import_fs.default.unlinkSync(this.storeDir + "/session.data");
+      this.log.error("Clear session.data, please wait");
     } finally {
       const end = (/* @__PURE__ */ new Date()).getTime() - start;
       this.sleepInterval = this.config.POLL_INTERVAL * 1e3 - end;
@@ -96,6 +98,9 @@ class Ankersolix2 extends utils.Adapter {
     );
     let loginData = await persistence.retrieve();
     if ((loginData == null ? void 0 : loginData.email) != this.config.Username || (loginData == null ? void 0 : loginData.auth_token) == null || (loginData == null ? void 0 : loginData.token_expires_at) == null) {
+      this.log.warn(
+        "Conifg Email Adresse are not the same in storedata or auth_token or token_expires_at are null"
+      );
       loginData = null;
     }
     if (loginData == null || !this.isLoginValid(loginData)) {
@@ -103,8 +108,6 @@ class Ankersolix2 extends utils.Adapter {
       loginData = (_a = loginResponse.data) != null ? _a : null;
       if (loginData && loginResponse.code == 0) {
         await persistence.store(loginData);
-      } else {
-        this.log.error(`${loginResponse.msg} (${loginResponse.code})`);
       }
     } else {
       this.log.debug("Using cached auth data");
@@ -112,7 +115,6 @@ class Ankersolix2 extends utils.Adapter {
     if (loginData) {
       const loggedInApi = api.withLogin(loginData);
       const siteHomepage = await loggedInApi.siteHomepage();
-      this.log.debug("siteHomepage Data: " + JSON.stringify(siteHomepage.data.site_list));
       let sites;
       if (siteHomepage.data.site_list.length === 0) {
         sites = (await loggedInApi.getSiteList()).data.site_list;
@@ -123,7 +125,7 @@ class Ankersolix2 extends utils.Adapter {
         const scenInfo = await loggedInApi.scenInfo(site.site_id);
         const message = JSON.stringify(scenInfo.data);
         const jsonparse = JSON.parse(message);
-        this.CreateOrUpdateFolder(site.site_id, jsonparse.home_info.home_name, "device");
+        this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, "device");
         Object.entries(jsonparse).forEach((entries) => {
           const [id, value] = entries;
           const type = this.whatIsIt(value);
@@ -188,7 +190,7 @@ class Ankersolix2 extends utils.Adapter {
   isObject(key, value) {
     var _a;
     const name = (_a = key.split(".").pop()) == null ? void 0 : _a.replaceAll("_", " ");
-    this.CreateOrUpdateFolder(key, name, "folder");
+    this.CreateOrUpdate(key, name, "folder");
     Object.entries(value).forEach((subentries) => {
       const [objkey, objvalue] = subentries;
       const type = this.whatIsIt(objvalue);
@@ -215,6 +217,8 @@ class Ankersolix2 extends utils.Adapter {
       parmRole = "value.time";
       if (valType === "number") {
         value = new Date(value * 1e3).toUTCString();
+      } else if (value == "") {
+        value = (/* @__PURE__ */ new Date()).getTime().toString();
       }
     }
     if (key.includes("unit")) {
@@ -233,84 +237,53 @@ class Ankersolix2 extends utils.Adapter {
     if (key.includes("_power") && !key.includes("display")) {
       parmUnit = "W";
     }
-    if (key.includes("total_battery_power")) {
+    if (key.includes("battery_power")) {
       value = value * 100;
       parmRole = "value.fill";
       parmUnit = "%";
       parmType = "number";
     }
     const name = (_a = key.split(".").pop()) == null ? void 0 : _a.replaceAll("_", " ");
-    await this.CreateOrUpdateState(key, name, parmType, parmRole, false, parmUnit);
+    await this.CreateOrUpdate(key, name, "state", parmType, parmRole, false, parmUnit);
     this.setState(key, { val: value, ack: true });
   }
-  async CreateOrUpdateFolder(path, name = "error", type) {
+  async CreateOrUpdate(path, name = "Error", type, commontype = void 0, role = void 0, writable = void 0, unit = void 0, min = void 0, max = void 0, step = void 0) {
     const obj = await this.getObjectAsync(path);
     if (obj == null) {
-      const newObj = {
-        type,
-        common: { name },
-        native: {}
-      };
-      await this.setObjectAsync(path, newObj);
-    } else {
-      let changed = false;
-      if (obj.common.name != name) {
-        obj.common.name = name;
-        changed = true;
-      }
-      if (obj.common.type != type) {
-        obj.common.type = type;
-        changed = true;
-      }
-      if (changed) {
-        this.log.debug(path + " => has been updated");
-        await this.setObjectAsync(path, obj);
-      }
-    }
-  }
-  async CreateOrUpdateState(path, name = "Error", type, role, writable, unit = void 0, min = void 0, max = void 0, step = void 0) {
-    const obj = await this.getObjectAsync(path);
-    if (obj == null) {
-      this.log.debug(path + " doesnt exist => create");
-      const newObj = {
-        type: "state",
-        common: {
-          name,
+      let newObj = null;
+      if (type === "state") {
+        newObj = {
           type,
-          role,
-          read: true,
-          write: writable,
-          unit,
-          min,
-          max,
-          step
-        },
-        native: {}
-      };
+          common: {
+            name,
+            type: commontype,
+            role,
+            read: true,
+            write: writable,
+            unit,
+            min,
+            max,
+            step
+          },
+          native: {}
+        };
+      } else {
+        newObj = {
+          type,
+          common: { name },
+          native: {}
+        };
+      }
       await this.setObjectAsync(path, newObj);
     } else {
-      this.log.debug(path + " exist => looking for update");
       let changed = false;
-      if (obj.common == null) {
-        obj.common = {
-          name,
-          type: "string",
-          role,
-          read: true,
-          write: writable,
-          unit,
-          min,
-          max,
-          step
-        };
-        changed = true;
-      } else {
+      if (type === "state") {
         if (obj.common.name != name) {
           obj.common.name = name;
           changed = true;
         }
-        if (obj.common.type != type) {
-          obj.common.type = type;
+        if (obj.common.type != commontype) {
+          obj.common.type = commontype;
           changed = true;
         }
         if (obj.common.role != role) {
@@ -341,10 +314,18 @@ class Ankersolix2 extends utils.Adapter {
           obj.common.step = step;
           changed = true;
         }
-        if (changed) {
-          this.log.debug(path + " => has been updated");
-          await this.setObjectAsync(path, obj);
+      } else {
+        if (obj.common.name != name) {
+          obj.common.name = name;
+          changed = true;
         }
+        if (obj.common.type != type) {
+          obj.common.type = type;
+          changed = true;
+        }
+      }
+      if (changed) {
+        await this.setObjectAsync(path, obj);
       }
     }
   }

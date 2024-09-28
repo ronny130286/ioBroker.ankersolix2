@@ -44,7 +44,7 @@ class Ankersolix2 extends utils.Adapter {
             return;
         }
 
-        if (!this.config.POLL_INTERVAL || this.config.POLL_INTERVAL < 30) {
+        if (!this.config.POLL_INTERVAL || this.config.POLL_INTERVAL < 10) {
             this.log.error(
                 `The poll intervall must be greater than 30 - please check instance configuration of ${this.namespace}`,
             );
@@ -71,7 +71,9 @@ class Ankersolix2 extends utils.Adapter {
         try {
             await this.fetchAndPublish();
         } catch (e) {
-            this.log.warn('Failed fetching or publishing printer data' + e);
+            this.log.warn('Failed fetching or publishing printer data ' + e);
+            fs.unlinkSync(this.storeDir + '/session.data');
+            this.log.error('Clear session.data, please wait');
         } finally {
             const end = new Date().getTime() - start;
             this.sleepInterval = this.config.POLL_INTERVAL * 1000 - end;
@@ -103,7 +105,9 @@ class Ankersolix2 extends utils.Adapter {
             loginData?.auth_token == null ||
             loginData?.token_expires_at == null
         ) {
-            //this.log.warn('Conifg Email Adresse are not the same in storedata or auth_token or token_expires_at are null');
+            this.log.warn(
+                'Conifg Email Adresse are not the same in storedata or auth_token or token_expires_at are null',
+            );
             loginData = null;
         }
 
@@ -113,9 +117,6 @@ class Ankersolix2 extends utils.Adapter {
 
             if (loginData && loginResponse.code == 0) {
                 await persistence.store(loginData);
-            } else {
-                //looking for session.data, delete if exist, so get a new token. Problem happen if use the same account in App
-                this.log.error(`${loginResponse.msg} (${loginResponse.code})`);
             }
         } else {
             this.log.debug('Using cached auth data');
@@ -124,8 +125,6 @@ class Ankersolix2 extends utils.Adapter {
         if (loginData) {
             const loggedInApi = api.withLogin(loginData);
             const siteHomepage = await loggedInApi.siteHomepage();
-
-            this.log.debug('siteHomepage Data: ' + JSON.stringify(siteHomepage.data.site_list));
 
             let sites;
             if (siteHomepage.data.site_list.length === 0) {
@@ -141,7 +140,9 @@ class Ankersolix2 extends utils.Adapter {
                 const message = JSON.stringify(scenInfo.data);
                 const jsonparse = JSON.parse(message);
 
-                this.CreateOrUpdateFolder(site.site_id, jsonparse.home_info.home_name, 'device');
+                //this.log.debug('JSON: ' + message);
+
+                this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
 
                 Object.entries(jsonparse).forEach((entries) => {
                     const [id, value] = entries;
@@ -215,7 +216,7 @@ class Ankersolix2 extends utils.Adapter {
 
     isObject(key: string, value: any): void {
         const name = key.split('.').pop()?.replaceAll('_', ' ');
-        this.CreateOrUpdateFolder(key, name, 'folder');
+        this.CreateOrUpdate(key, name, 'folder');
         Object.entries(value).forEach((subentries) => {
             const [objkey, objvalue] = subentries;
             const type = this.whatIsIt(objvalue);
@@ -243,6 +244,9 @@ class Ankersolix2 extends utils.Adapter {
             parmRole = 'value.time';
             if (valType === 'number') {
                 value = new Date(value * 1000).toUTCString();
+            } else if (value == '') {
+                //when Update_time not set in JSON, set it to actual time
+                value = new Date().getTime().toString();
             }
         }
         if (key.includes('unit')) {
@@ -261,7 +265,7 @@ class Ankersolix2 extends utils.Adapter {
         if (key.includes('_power') && !key.includes('display')) {
             parmUnit = 'W';
         }
-        if (key.includes('total_battery_power')) {
+        if (key.includes('battery_power')) {
             //Battery_power Level in %
             value = value * 100;
             parmRole = 'value.fill';
@@ -271,48 +275,17 @@ class Ankersolix2 extends utils.Adapter {
 
         const name = key.split('.').pop()?.replaceAll('_', ' ');
 
-        await this.CreateOrUpdateState(key, name, parmType, parmRole, false, parmUnit);
+        await this.CreateOrUpdate(key, name, 'state', parmType, parmRole, false, parmUnit);
         this.setState(key, { val: value, ack: true });
     }
 
-    async CreateOrUpdateFolder(
-        path: string,
-        name: string | undefined = 'error',
-        type: 'folder' | 'device' | 'channel',
-    ): Promise<void> {
-        const obj = await this.getObjectAsync(path);
-        if (obj == null) {
-            //this.log.debug(path + ' doesnt exist => create');
-            const newObj: ioBroker.SettableObject = {
-                type: type,
-                common: { name: name },
-                native: {},
-            };
-            await this.setObjectAsync(path, newObj);
-        } else {
-            //this.log.debug(path + ' exist => looking for update');
-            let changed: boolean = false;
-            if (obj.common.name != name) {
-                obj.common.name = name;
-                changed = true;
-            }
-            if (obj.common.type != type) {
-                obj.common.type = type;
-                changed = true;
-            }
-            if (changed) {
-                this.log.debug(path + ' => has been updated');
-                await this.setObjectAsync(path, obj);
-            }
-        }
-    }
-
-    async CreateOrUpdateState(
+    async CreateOrUpdate(
         path: string,
         name: string | undefined = 'Error',
-        type: ioBroker.CommonType,
-        role: string,
-        writable: boolean,
+        type: 'state' | 'device' | 'folder' | 'channel',
+        commontype: ioBroker.CommonType | undefined = undefined,
+        role: string | undefined = undefined,
+        writable: boolean | undefined = undefined,
         unit: string | undefined = undefined,
         min: number | undefined = undefined,
         max: number | undefined = undefined,
@@ -320,46 +293,42 @@ class Ankersolix2 extends utils.Adapter {
     ): Promise<void> {
         const obj = await this.getObjectAsync(path);
         if (obj == null) {
-            this.log.debug(path + ' doesnt exist => create');
-            const newObj: ioBroker.SettableObject = {
-                type: 'state',
-                common: {
-                    name: name,
+            let newObj: any = null;
+            if (type === 'state') {
+                //this.log.debug(path + ' doesnt exist => create');
+                newObj = {
                     type: type,
-                    role: role,
-                    read: true,
-                    write: writable,
-                    unit: unit,
-                    min: min,
-                    max: max,
-                    step: step,
-                },
-                native: {},
-            };
+                    common: {
+                        name: name,
+                        type: commontype,
+                        role: role,
+                        read: true,
+                        write: writable,
+                        unit: unit,
+                        min: min,
+                        max: max,
+                        step: step,
+                    },
+                    native: {},
+                };
+            } else {
+                newObj = {
+                    type: type,
+                    common: { name: name },
+                    native: {},
+                };
+            }
+            //this.log.debug(path + ' doesnt exist => create');
             await this.setObjectAsync(path, newObj);
         } else {
-            this.log.debug(path + ' exist => looking for update');
             let changed: boolean = false;
-            if (obj.common == null) {
-                obj.common = {
-                    name: name,
-                    type: 'string',
-                    role: role,
-                    read: true,
-                    write: writable,
-                    unit: unit,
-                    min: min,
-                    max: max,
-                    step: step,
-                };
-                changed = true;
-            } else {
+            if (type === 'state') {
                 if (obj.common.name != name) {
                     obj.common.name = name;
                     changed = true;
                 }
-                if (obj.common.type != type) {
-                    obj.common.type = type;
+                if (obj.common.type != commontype) {
+                    obj.common.type = commontype;
                     changed = true;
                 }
                 if (obj.common.role != role) {
@@ -390,10 +359,19 @@ class Ankersolix2 extends utils.Adapter {
                     obj.common.step = step;
                     changed = true;
                 }
-                if (changed) {
-                    this.log.debug(path + ' => has been updated');
-                    await this.setObjectAsync(path, obj);
+            } else {
+                if (obj.common.name != name) {
+                    obj.common.name = name;
+                    changed = true;
                 }
+                if (obj.common.type != type) {
+                    obj.common.type = type;
+                    changed = true;
+                }
+            }
+            if (changed) {
+                //this.log.debug(path + ' => has been updated');
+                await this.setObjectAsync(path, obj);
             }
         }
     }

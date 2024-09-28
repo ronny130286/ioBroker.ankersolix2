@@ -339,7 +339,7 @@ export class SolixApi {
     }
 
     private async axios(endpoint: string, data?: any, headers?: Record<string, string>): Promise<axios.AxiosResponse> {
-        this.log.debug(JSON.stringify(data));
+        //this.log.debug(JSON.stringify(data));
         const urlBuilder = new URL(endpoint, 'https://ankerpower-api-eu.anker.com');
         const url = urlBuilder.href;
 
@@ -490,10 +490,11 @@ export class SolixApi {
             transaction: `${new Date().getTime()}`,
         };
         const response = await this.axios('/passport/login', data);
-        if (response.status === 200) {
-            return (await response.data) as ResultResponse<LoginResultResponse>;
-        } else {
-            throw new Error(`Login failed (${response.status}): ${await response.data}`);
-        }
+
+        //if (response.status === 200) {
+        return (await response.data) as ResultResponse<LoginResultResponse>;
+        //} else {
+        //   throw new Error(`Login failed (${response.status}): ${await response.data}`);
+        //}
     }
 }

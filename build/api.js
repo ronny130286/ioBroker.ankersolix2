@@ -72,7 +72,6 @@ class SolixApi {
     return cipher.update(data, "utf8", "base64") + cipher.final("base64");
   }
   async axios(endpoint, data, headers) {
-    this.log.debug(JSON.stringify(data));
     const urlBuilder = new URL(endpoint, "https://ankerpower-api-eu.anker.com");
     const url = urlBuilder.href;
     return (0, import_axios.default)({
@@ -200,11 +199,7 @@ class SolixApi {
       transaction: `${(/* @__PURE__ */ new Date()).getTime()}`
     };
     const response = await this.axios("/passport/login", data);
-    if (response.status === 200) {
-      return await response.data;
-    } else {
-      throw new Error(`Login failed (${response.status}): ${await response.data}`);
-    }
+    return await response.data;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
