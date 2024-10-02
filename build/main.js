@@ -126,6 +126,16 @@ class Ankersolix2 extends utils.Adapter {
         const message = JSON.stringify(scenInfo.data);
         const jsonparse = JSON.parse(message);
         this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, "device");
+        this.CreateOrUpdate(
+          site.site_id + ".RAW_JSON",
+          "RAW_JSON",
+          "state",
+          "string",
+          "value",
+          false,
+          "undefined"
+        );
+        await this.setState(site.site_id + ".RAW_JSON", { val: message, ack: true });
         Object.entries(jsonparse).forEach((entries) => {
           const [id, value] = entries;
           const type = this.whatIsIt(value);
@@ -205,6 +215,7 @@ class Ankersolix2 extends utils.Adapter {
     var _a;
     let parmType = "string";
     let parmRole = "value";
+    let parmUnit = void 0;
     const valType = this.whatIsIt(value);
     if (valType === "boolean") {
       parmType = "boolean";
@@ -215,9 +226,9 @@ class Ankersolix2 extends utils.Adapter {
     if (key.includes("time")) {
       parmType = "string";
       parmRole = "value.time";
-      if (valType === "number") {
+      if (key.includes("create")) {
         value = new Date(value * 1e3).toUTCString();
-      } else if (value == "") {
+      } else if (key.includes("update")) {
         value = (/* @__PURE__ */ new Date()).getTime().toString();
       }
     }
@@ -229,23 +240,26 @@ class Ankersolix2 extends utils.Adapter {
         case "W":
           parmRole = "value.energy";
           break;
-        default:
-          break;
       }
     }
-    let parmUnit = void 0;
-    if (key.includes("_power") && !key.includes("display")) {
+    if (key.includes("_power") && !key.includes("display") && !key.includes("battery")) {
+      parmType = "number";
+      value = +value;
       parmUnit = "W";
     }
     if (key.includes("battery_power")) {
-      value = value * 100;
       parmRole = "value.fill";
       parmUnit = "%";
       parmType = "number";
+      if (key.includes("total_battery_power")) {
+        value = +value * 100;
+      } else {
+        value = +value;
+      }
     }
     const name = (_a = key.split(".").pop()) == null ? void 0 : _a.replaceAll("_", " ");
     await this.CreateOrUpdate(key, name, "state", parmType, parmRole, false, parmUnit);
-    this.setState(key, { val: value, ack: true });
+    await this.setState(key, { val: value, ack: true });
   }
   async CreateOrUpdate(path, name = "Error", type, commontype = void 0, role = void 0, writable = void 0, unit = void 0, min = void 0, max = void 0, step = void 0) {
     const obj = await this.getObjectAsync(path);

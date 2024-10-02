@@ -143,6 +143,16 @@ class Ankersolix2 extends utils.Adapter {
                 //this.log.debug('JSON: ' + message);
 
                 this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
+                this.CreateOrUpdate(
+                    site.site_id + '.RAW_JSON',
+                    'RAW_JSON',
+                    'state',
+                    'string',
+                    'value',
+                    false,
+                    'undefined',
+                );
+                await this.setState(site.site_id + '.RAW_JSON', { val: message, ack: true });
 
                 Object.entries(jsonparse).forEach((entries) => {
                     const [id, value] = entries;
@@ -231,6 +241,8 @@ class Ankersolix2 extends utils.Adapter {
     async isString(key: string, value: any): Promise<void> {
         let parmType: ioBroker.CommonType = 'string';
         let parmRole: string = 'value';
+        let parmUnit = undefined;
+
         const valType = this.whatIsIt(value);
 
         if (valType === 'boolean') {
@@ -239,12 +251,14 @@ class Ankersolix2 extends utils.Adapter {
         if (valType === 'number') {
             parmType = 'number';
         }
+
         if (key.includes('time')) {
             parmType = 'string';
             parmRole = 'value.time';
-            if (valType === 'number') {
+
+            if (key.includes('create')) {
                 value = new Date(value * 1000).toUTCString();
-            } else if (value == '') {
+            } else if (key.includes('update')) {
                 //when Update_time not set in JSON, set it to actual time
                 value = new Date().getTime().toString();
             }
@@ -257,26 +271,31 @@ class Ankersolix2 extends utils.Adapter {
                 case 'W':
                     parmRole = 'value.energy';
                     break;
-                default:
-                    break;
             }
         }
-        let parmUnit = undefined;
-        if (key.includes('_power') && !key.includes('display')) {
+
+        if (key.includes('_power') && !key.includes('display') && !key.includes('battery')) {
+            parmType = 'number';
+            value = +value;
             parmUnit = 'W';
         }
         if (key.includes('battery_power')) {
             //Battery_power Level in %
-            value = value * 100;
             parmRole = 'value.fill';
             parmUnit = '%';
             parmType = 'number';
+
+            if (key.includes('total_battery_power')) {
+                value = +value * 100;
+            } else {
+                value = +value;
+            }
         }
 
         const name = key.split('.').pop()?.replaceAll('_', ' ');
 
         await this.CreateOrUpdate(key, name, 'state', parmType, parmRole, false, parmUnit);
-        this.setState(key, { val: value, ack: true });
+        await this.setState(key, { val: value, ack: true });
     }
 
     async CreateOrUpdate(
