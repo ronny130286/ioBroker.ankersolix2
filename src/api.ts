@@ -184,6 +184,7 @@ export interface Solarbank {
     main_version: `${number}`;
     photovoltaic_power: `${number}`;
     output_power: `${number}`;
+    create_time: string;
 }
 
 export interface ScenInfo {
@@ -221,6 +222,7 @@ export interface ScenInfo {
     retain_load: string;
     updated_time: string;
     power_site_type: number;
+    side_id: string;
 }
 
 export interface EnergyAnalysis {
@@ -393,6 +395,7 @@ export class SolixApi {
             },
             scenInfo: async (siteId: string) => {
                 const data = { site_id: siteId };
+                //this.log.warn('scenInfo: ' + siteId);
                 return authFetch<ScenInfo>('/power_service/v1/site/get_scen_info', data);
             },
             energyAnalysis: async ({
@@ -432,7 +435,10 @@ export class SolixApi {
                 paramType: T;
                 siteId: string;
             }): Promise<ResultResponse<SiteDeviceParamResponse<T>>> => {
-                const data = { site_id: siteId, param_type: paramType };
+                const data = { site_id: siteId, param_type: paramType }; //sn APCGQ80E28300425
+
+                //this.log.debug('data: ' + siteId + ' paramtype: ' + paramType);
+
                 const response = await authFetch<{ param_data: string }>(
                     '/power_service/v1/site/get_site_device_param',
                     data,

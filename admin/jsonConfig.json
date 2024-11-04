@@ -58,7 +58,7 @@
                     "md": 4,
                     "lg": 4,
                     "min": 10,
-                    "max": 180,
+                    "max": 3600,
                     "label": "Polltime in secounds",
                     "newLine": true
                 }

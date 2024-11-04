@@ -5,16 +5,17 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
-import fs from 'fs';
-import { LoginResultResponse, SolixApi } from './api.js';
-import { FilePersistence, Persistence } from './persistence.js';
-import { sleep } from './utils.js';
+import fs, { promises as pfs } from 'fs';
+import { LoginResultResponse, SolixApi } from './api';
+import { sleep } from './utils';
 
 // Load your modules here, e.g.:
 
 class Ankersolix2 extends utils.Adapter {
-    private storeDir: string = '';
+    private storeData: string = '';
     private sleepInterval: number | undefined;
+    private loginData: LoginResultResponse | null;
+    private api: any;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -22,7 +23,8 @@ class Ankersolix2 extends utils.Adapter {
             name: 'ankersolix2',
         });
 
-        this.storeDir = utils.getAbsoluteInstanceDataDir(this);
+        this.storeData = utils.getAbsoluteInstanceDataDir(this) + '/session.data';
+        this.loginData = null;
 
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
@@ -46,35 +48,106 @@ class Ankersolix2 extends utils.Adapter {
 
         if (!this.config.POLL_INTERVAL || this.config.POLL_INTERVAL < 10) {
             this.log.error(
-                `The poll intervall must be greater than 30 - please check instance configuration of ${this.namespace}`,
+                `The poll intervall must be greater than 10 - please check instance configuration of ${this.namespace}`,
             );
             return;
         }
 
         try {
             // create directory to store fetch data
-            if (!fs.existsSync(this.storeDir)) {
-                fs.mkdirSync(this.storeDir);
-                this.log.debug('Folder created: ' + this.storeDir);
+            if (!fs.existsSync(utils.getAbsoluteInstanceDataDir(this))) {
+                fs.mkdirSync(utils.getAbsoluteInstanceDataDir(this));
+                this.log.debug('Folder created: ' + this.storeData);
                 sleep(2000);
             }
         } catch (err) {
-            this.log.error('Could not create storage directory (' + this.storeDir + '): ' + err);
+            this.log.error(
+                'Could not create storage directory (' + utils.getAbsoluteInstanceDataDir(this) + '): ' + err,
+            );
             return;
         }
+
+        this.api = new SolixApi({
+            username: this.config.Username,
+            password: this.config.Password,
+            country: this.config.COUNTRY,
+            log: this.log,
+        });
 
         this.refreshDate();
     }
 
+    async loginAPI(): Promise<LoginResultResponse | null> {
+        let login = await this.restoreLoginData();
+
+        if (!this.isLoginValid(login)) {
+            this.log.debug('loginAPI: token expires');
+            login = null;
+        }
+
+        if (login == null) {
+            try {
+                const loginResponse = await this.api.login();
+                login = loginResponse.data ?? null;
+
+                if (login && loginResponse.code == 0) {
+                    this.log.debug('LoginRsponseCode: ' + loginResponse.code);
+
+                    await this.storeLoginData(login);
+                }
+            } catch (error) {
+                this.log.error('loginAPI: ' + (error as any).message);
+                const status = (error as any).status;
+                if (!(status >= 200 && status < 300 && status != 401)) {
+                    this.log.error('Cant login, maybe Servererror or no internet connection lost. Please wait 5min.');
+                    //fs.unlinkSync(this.storeData);
+                    const sleepInterval = 300 * 1000;
+                    await sleep(sleepInterval);
+                } else if (status == 401) {
+                    if (fs.existsSync(this.storeData)) {
+                        fs.unlinkSync(this.storeData);
+                    }
+                    this.terminate('Credentials are wrong, please check and restart', status);
+                }
+
+                return null;
+            }
+        } else {
+            this.log.debug('Using auth data from savefile');
+        }
+
+        return login;
+    }
+
+    async storeLoginData(data: LoginResultResponse): Promise<void> {
+        //this.log.debug('Write Data to File: ' + this.storeData);
+        await pfs.writeFile(this.storeData, JSON.stringify(data), 'utf-8');
+    }
+
+    async restoreLoginData(): Promise<LoginResultResponse | null> {
+        try {
+            this.log.debug('Try to restore data from File: ' + this.storeData);
+            const data = await pfs.readFile(this.storeData, 'utf8');
+            return JSON.parse(data);
+        } catch (err) {
+            if ((err as any).code === 'ENOENT') {
+                return null;
+            } else {
+                this.log.error('RestoreLoginData: ' + (err as any).message);
+                return null;
+            }
+        }
+    }
+
     async refreshDate(): Promise<void> {
         const start = new Date().getTime();
-        try {
+        this.loginData = await this.loginAPI();
+
+        //this.log.debug('loginData: ' + JSON.stringify(this.loginData));
+
+        if (this.loginData) {
             await this.fetchAndPublish();
-        } catch (e) {
-            this.log.warn('Failed fetching or publishing printer data ' + e);
-            fs.unlinkSync(this.storeDir + '/session.data');
-            this.log.error('Clear session.data, please wait');
-        } finally {
+
             const end = new Date().getTime() - start;
             this.sleepInterval = this.config.POLL_INTERVAL * 1000 - end;
             this.log.debug(`Sleeping for ${this.sleepInterval}ms...`);
@@ -85,105 +158,100 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     async fetchAndPublish(): Promise<void> {
-        this.log.debug('Fetching data');
+        this.log.debug('fetchAndPublish()');
 
-        const api = new SolixApi({
-            username: this.config.Username,
-            password: this.config.Password,
-            country: this.config.COUNTRY,
-            log: this.log,
-        });
-
-        const persistence: Persistence<LoginResultResponse> = new FilePersistence(
-            this.storeDir + '/session.data',
-            this.log,
-        );
-
-        let loginData = await persistence.retrieve();
-        if (
-            loginData?.email != this.config.Username ||
-            loginData?.auth_token == null ||
-            loginData?.token_expires_at == null
-        ) {
-            this.log.warn(
-                'Conifg Email Adresse are not the same in storedata or auth_token or token_expires_at are null',
-            );
-            loginData = null;
-        }
-
-        if (loginData == null || !this.isLoginValid(loginData)) {
-            const loginResponse = await api.login();
-            loginData = loginResponse.data ?? null;
-
-            if (loginData && loginResponse.code == 0) {
-                await persistence.store(loginData);
-            }
-        } else {
-            this.log.debug('Using cached auth data');
-        }
-
-        if (loginData) {
-            const loggedInApi = api.withLogin(loginData);
+        try {
+            const loggedInApi = await this.api.withLogin(this.loginData);
             const siteHomepage = await loggedInApi.siteHomepage();
 
-            let sites;
-            if (siteHomepage.data.site_list.length === 0) {
-                // Fallback for Shared Accounts
-                sites = (await loggedInApi.getSiteList()).data.site_list;
+            if (siteHomepage.code == 0) {
+                let sites;
+                if (siteHomepage.data.site_list.length === 0) {
+                    // Fallback for Shared Accounts
+                    sites = (await loggedInApi.getSiteList()).data.site_list;
+                } else {
+                    sites = siteHomepage.data.site_list;
+                }
+
+                for (const site of sites) {
+                    const scenInfo = await loggedInApi.scenInfo(site.site_id);
+
+                    const message = JSON.stringify(scenInfo.data);
+                    const jsonparse = JSON.parse(message);
+
+                    //this.log.debug('JSON: ' + message);
+
+                    this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
+                    this.CreateOrUpdate(
+                        site.site_id + '.EXTRA.RAW_JSON',
+                        'RAW_JSON',
+                        'state',
+                        'string',
+                        'value',
+                        false,
+                        'undefined',
+                    );
+
+                    await this.setState(site.site_id + '.EXTRA.RAW_JSON', { val: message, ack: true });
+                    /*
+                    this.log.warn('SITE_ID: ' + site.site_id);
+                    const schedule = await loggedInApi.getSiteDeviceParam(ParamType.LoadConfiguration, site.site_id);
+                    const m_schedule = JSON.stringify(schedule);
+                    this.CreateOrUpdate(
+                        site.site_id + '.EXTRA.Schedule_JSON',
+                        'Schedule_JSON',
+                        'state',
+                        'string',
+                        'value',
+                        false,
+                        'undefined',
+                    );
+                    await this.setState(site.site_id + '.EXTRA.Schedule_JSON', { val: m_schedule, ack: true });
+                     */
+                    Object.entries(jsonparse).forEach((entries) => {
+                        const [id, value] = entries;
+
+                        const type = this.whatIsIt(value);
+
+                        const key = site.site_id + '.' + id;
+
+                        if (type === 'object') {
+                            this.isObject(key, value);
+                        } else if (type === 'array') {
+                            const array = JSON.parse(JSON.stringify(value));
+                            let i = 0;
+                            array.forEach((elem: any, item: any) => {
+                                if (this.whatIsIt(array[item]) === 'object') {
+                                    this.isObject(key + '.' + i, array[item]);
+                                } else if (this.whatIsIt(array[item]) === 'string') {
+                                    this.isString(key + '.' + i, array[item]);
+                                }
+                                i++;
+                            });
+                        } else {
+                            this.isString(key, value);
+                        }
+                    });
+
+                    //fs.writeFileSync(utils.getAbsoluteInstanceDataDir(this) + '/scenInfo.json', message, 'utf8');
+                }
+                this.log.debug('Published.');
             } else {
-                sites = siteHomepage.data.site_list;
+                this.log.error('loggedInApi Errorcode: ' + siteHomepage.code);
             }
+        } catch (error) {
+            this.log.warn('Failed fetching or publishing printer data ' + error);
 
-            for (const site of sites) {
-                const scenInfo = await loggedInApi.scenInfo(site.site_id);
+            const status = (error as any).status;
 
-                const message = JSON.stringify(scenInfo.data);
-                const jsonparse = JSON.parse(message);
+            if (!(status >= 200 && status < 300)) {
+                this.log.error('Something went wrong, Servererror or Internetconnection lost. Please wait 5min.');
 
-                //this.log.debug('JSON: ' + message);
-
-                this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
-                this.CreateOrUpdate(
-                    site.site_id + '.RAW_JSON',
-                    'RAW_JSON',
-                    'state',
-                    'string',
-                    'value',
-                    false,
-                    'undefined',
-                );
-                await this.setState(site.site_id + '.RAW_JSON', { val: message, ack: true });
-
-                Object.entries(jsonparse).forEach((entries) => {
-                    const [id, value] = entries;
-
-                    const type = this.whatIsIt(value);
-
-                    const key = site.site_id + '.' + id;
-
-                    if (type === 'object') {
-                        this.isObject(key, value);
-                    } else if (type === 'array') {
-                        const array = JSON.parse(JSON.stringify(value));
-                        let i = 0;
-                        array.forEach((elem: any, item: any) => {
-                            if (this.whatIsIt(array[item]) === 'object') {
-                                this.isObject(key + '.' + i, array[item]);
-                            } else if (this.whatIsIt(array[item]) === 'string') {
-                                this.isString(key + '.' + i, array[item]);
-                            }
-                            i++;
-                        });
-                    } else {
-                        this.isString(key, value);
-                    }
-                });
-
-                //fs.writeFileSync(utils.getAbsoluteInstanceDataDir(this) + '/scenInfo.json', message, 'utf8');
+                const sleepInterval = 300 * 1000;
+                await sleep(sleepInterval);
+                this.refreshDate();
             }
-            this.log.debug('Published.');
-        } else {
-            this.log.error('Not logged in');
+            //this.log.error('Clear session.data, please wait');
         }
     }
 
@@ -263,22 +331,13 @@ class Ankersolix2 extends utils.Adapter {
                 value = new Date().getTime().toString();
             }
         }
-        if (key.includes('unit')) {
-            switch (value) {
-                case 'kWh':
-                    parmRole = 'value.energy';
-                    break;
-                case 'W':
-                    parmRole = 'value.energy';
-                    break;
-            }
-        }
 
         if (key.includes('_power') && !key.includes('display') && !key.includes('battery')) {
             parmType = 'number';
             value = +value;
             parmUnit = 'W';
         }
+
         if (key.includes('battery_power')) {
             //Battery_power Level in %
             parmRole = 'value.fill';
@@ -289,6 +348,15 @@ class Ankersolix2 extends utils.Adapter {
                 value = +value * 100;
             } else {
                 value = +value;
+            }
+        }
+
+        if (key.includes('unit')) {
+            switch (value) {
+                case 'kWh':
+                case 'W':
+                    parmRole = 'value.energy';
+                    break;
             }
         }
 
@@ -399,8 +467,11 @@ class Ankersolix2 extends utils.Adapter {
         return JSON.parse(JSON.stringify(value));
     }
 
-    isLoginValid(loginData: LoginResultResponse, now: Date = new Date()): boolean {
-        return new Date(loginData.token_expires_at * 1000).getTime() > now.getTime();
+    isLoginValid(loginData: LoginResultResponse | null, now: Date = new Date()): boolean {
+        if (loginData != null) {
+            return new Date(loginData.token_expires_at * 1000).getTime() > now.getTime();
+        }
+        return false;
     }
 
     /**
