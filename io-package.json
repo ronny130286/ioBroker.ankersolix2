@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "0.1.0-beta.0",
+    "version": "1.0.0",
     "news": {
+      "1.0.0": {
+        "en": "stable release\nfixed backup_info object",
+        "de": "stabiler release\nfixed backup_info object",
+        "ru": "стабильный выпуск\nфиксированная резервная копия_info",
+        "pt": "liberação estável\nobjeto corrigido backup_info",
+        "nl": "stabiele afgifte\nvast backup_info-object",
+        "fr": "libération stable\nobjet_info de sauvegarde fixe",
+        "it": "rilascio stabile\noggetto backup_info fisso",
+        "es": "liberación estable\nbackup_info objeto",
+        "pl": "stabilne uwalnianie\nustawiony obiekt backup _ info",
+        "uk": "стабільний реліз\nвиправлено резервне копіювання_info об'єкт",
+        "zh-cn": "稳定释放\n固定备份_ info 对象"
+      },
       "0.1.0-beta.0": {
         "en": "beta release",
         "de": "beta release",
