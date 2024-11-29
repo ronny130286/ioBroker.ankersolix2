@@ -38,6 +38,12 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+-   (ronny130286) stable release
+-   (ronny130286) fixed backup_info object
+
 ### 0.1.0-beta.0 (2024-10-02)
 
 -   (ronny130286) beta release
