@@ -218,6 +218,11 @@ export interface ScenInfo {
         updated_time: string;
         total_photovoltaic_power: `${number}`;
         total_output_power: `${number}`;
+        backup_info: {
+            start_time: string;
+            end_time: string;
+            full_time: string;
+        };
     };
     retain_load: string;
     updated_time: string;

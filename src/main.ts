@@ -120,7 +120,7 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     async storeLoginData(data: LoginResultResponse): Promise<void> {
-        //this.log.debug('Write Data to File: ' + this.storeData);
+        this.log.debug('Write Data to File: ' + this.storeData);
         await pfs.writeFile(this.storeData, JSON.stringify(data), 'utf-8');
     }
 
@@ -131,6 +131,7 @@ class Ankersolix2 extends utils.Adapter {
             return JSON.parse(data);
         } catch (err) {
             if ((err as any).code === 'ENOENT') {
+                this.log.error('RestoreLoginData: ' + (err as any).message);
                 return null;
             } else {
                 this.log.error('RestoreLoginData: ' + (err as any).message);
@@ -294,12 +295,15 @@ class Ankersolix2 extends utils.Adapter {
 
     isObject(key: string, value: any): void {
         const name = key.split('.').pop()?.replaceAll('_', ' ');
+
         this.CreateOrUpdate(key, name, 'folder');
         Object.entries(value).forEach((subentries) => {
             const [objkey, objvalue] = subentries;
             const type = this.whatIsIt(objvalue);
             if (type === 'array') {
                 this.isArray(key + '.' + objkey, objvalue);
+            } else if (type === 'object') {
+                this.isObject(key + '.' + objkey, objvalue);
             } else {
                 this.isString(key + '.' + objkey, objvalue);
             }
@@ -320,7 +324,7 @@ class Ankersolix2 extends utils.Adapter {
             parmType = 'number';
         }
 
-        if (key.includes('time')) {
+        if (key.includes('time') && !key.includes('backup_info')) {
             parmType = 'string';
             parmRole = 'value.time';
 

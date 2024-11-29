@@ -113,6 +113,7 @@ class Ankersolix2 extends utils.Adapter {
     return login;
   }
   async storeLoginData(data) {
+    this.log.debug("Write Data to File: " + this.storeData);
     await import_fs.promises.writeFile(this.storeData, JSON.stringify(data), "utf-8");
   }
   async restoreLoginData() {
@@ -122,6 +123,7 @@ class Ankersolix2 extends utils.Adapter {
       return JSON.parse(data);
     } catch (err) {
       if (err.code === "ENOENT") {
+        this.log.error("RestoreLoginData: " + err.message);
         return null;
       } else {
         this.log.error("RestoreLoginData: " + err.message);
@@ -248,6 +250,8 @@ class Ankersolix2 extends utils.Adapter {
       const type = this.whatIsIt(objvalue);
       if (type === "array") {
         this.isArray(key + "." + objkey, objvalue);
+      } else if (type === "object") {
+        this.isObject(key + "." + objkey, objvalue);
       } else {
         this.isString(key + "." + objkey, objvalue);
       }
@@ -265,7 +269,7 @@ class Ankersolix2 extends utils.Adapter {
     if (valType === "number") {
       parmType = "number";
     }
-    if (key.includes("time")) {
+    if (key.includes("time") && !key.includes("backup_info")) {
       parmType = "string";
       parmRole = "value.time";
       if (key.includes("create")) {
