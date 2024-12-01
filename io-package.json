@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "news": {
+      "1.0.1": {
+        "en": "ESLint 9.x",
+        "de": "ESLint 9.x",
+        "ru": "ESLint 9.x",
+        "pt": "ESLint 9.x",
+        "nl": "ESLint 9.x",
+        "fr": "ESLint 9.x",
+        "it": "ESLint 9.x",
+        "es": "ESLint 9.x",
+        "pl": "ESLint 9.x",
+        "uk": "ESLint 9.х",
+        "zh-cn": "ESLint 9.x (英语)"
+      },
       "1.0.0": {
         "en": "stable release\nfixed backup_info object",
         "de": "stabiler release\nfixed backup_info object",
