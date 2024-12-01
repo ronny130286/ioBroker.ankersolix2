@@ -18,7 +18,7 @@
 
         // This is necessary for the automatic typing of the adapter config
         "resolveJsonModule": true,
-        "module": "Node16",
+        //"module": "Node16",
         // If you want to disable the stricter type checks (not recommended), uncomment the following line
         // "strict": false,
         // And enable some of those features for more fine-grained control
@@ -34,6 +34,6 @@
         "sourceMap": true,
         "inlineSourceMap": false
     },
-    "include": ["src/**/*.ts", "test/**/*.ts"],
+    "include": ["src/**/*.ts", "test/**/*.ts", "./*.config.mjs"],
     "exclude": ["build/**", "node_modules/**", "widgets/**"]
 }
