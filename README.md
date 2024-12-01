@@ -38,23 +38,28 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ronny130286) ESLint 9.x
+
 ### 1.0.0 (2024-11-29)
 
--   (ronny130286) stable release
--   (ronny130286) fixed backup_info object
+- (ronny130286) stable release
+- (ronny130286) fixed backup_info object
 
 ### 0.1.0-beta.0 (2024-10-02)
 
--   (ronny130286) beta release
+- (ronny130286) beta release
 
 ### 0.0.3-alpha.0 (2024-09-25)
 
--   (ronny130286) fix session.data
--   (ronny130286) npm release
+- (ronny130286) fix session.data
+- (ronny130286) npm release
 
 ### 0.0.2-alpha.0 (2024-09-20)
 
--   (ronny130286) initial release
+- (ronny130286) initial release
 
 ## License
 
