@@ -98,7 +98,7 @@ class Ankersolix2 extends utils.Adapter {
             } catch (error) {
                 this.log.error('loginAPI: ' + (error as any).message);
                 const status = (error as any).status;
-                if (!(status >= 200 && status < 300 && status != 401)) {
+                if (status > 401) {
                     this.log.error('Cant login, maybe Servererror or no internet connection lost. Please wait 5min.');
                     //fs.unlinkSync(this.storeData);
                     const sleepInterval = 300 * 1000;
@@ -120,13 +120,13 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     async storeLoginData(data: LoginResultResponse): Promise<void> {
-        this.log.debug('Write Data to File: ' + this.storeData);
+        this.log.debug('Write Data to File');
         await pfs.writeFile(this.storeData, JSON.stringify(data), 'utf-8');
     }
 
     async restoreLoginData(): Promise<LoginResultResponse | null> {
         try {
-            this.log.debug('Try to restore data from File: ' + this.storeData);
+            this.log.debug('Try to restore data from File');
             const data = await pfs.readFile(this.storeData, 'utf8');
             return JSON.parse(data);
         } catch (err) {
@@ -141,7 +141,6 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     async refreshDate(): Promise<void> {
-        const start = new Date().getTime();
         this.loginData = await this.loginAPI();
 
         //this.log.debug('loginData: ' + JSON.stringify(this.loginData));
@@ -149,8 +148,7 @@ class Ankersolix2 extends utils.Adapter {
         if (this.loginData) {
             await this.fetchAndPublish();
 
-            const end = new Date().getTime() - start;
-            this.sleepInterval = this.config.POLL_INTERVAL * 1000 - end;
+            this.sleepInterval = this.config.POLL_INTERVAL * 1000;
             this.log.debug(`Sleeping for ${this.sleepInterval}ms...`);
             await sleep(this.sleepInterval);
 
@@ -158,7 +156,7 @@ class Ankersolix2 extends utils.Adapter {
         }
     }
 
-    async fetchAndPublish(): Promise<void> {
+    async fetchAndPublish(): Promise<boolean> {
         this.log.debug('fetchAndPublish()');
 
         try {
@@ -237,21 +235,35 @@ class Ankersolix2 extends utils.Adapter {
                     //fs.writeFileSync(utils.getAbsoluteInstanceDataDir(this) + '/scenInfo.json', message, 'utf8');
                 }
                 this.log.debug('Published.');
+                return true;
             } else {
                 this.log.error('loggedInApi Errorcode: ' + siteHomepage.code);
+                return false;
             }
         } catch (error) {
-            this.log.warn('Failed fetching or publishing printer data ' + error);
-
-            const status = (error as any).status;
-
-            if (!(status >= 200 && status < 300)) {
-                this.log.error('Something went wrong, Servererror or Internetconnection lost. Please wait 5min.');
-
-                const sleepInterval = 300 * 1000;
-                await sleep(sleepInterval);
-                this.refreshDate();
+            const status = (error as any).code;
+            this.log.error('Failed fetching or publishing printer data ' + error + ' Errorcode: ' + status);
+            if (status === 'ECONNREFUSED') {
+                this.sleepInterval = 300 * 1000;
+                this.log.error(
+                    'Something went wrong, Servererror or Internetconnection lost. Please wait ' +
+                        this.sleepInterval / 60000 +
+                        'min.',
+                );
+                await sleep(this.sleepInterval);
             }
+            /*
+            if (status === 'ERR_BAD_REQUEST') {
+                this.sleepInterval = 120 * 1000;
+                this.log.debug(
+                    'Please try increase the refresh rate, the anker service does not allow such fast rates. If the error repeate the whole time, check the anker app. Please wait ' +
+                        this.sleepInterval / 60000 +
+                        'min.',
+                );
+                await sleep(this.sleepInterval);
+            }
+                */
+            return false;
             //this.log.error('Clear session.data, please wait');
         }
     }

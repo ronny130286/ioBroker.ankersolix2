@@ -95,7 +95,7 @@ class Ankersolix2 extends utils.Adapter {
       } catch (error) {
         this.log.error("loginAPI: " + error.message);
         const status = error.status;
-        if (!(status >= 200 && status < 300 && status != 401)) {
+        if (status > 401) {
           this.log.error("Cant login, maybe Servererror or no internet connection lost. Please wait 5min.");
           const sleepInterval = 300 * 1e3;
           await (0, import_utils.sleep)(sleepInterval);
@@ -113,12 +113,12 @@ class Ankersolix2 extends utils.Adapter {
     return login;
   }
   async storeLoginData(data) {
-    this.log.debug("Write Data to File: " + this.storeData);
+    this.log.debug("Write Data to File");
     await import_fs.promises.writeFile(this.storeData, JSON.stringify(data), "utf-8");
   }
   async restoreLoginData() {
     try {
-      this.log.debug("Try to restore data from File: " + this.storeData);
+      this.log.debug("Try to restore data from File");
       const data = await import_fs.promises.readFile(this.storeData, "utf8");
       return JSON.parse(data);
     } catch (err) {
@@ -132,12 +132,10 @@ class Ankersolix2 extends utils.Adapter {
     }
   }
   async refreshDate() {
-    const start = (/* @__PURE__ */ new Date()).getTime();
     this.loginData = await this.loginAPI();
     if (this.loginData) {
       await this.fetchAndPublish();
-      const end = (/* @__PURE__ */ new Date()).getTime() - start;
-      this.sleepInterval = this.config.POLL_INTERVAL * 1e3 - end;
+      this.sleepInterval = this.config.POLL_INTERVAL * 1e3;
       this.log.debug(`Sleeping for ${this.sleepInterval}ms...`);
       await (0, import_utils.sleep)(this.sleepInterval);
       this.refreshDate();
@@ -193,18 +191,22 @@ class Ankersolix2 extends utils.Adapter {
           });
         }
         this.log.debug("Published.");
+        return true;
       } else {
         this.log.error("loggedInApi Errorcode: " + siteHomepage.code);
+        return false;
       }
     } catch (error) {
-      this.log.warn("Failed fetching or publishing printer data " + error);
-      const status = error.status;
-      if (!(status >= 200 && status < 300)) {
-        this.log.error("Something went wrong, Servererror or Internetconnection lost. Please wait 5min.");
-        const sleepInterval = 300 * 1e3;
-        await (0, import_utils.sleep)(sleepInterval);
-        this.refreshDate();
+      const status = error.code;
+      this.log.error("Failed fetching or publishing printer data " + error + " Errorcode: " + status);
+      if (status === "ECONNREFUSED") {
+        this.sleepInterval = 300 * 1e3;
+        this.log.error(
+          "Something went wrong, Servererror or Internetconnection lost. Please wait " + this.sleepInterval / 6e4 + "min."
+        );
+        await (0, import_utils.sleep)(this.sleepInterval);
       }
+      return false;
     }
   }
   whatIsIt(obj) {

@@ -38,6 +38,11 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ronny130286) bugfix
+
 ### 1.0.1 (2024-12-01)
 
 - (ronny130286) ESLint 9.x
