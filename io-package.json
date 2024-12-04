@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "news": {
+      "1.0.2": {
+        "en": "bugfix",
+        "de": "fehlerbehebung",
+        "ru": "исправления",
+        "pt": "correção de erros",
+        "nl": "bugfix",
+        "fr": "correction du bug",
+        "it": "bugfix",
+        "es": "bugfix",
+        "pl": "bugfix",
+        "uk": "панчохи",
+        "zh-cn": "错误修正"
+      },
       "1.0.1": {
         "en": "ESLint 9.x",
         "de": "ESLint 9.x",
