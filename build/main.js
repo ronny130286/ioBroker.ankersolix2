@@ -142,7 +142,7 @@ class Ankersolix2 extends utils.Adapter {
         this.refreshTimeout = null;
         this.refreshDate();
       }, this.config.POLL_INTERVAL * 1e3);
-      this.log.debug(`Sleeping for ${this.config.POLL_INTERVAL * 1e3}ms... id ${this.refreshTimeout}`);
+      this.log.debug(`Sleeping for ${this.config.POLL_INTERVAL * 1e3}ms... TimerId ${this.refreshTimeout}`);
     }
   }
   async fetchAndPublish() {
