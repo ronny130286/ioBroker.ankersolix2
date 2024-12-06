@@ -38,8 +38,7 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.0.3 (2024-12-06)
 
 - (ronny130286) edit refreshtimer
 - (ronny130286) add to repo
