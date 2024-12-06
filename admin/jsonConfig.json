@@ -10,10 +10,10 @@
                 "Username": {
                     "newLine": true,
                     "type": "text",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 6,
-                    "xs": 12,
                     "xl": 6,
                     "label": "Solix Username",
                     "help": "Please use a Family-Acoount how can only watch, dont use your main account."
@@ -22,10 +22,10 @@
                     "type": "password",
                     "repeat": false,
                     "visible": false,
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 6,
-                    "xs": 12,
                     "xl": 6,
                     "label": "Solix Password"
                 },
@@ -50,25 +50,23 @@
                             "value": "FR"
                         }
                     ],
+                    "xs": 12,
                     "sm": 12,
                     "md": 4,
                     "lg": 4,
-                    "xs": 12,
-                    "xl": 6,
-                    "newLine": true
+                    "xl": 4
                 },
                 "POLL_INTERVAL": {
                     "default": "60",
                     "type": "number",
+                    "xs": 12,
                     "sm": 12,
                     "md": 4,
                     "lg": 4,
-                    "xs": 12,
-                    "xl": 6,
+                    "xl": 4,
                     "min": 10,
                     "max": 3600,
-                    "label": "Polltime in secounds",
-                    "newLine": true
+                    "label": "Polltime in secounds"
                 }
             }
         }

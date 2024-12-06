@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../src/utils.ts"],
-  "sourcesContent": ["export async function sleep(ms: number): Promise<void> {\n    return new Promise((resolve) => setTimeout(resolve, ms));\n}\n\nexport interface Logger {\n    //silly(msg: string): void;\n    debug(msg: string): void;\n    info(msg: string): void;\n    error(msg: string): void;\n    warn(msg: string): void;\n}\n"],
-  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,eAAsB,MAAM,IAA2B;AACnD,SAAO,IAAI,QAAQ,CAAC,YAAY,WAAW,SAAS,EAAE,CAAC;AAC3D;",
+  "sourcesContent": ["export interface Logger {\n    //silly(msg: string): void;\n    debug(msg: string): void;\n    info(msg: string): void;\n    error(msg: string): void;\n    warn(msg: string): void;\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
   "names": []
 }
