@@ -143,8 +143,6 @@ class Ankersolix2 extends utils.Adapter {
     async refreshDate(): Promise<void> {
         this.loginData = await this.loginAPI();
 
-        //this.log.debug('loginData: ' + JSON.stringify(this.loginData));
-
         if (this.loginData) {
             await this.fetchAndPublish();
 
@@ -156,7 +154,7 @@ class Ankersolix2 extends utils.Adapter {
         }
     }
 
-    async fetchAndPublish(): Promise<boolean> {
+    async fetchAndPublish(): Promise<void> {
         this.log.debug('fetchAndPublish()');
 
         try {
@@ -178,8 +176,6 @@ class Ankersolix2 extends utils.Adapter {
                     const message = JSON.stringify(scenInfo.data);
                     const jsonparse = JSON.parse(message);
 
-                    //this.log.debug('JSON: ' + message);
-
                     this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
                     this.CreateOrUpdate(
                         site.site_id + '.EXTRA.RAW_JSON',
@@ -192,21 +188,7 @@ class Ankersolix2 extends utils.Adapter {
                     );
 
                     await this.setState(site.site_id + '.EXTRA.RAW_JSON', { val: message, ack: true });
-                    /*
-                    this.log.warn('SITE_ID: ' + site.site_id);
-                    const schedule = await loggedInApi.getSiteDeviceParam(ParamType.LoadConfiguration, site.site_id);
-                    const m_schedule = JSON.stringify(schedule);
-                    this.CreateOrUpdate(
-                        site.site_id + '.EXTRA.Schedule_JSON',
-                        'Schedule_JSON',
-                        'state',
-                        'string',
-                        'value',
-                        false,
-                        'undefined',
-                    );
-                    await this.setState(site.site_id + '.EXTRA.Schedule_JSON', { val: m_schedule, ack: true });
-                     */
+
                     Object.entries(jsonparse).forEach((entries) => {
                         const [id, value] = entries;
 
@@ -231,14 +213,10 @@ class Ankersolix2 extends utils.Adapter {
                             this.isString(key, value);
                         }
                     });
-
-                    //fs.writeFileSync(utils.getAbsoluteInstanceDataDir(this) + '/scenInfo.json', message, 'utf8');
                 }
                 this.log.debug('Published.');
-                return true;
             } else {
                 this.log.error('loggedInApi Errorcode: ' + siteHomepage.code);
-                return false;
             }
         } catch (error) {
             const status = (error as any).code;
@@ -263,8 +241,6 @@ class Ankersolix2 extends utils.Adapter {
                 await sleep(this.sleepInterval);
             }
                 */
-            return false;
-            //this.log.error('Clear session.data, please wait');
         }
     }
 
