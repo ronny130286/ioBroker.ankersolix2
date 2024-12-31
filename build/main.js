@@ -27,6 +27,7 @@ var import_api = require("./api");
 class Ankersolix2 extends utils.Adapter {
   storeData = "";
   refreshTimeout;
+  refreshAnalysisTimeout;
   loginData;
   api;
   constructor(options = {}) {
@@ -37,6 +38,7 @@ class Ankersolix2 extends utils.Adapter {
     this.storeData = utils.getAbsoluteInstanceDataDir(this) + "/session.data";
     this.loginData = null;
     this.refreshTimeout = null;
+    this.refreshAnalysisTimeout = null;
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
@@ -75,6 +77,7 @@ class Ankersolix2 extends utils.Adapter {
       log: this.log
     });
     this.refreshDate();
+    this.refreshAnalysis();
   }
   async loginAPI() {
     var _a;
@@ -145,6 +148,25 @@ class Ankersolix2 extends utils.Adapter {
       this.log.debug(`Sleeping for ${this.config.POLL_INTERVAL * 1e3}ms... TimerId ${this.refreshTimeout}`);
     }
   }
+  async refreshAnalysis() {
+    try {
+      this.loginData = await this.loginAPI();
+      await this.fetchAndPublishAnalysis();
+    } catch (err) {
+      this.log.error("Failed fetching or publishing analysisdata: " + err);
+      this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+    } finally {
+      if (this.refreshAnalysisTimeout) {
+        this.log.debug("refreshAnalysisTimeout: " + this.refreshAnalysisTimeout.id);
+        this.clearTimeout(this.refreshAnalysisTimeout);
+      }
+      this.refreshAnalysisTimeout = this.setTimeout(() => {
+        this.refreshAnalysisTimeout = null;
+        this.refreshAnalysis();
+      }, 600 * 1e3);
+      this.log.debug(`Analysis Sleeping for ${600 * 1e3}ms... TimerId ${this.refreshAnalysisTimeout}`);
+    }
+  }
   async fetchAndPublish() {
     const loggedInApi = await this.api.withLogin(this.loginData);
     const siteHomepage = await loggedInApi.siteHomepage();
@@ -191,7 +213,75 @@ class Ankersolix2 extends utils.Adapter {
         }
       });
     }
-    this.log.debug("Published.");
+    this.log.debug("Published Data.");
+  }
+  async fetchAndPublishAnalysis() {
+    const loggedInApi = await this.api.withLogin(this.loginData);
+    const siteHomepage = await loggedInApi.siteHomepage();
+    let sites;
+    if (siteHomepage.data.site_list.length === 0) {
+      sites = (await loggedInApi.getSiteList()).data.site_list;
+    } else {
+      sites = siteHomepage.data.site_list;
+    }
+    for (const site of sites) {
+      const ranges = ["day", "week"];
+      for (const range of ranges) {
+        this.CreateOrUpdate(
+          site.site_id + ".EXTRA.ENERGY_" + range.toUpperCase(),
+          "ENERGY_JSON",
+          "state",
+          "string",
+          "value",
+          false,
+          "undefined"
+        );
+        let energyInfo;
+        const date = /* @__PURE__ */ new Date();
+        if (range == "year") {
+          const startDate = new Date((/* @__PURE__ */ new Date()).getFullYear(), 0, 1);
+          const endDate = new Date((/* @__PURE__ */ new Date()).getFullYear(), 11, 31);
+          energyInfo = await loggedInApi.energyAnalysis(site.site_id, "", range, startDate, endDate);
+        } else if (range == "week") {
+          const start = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
+          const end = start + 6;
+          const startDate = new Date(date.setDate(start));
+          const endDate = new Date(date.setDate(end));
+          this.log.debug("StartDate: " + startDate.toDateString());
+          this.log.debug("EndDate: " + endDate.toDateString());
+          energyInfo = await loggedInApi.energyAnalysis(site.site_id, "", range, startDate, endDate);
+        } else {
+          energyInfo = await loggedInApi.energyAnalysis(site.site_id, "", "week", /* @__PURE__ */ new Date(), /* @__PURE__ */ new Date());
+        }
+        const energy_message = JSON.stringify(energyInfo.data);
+        await this.setState(site.site_id + ".EXTRA.ENERGY_" + range.toUpperCase(), {
+          val: energy_message,
+          ack: true
+        });
+        Object.entries(JSON.parse(energy_message)).forEach((entries) => {
+          const [id, value] = entries;
+          const type = this.whatIsIt(value);
+          const key = site.site_id + ".eneryanalysis." + range + "." + id;
+          if (type === "object") {
+            this.isObject(key, value);
+          } else if (type === "array") {
+            const array = JSON.parse(JSON.stringify(value));
+            let i = 0;
+            array.forEach((elem, item) => {
+              if (this.whatIsIt(array[item]) === "object") {
+                this.isObject(key + "." + i, array[item]);
+              } else if (this.whatIsIt(array[item]) === "string") {
+                this.isString(key + "." + i, array[item]);
+              }
+              i++;
+            });
+          } else {
+            this.isString(key, value);
+          }
+        });
+      }
+    }
+    this.log.debug("Published Analysis Data.");
   }
   whatIsIt(obj) {
     if (obj === null) {
@@ -388,6 +478,7 @@ class Ankersolix2 extends utils.Adapter {
   onUnload(callback) {
     try {
       clearTimeout(this.refreshTimeout);
+      clearTimeout(this.refreshAnalysisTimeout);
       callback();
     } catch (e) {
       this.log.error("onUnload: " + e);

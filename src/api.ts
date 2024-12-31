@@ -388,40 +388,34 @@ export class SolixApi {
                 const data = {};
                 return authFetch<SiteListResponse>('/power_service/v1/site/get_site_list', data);
             },
-            getHomeLoadChart: async ({
-                siteId,
-                deviceSn = '', // Was always an empty string
-            }: {
-                siteId: string;
-                deviceSn?: string;
-            }) => {
+            getHomeLoadChart: async (siteId: string, deviceSn?: string) => {
                 const data = { site_id: siteId, device_sn: deviceSn };
                 return authFetch<HomeLoadChartResponse>('/power_service/v1/site/get_home_load_chart', data);
             },
             scenInfo: async (siteId: string) => {
                 const data = { site_id: siteId };
-                //this.log.warn('scenInfo: ' + siteId);
                 return authFetch<ScenInfo>('/power_service/v1/site/get_scen_info', data);
             },
-            energyAnalysis: async ({
-                siteId,
-                deviceSn,
-                type,
-                startTime = new Date(),
-                endTime,
-                deviceType = 'solar_production',
-            }: {
-                siteId: string;
-                deviceSn: string;
-                type: 'day' | 'week' | 'year';
-                startTime?: Date;
-                endTime?: Date;
-                deviceType?: 'solar_production';
-            }) => {
-                const startTimeString = `${startTime.getUTCFullYear()}-${this.pad(startTime.getUTCMonth())}-${this.pad(startTime.getUTCDate())}`;
+            energyAnalysis: async (
+                siteId: string,
+                deviceSn: string,
+                type: 'day' | 'week' | 'year',
+                startTime?: Date,
+                endTime?: Date,
+                deviceType?: 'solar_production' | 'solar_production_pv[1-4]' | 'solarbank' | 'home_usage' | 'grid',
+            ) => {
+                if (startTime == null) {
+                    startTime = new Date();
+                }
+
+                if (deviceType == null) {
+                    deviceType = 'solar_production';
+                }
+
+                const startTimeString = `${startTime.getFullYear()}-${this.pad(startTime.getMonth() + 1)}-${this.pad(startTime.getDate())}`;
                 const endTimeString =
                     endTime != null
-                        ? `${endTime.getUTCFullYear()}-${endTime.getUTCMonth()}-${endTime.getUTCDate()}`
+                        ? `${endTime.getFullYear()}-${this.pad(endTime.getMonth() + 1)}-${this.pad(endTime.getDate())}`
                         : '';
                 const data = {
                     site_id: siteId,
@@ -431,6 +425,8 @@ export class SolixApi {
                     device_type: deviceType,
                     end_time: endTimeString,
                 };
+                //this.log.debug('energyAnalysis: ' + JSON.stringify(data));
+
                 return authFetch<EnergyAnalysis>('/power_service/v1/site/energy_analysis', data);
             },
             getSiteDeviceParam: async <T extends ParamType>({
