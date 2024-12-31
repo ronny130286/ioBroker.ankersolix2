@@ -111,11 +111,7 @@ class SolixApi {
         const data = {};
         return authFetch("/power_service/v1/site/get_site_list", data);
       },
-      getHomeLoadChart: async ({
-        siteId,
-        deviceSn = ""
-        // Was always an empty string
-      }) => {
+      getHomeLoadChart: async (siteId, deviceSn) => {
         const data = { site_id: siteId, device_sn: deviceSn };
         return authFetch("/power_service/v1/site/get_home_load_chart", data);
       },
@@ -123,16 +119,15 @@ class SolixApi {
         const data = { site_id: siteId };
         return authFetch("/power_service/v1/site/get_scen_info", data);
       },
-      energyAnalysis: async ({
-        siteId,
-        deviceSn,
-        type,
-        startTime = /* @__PURE__ */ new Date(),
-        endTime,
-        deviceType = "solar_production"
-      }) => {
-        const startTimeString = `${startTime.getUTCFullYear()}-${this.pad(startTime.getUTCMonth())}-${this.pad(startTime.getUTCDate())}`;
-        const endTimeString = endTime != null ? `${endTime.getUTCFullYear()}-${endTime.getUTCMonth()}-${endTime.getUTCDate()}` : "";
+      energyAnalysis: async (siteId, deviceSn, type, startTime, endTime, deviceType) => {
+        if (startTime == null) {
+          startTime = /* @__PURE__ */ new Date();
+        }
+        if (deviceType == null) {
+          deviceType = "solar_production";
+        }
+        const startTimeString = `${startTime.getFullYear()}-${this.pad(startTime.getMonth() + 1)}-${this.pad(startTime.getDate())}`;
+        const endTimeString = endTime != null ? `${endTime.getFullYear()}-${this.pad(endTime.getMonth() + 1)}-${this.pad(endTime.getDate())}` : "";
         const data = {
           site_id: siteId,
           device_sn: deviceSn,
@@ -141,6 +136,7 @@ class SolixApi {
           device_type: deviceType,
           end_time: endTimeString
         };
+        this.log.debug("energyAnalysis: " + JSON.stringify(data));
         return authFetch("/power_service/v1/site/energy_analysis", data);
       },
       getSiteDeviceParam: async ({
