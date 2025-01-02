@@ -226,6 +226,8 @@ class Ankersolix2 extends utils.Adapter {
     }
     for (const site of sites) {
       const ranges = ["day", "week"];
+      const test = await loggedInApi.getSiteDeviceParam(import_api.ParamType.SB2_SCHEDULE, site.site_id);
+      this.log.info("getSiteDeviceParam: " + JSON.stringify(test) + " side_id: " + site.site_id);
       for (const range of ranges) {
         this.CreateOrUpdate(
           site.site_id + ".EXTRA.ENERGY_" + range.toUpperCase(),

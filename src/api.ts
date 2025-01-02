@@ -290,10 +290,11 @@ export interface LoadConfiguration {
 }
 
 export enum ParamType {
-    LoadConfiguration = '4',
+    SB1_SCHEDULE = '4',
+    SB2_SCHEDULE = '6',
 }
 
-export type ParamData<T extends ParamType> = T extends ParamType.LoadConfiguration ? LoadConfiguration : string;
+export type ParamData<T extends ParamType> = T extends ParamType.SB1_SCHEDULE ? LoadConfiguration : string;
 
 export interface SiteDeviceParamResponse<T extends ParamType> {
     param_data: ParamData<T>;
@@ -429,16 +430,11 @@ export class SolixApi {
 
                 return authFetch<EnergyAnalysis>('/power_service/v1/site/energy_analysis', data);
             },
-            getSiteDeviceParam: async <T extends ParamType>({
-                paramType,
-                siteId,
-            }: {
-                paramType: T;
-                siteId: string;
-            }): Promise<ResultResponse<SiteDeviceParamResponse<T>>> => {
-                const data = { site_id: siteId, param_type: paramType }; //sn APCGQ80E28300425
-
-                //this.log.debug('data: ' + siteId + ' paramtype: ' + paramType);
+            getSiteDeviceParam: async <T extends ParamType>(
+                paramType: ParamType,
+                siteId: string,
+            ): Promise<ResultResponse<SiteDeviceParamResponse<T>>> => {
+                const data = { site_id: siteId, param_type: paramType };
 
                 const response = await authFetch<{ param_data: string }>(
                     '/power_service/v1/site/get_site_device_param',
@@ -446,7 +442,7 @@ export class SolixApi {
                 );
                 if (response.data != null) {
                     switch (paramType) {
-                        case ParamType.LoadConfiguration:
+                        case ParamType.SB1_SCHEDULE:
                             return {
                                 ...response,
                                 data: { param_data: JSON.parse(response.data.param_data) as ParamData<T> },
@@ -457,20 +453,15 @@ export class SolixApi {
                 }
                 return response as ResultResponse<SiteDeviceParamResponse<T>>;
             },
-            setSiteDeviceParam: async <T extends ParamType>({
-                paramType,
-                siteId,
+            setSiteDeviceParam: async <T extends ParamType>(
+                paramType: ParamType,
+                siteId: string,
                 cmd = 17, // Unknown what this means but it's alway 17
-                paramData,
-            }: {
-                paramType: T;
-                siteId: string;
-                cmd?: number;
-                paramData: ParamData<T>;
-            }) => {
+                paramData: ParamData<T>,
+            ) => {
                 let data = { site_id: siteId, param_type: paramType, cmd, param_data: paramData as unknown };
                 switch (paramType) {
-                    case ParamType.LoadConfiguration:
+                    case ParamType.SB1_SCHEDULE:
                         data = { ...data, param_data: JSON.stringify(paramData) };
                         break;
                     default:

@@ -251,6 +251,7 @@ class Ankersolix2 extends utils.Adapter {
 
         for (const site of sites) {
             const ranges = ['day', 'week'];
+
             for (const range of ranges) {
                 this.CreateOrUpdate(
                     site.site_id + '.EXTRA.ENERGY_' + range.toUpperCase(),

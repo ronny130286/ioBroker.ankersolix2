@@ -35,7 +35,8 @@ module.exports = __toCommonJS(api_exports);
 var import_axios = __toESM(require("axios"));
 var import_crypto = require("crypto");
 var ParamType = /* @__PURE__ */ ((ParamType2) => {
-  ParamType2["LoadConfiguration"] = "4";
+  ParamType2["SB1_SCHEDULE"] = "4";
+  ParamType2["SB2_SCHEDULE"] = "6";
   return ParamType2;
 })(ParamType || {});
 class SolixApi {
@@ -136,21 +137,18 @@ class SolixApi {
           device_type: deviceType,
           end_time: endTimeString
         };
-        this.log.debug("energyAnalysis: " + JSON.stringify(data));
         return authFetch("/power_service/v1/site/energy_analysis", data);
       },
-      getSiteDeviceParam: async ({
-        paramType,
-        siteId
-      }) => {
+      getSiteDeviceParam: async (paramType, siteId) => {
         const data = { site_id: siteId, param_type: paramType };
+        this.log.debug("site_id: " + siteId + " paramtype: " + paramType);
         const response = await authFetch(
           "/power_service/v1/site/get_site_device_param",
           data
         );
         if (response.data != null) {
           switch (paramType) {
-            case "4" /* LoadConfiguration */:
+            case "4" /* SB1_SCHEDULE */:
               return {
                 ...response,
                 data: { param_data: JSON.parse(response.data.param_data) }
@@ -170,7 +168,7 @@ class SolixApi {
       }) => {
         let data = { site_id: siteId, param_type: paramType, cmd, param_data: paramData };
         switch (paramType) {
-          case "4" /* LoadConfiguration */:
+          case "4" /* SB1_SCHEDULE */:
             data = { ...data, param_data: JSON.stringify(paramData) };
             break;
           default:
