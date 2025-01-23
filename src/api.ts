@@ -282,11 +282,33 @@ export interface Range {
     appliance_loads: ApplianceLoad[];
 }
 
-export interface LoadConfiguration {
+export interface SB1_LoadConfiguration {
     ranges: Range[];
     min_load: number;
     max_load: number;
     step: number;
+}
+
+export interface SB2_LoadConfiguration {
+    mode_type: number;
+    custom_rate_plan: Custom_Rate_Plan[];
+    blend_plan: Custom_Rate_Plan[];
+    default_home_load: number;
+    max_load: number;
+    min_load: number;
+    step: number;
+}
+
+export interface Custom_Rate_Plan {
+    index: number;
+    week: Array<number>[];
+    ranges: SB2_Range[];
+}
+
+export interface SB2_Range {
+    start_time: string;
+    end_time: string;
+    powerr: number;
 }
 
 export enum ParamType {
@@ -294,7 +316,7 @@ export enum ParamType {
     SB2_SCHEDULE = '6',
 }
 
-export type ParamData<T extends ParamType> = T extends ParamType.SB1_SCHEDULE ? LoadConfiguration : string;
+export type ParamData<T extends ParamType> = T extends ParamType.SB1_SCHEDULE ? SB1_LoadConfiguration : string;
 
 export interface SiteDeviceParamResponse<T extends ParamType> {
     param_data: ParamData<T>;
@@ -426,7 +448,6 @@ export class SolixApi {
                     device_type: deviceType,
                     end_time: endTimeString,
                 };
-                //this.log.debug('energyAnalysis: ' + JSON.stringify(data));
 
                 return authFetch<EnergyAnalysis>('/power_service/v1/site/energy_analysis', data);
             },
@@ -440,6 +461,7 @@ export class SolixApi {
                     '/power_service/v1/site/get_site_device_param',
                     data,
                 );
+
                 if (response.data != null) {
                     switch (paramType) {
                         case ParamType.SB1_SCHEDULE:

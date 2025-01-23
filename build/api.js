@@ -141,7 +141,6 @@ class SolixApi {
       },
       getSiteDeviceParam: async (paramType, siteId) => {
         const data = { site_id: siteId, param_type: paramType };
-        this.log.debug("site_id: " + siteId + " paramtype: " + paramType);
         const response = await authFetch(
           "/power_service/v1/site/get_site_device_param",
           data
@@ -159,13 +158,7 @@ class SolixApi {
         }
         return response;
       },
-      setSiteDeviceParam: async ({
-        paramType,
-        siteId,
-        cmd = 17,
-        // Unknown what this means but it's alway 17
-        paramData
-      }) => {
+      setSiteDeviceParam: async (paramType, siteId, cmd = 17, paramData) => {
         let data = { site_id: siteId, param_type: paramType, cmd, param_data: paramData };
         switch (paramType) {
           case "4" /* SB1_SCHEDULE */:

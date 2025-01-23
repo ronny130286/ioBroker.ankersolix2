@@ -27,6 +27,7 @@ class Ankersolix2 extends utils.Adapter {
         this.loginData = null;
         this.refreshTimeout = null;
         this.refreshAnalysisTimeout = null;
+        this.api = null;
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
@@ -66,7 +67,20 @@ class Ankersolix2 extends utils.Adapter {
             );
             return;
         }
+        /*
+        this.api = new SolixApi({
+            username: this.config.Username,
+            password: this.config.Password,
+            country: this.config.COUNTRY,
+            log: this.log,
+        });
+        */
 
+        this.refreshDate();
+        this.refreshAnalysis();
+    }
+
+    async loginAPI(): Promise<LoginResultResponse | null> {
         this.api = new SolixApi({
             username: this.config.Username,
             password: this.config.Password,
@@ -74,11 +88,6 @@ class Ankersolix2 extends utils.Adapter {
             log: this.log,
         });
 
-        this.refreshDate();
-        this.refreshAnalysis();
-    }
-
-    async loginAPI(): Promise<LoginResultResponse | null> {
         let login = await this.restoreLoginData();
 
         if (!this.isLoginValid(login)) {
@@ -139,14 +148,13 @@ class Ankersolix2 extends utils.Adapter {
     async refreshDate(): Promise<void> {
         try {
             this.loginData = await this.loginAPI();
-
             await this.fetchAndPublish();
         } catch (err) {
             this.log.error('Failed fetching or publishing printer data, Error: ' + err);
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
         } finally {
             if (this.refreshTimeout) {
-                this.log.debug('refreshTimeout: ' + this.refreshTimeout.id);
+                this.log.debug('refreshTimeout clear: ' + this.refreshTimeout.id);
                 this.clearTimeout(this.refreshTimeout);
             }
 
@@ -167,7 +175,7 @@ class Ankersolix2 extends utils.Adapter {
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
         } finally {
             if (this.refreshAnalysisTimeout) {
-                this.log.debug('refreshAnalysisTimeout: ' + this.refreshAnalysisTimeout.id);
+                this.log.debug('refreshAnalysisTimeout clear: ' + this.refreshAnalysisTimeout.id);
                 this.clearTimeout(this.refreshAnalysisTimeout);
             }
 
@@ -269,9 +277,6 @@ class Ankersolix2 extends utils.Adapter {
                     const startDate = new Date(new Date().getFullYear(), 0, 1);
                     const endDate = new Date(new Date().getFullYear(), 11, 31);
 
-                    //this.log.debug('StartDate: ' + startDate.toDateString());
-                    //this.log.debug('EndDate: ' + endDate.toDateString());
-
                     energyInfo = await loggedInApi.energyAnalysis(site.site_id, '', range, startDate, endDate);
                 } else if (range == 'week') {
                     const start = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
@@ -279,9 +284,6 @@ class Ankersolix2 extends utils.Adapter {
 
                     const startDate = new Date(date.setDate(start));
                     const endDate = new Date(date.setDate(end));
-
-                    this.log.debug('StartDate: ' + startDate.toDateString());
-                    this.log.debug('EndDate: ' + endDate.toDateString());
                     energyInfo = await loggedInApi.energyAnalysis(site.site_id, '', range, startDate, endDate);
                 } else {
                     energyInfo = await loggedInApi.energyAnalysis(site.site_id, '', 'week', new Date(), new Date());
@@ -451,7 +453,6 @@ class Ankersolix2 extends utils.Adapter {
         if (obj == null) {
             let newObj: any = null;
             if (type === 'state') {
-                //this.log.debug(path + ' doesnt exist => create');
                 newObj = {
                     type: type,
                     common: {
@@ -474,8 +475,8 @@ class Ankersolix2 extends utils.Adapter {
                     native: {},
                 };
             }
-            //this.log.debug(path + ' doesnt exist => create');
-            await this.setObjectAsync(path, newObj);
+
+            await this.setObject(path, newObj);
         } else {
             let changed: boolean = false;
             if (type === 'state') {
@@ -527,13 +528,9 @@ class Ankersolix2 extends utils.Adapter {
             }
             if (changed) {
                 //this.log.debug(path + ' => has been updated');
-                await this.setObjectAsync(path, obj);
+                await this.setObject(path, obj);
             }
         }
-    }
-
-    getJSON(value: string): Promise<void> {
-        return JSON.parse(JSON.stringify(value));
     }
 
     isLoginValid(loginData: LoginResultResponse | null, now: Date = new Date()): boolean {
@@ -553,9 +550,15 @@ class Ankersolix2 extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
+            if (this.refreshTimeout) {
+                this.log.debug('refreshTimeout: Unload');
+                clearTimeout(this.refreshTimeout);
+            }
+            if (this.refreshAnalysisTimeout) {
+                this.log.debug('refreshAnalysisTimeout: Unload');
+                clearTimeout(this.refreshAnalysisTimeout);
+            }
 
-            clearTimeout(this.refreshTimeout);
-            clearTimeout(this.refreshAnalysisTimeout);
             callback();
         } catch (e) {
             this.log.error('onUnload: ' + e);

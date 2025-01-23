@@ -39,6 +39,7 @@ class Ankersolix2 extends utils.Adapter {
     this.loginData = null;
     this.refreshTimeout = null;
     this.refreshAnalysisTimeout = null;
+    this.api = null;
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
@@ -70,17 +71,18 @@ class Ankersolix2 extends utils.Adapter {
       );
       return;
     }
+    this.log.debug("OnReady: Adapter Start ");
+    this.refreshDate();
+    this.refreshAnalysis();
+  }
+  async loginAPI() {
+    var _a;
     this.api = new import_api.SolixApi({
       username: this.config.Username,
       password: this.config.Password,
       country: this.config.COUNTRY,
       log: this.log
     });
-    this.refreshDate();
-    this.refreshAnalysis();
-  }
-  async loginAPI() {
-    var _a;
     let login = await this.restoreLoginData();
     if (!this.isLoginValid(login)) {
       this.log.debug("loginAPI: token expires");
@@ -138,7 +140,7 @@ class Ankersolix2 extends utils.Adapter {
       this.log.debug(`Error Object: ${JSON.stringify(err)}`);
     } finally {
       if (this.refreshTimeout) {
-        this.log.debug("refreshTimeout: " + this.refreshTimeout.id);
+        this.log.debug("refreshTimeout clear: " + this.refreshTimeout.id);
         this.clearTimeout(this.refreshTimeout);
       }
       this.refreshTimeout = this.setTimeout(() => {
@@ -157,7 +159,7 @@ class Ankersolix2 extends utils.Adapter {
       this.log.debug(`Error Object: ${JSON.stringify(err)}`);
     } finally {
       if (this.refreshAnalysisTimeout) {
-        this.log.debug("refreshAnalysisTimeout: " + this.refreshAnalysisTimeout.id);
+        this.log.debug("refreshAnalysisTimeout clear: " + this.refreshAnalysisTimeout.id);
         this.clearTimeout(this.refreshAnalysisTimeout);
       }
       this.refreshAnalysisTimeout = this.setTimeout(() => {
@@ -226,8 +228,6 @@ class Ankersolix2 extends utils.Adapter {
     }
     for (const site of sites) {
       const ranges = ["day", "week"];
-      const test = await loggedInApi.getSiteDeviceParam(import_api.ParamType.SB2_SCHEDULE, site.site_id);
-      this.log.info("getSiteDeviceParam: " + JSON.stringify(test) + " side_id: " + site.site_id);
       for (const range of ranges) {
         this.CreateOrUpdate(
           site.site_id + ".EXTRA.ENERGY_" + range.toUpperCase(),
@@ -249,8 +249,6 @@ class Ankersolix2 extends utils.Adapter {
           const end = start + 6;
           const startDate = new Date(date.setDate(start));
           const endDate = new Date(date.setDate(end));
-          this.log.debug("StartDate: " + startDate.toDateString());
-          this.log.debug("EndDate: " + endDate.toDateString());
           energyInfo = await loggedInApi.energyAnalysis(site.site_id, "", range, startDate, endDate);
         } else {
           energyInfo = await loggedInApi.energyAnalysis(site.site_id, "", "week", /* @__PURE__ */ new Date(), /* @__PURE__ */ new Date());
@@ -410,7 +408,7 @@ class Ankersolix2 extends utils.Adapter {
           native: {}
         };
       }
-      await this.setObjectAsync(path, newObj);
+      await this.setObject(path, newObj);
     } else {
       let changed = false;
       if (type === "state") {
@@ -461,12 +459,9 @@ class Ankersolix2 extends utils.Adapter {
         }
       }
       if (changed) {
-        await this.setObjectAsync(path, obj);
+        await this.setObject(path, obj);
       }
     }
-  }
-  getJSON(value) {
-    return JSON.parse(JSON.stringify(value));
   }
   isLoginValid(loginData, now = /* @__PURE__ */ new Date()) {
     if (loginData != null) {
@@ -479,8 +474,14 @@ class Ankersolix2 extends utils.Adapter {
    */
   onUnload(callback) {
     try {
-      clearTimeout(this.refreshTimeout);
-      clearTimeout(this.refreshAnalysisTimeout);
+      if (this.refreshTimeout) {
+        this.log.debug("refreshTimeout: Unload");
+        clearTimeout(this.refreshTimeout);
+      }
+      if (this.refreshAnalysisTimeout) {
+        this.log.debug("refreshAnalysisTimeout: Unload");
+        clearTimeout(this.refreshAnalysisTimeout);
+      }
       callback();
     } catch (e) {
       this.log.error("onUnload: " + e);
