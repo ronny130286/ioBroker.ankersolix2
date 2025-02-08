@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "news": {
+      "1.1.0": {
+        "en": "add analysis data for week/day\nupdate packages",
+        "de": "analysedaten für woche/tag hinzufügen\nupdate-pakete",
+        "ru": "добавить данные анализа на неделю/день\nобновления пакетов",
+        "pt": "adicionar dados de análise para semana/dia\npacotes de atualização",
+        "nl": "analysegegevens voor week/dag toevoegen\npakketten bijwerken",
+        "fr": "ajouter des données d'analyse pour semaine/jour\nmettre à jour les paquets",
+        "it": "aggiungere i dati di analisi per settimana/giorno\npacchetti di aggiornamento",
+        "es": "añadir datos de análisis para semana/día\nactualizar paquetes",
+        "pl": "dodać dane z analizy za tydzień / dzień\naktualizacja pakietów",
+        "uk": "додавати аналіз даних за тиждень/день\nоновлення пакетів",
+        "zh-cn": "增加周/日分析数据\n更新软件包"
+      },
       "1.0.3": {
         "en": "edit refreshtimer\nadd to repo",
         "de": "updatetimer bearbeiten\nin den warenkorb",
