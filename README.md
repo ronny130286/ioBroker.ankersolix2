@@ -38,6 +38,12 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ronny130286) add analysis data for week/day
+- (ronny130286) update packages
+
 ### 1.0.3 (2024-12-06)
 
 - (ronny130286) edit refreshtimer

@@ -71,7 +71,6 @@ class Ankersolix2 extends utils.Adapter {
       );
       return;
     }
-    this.log.debug("OnReady: Adapter Start ");
     this.refreshDate();
     this.refreshAnalysis();
   }
