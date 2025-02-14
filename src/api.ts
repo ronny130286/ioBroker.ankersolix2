@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { ECDH, createCipheriv, createECDH, createHash } from 'crypto';
-import { Logger } from './utils';
+import { type ECDH, createCipheriv, createECDH, createHash } from 'crypto';
+import type { Logger } from './utils';
 
 export interface Options {
     username: string;
@@ -25,7 +25,7 @@ export interface LoginRequest {
 }
 
 export interface SuccessResponse<T> {
-    code: 0 | number;
+    code: number;
     msg: 'success!';
     data: T;
 }
@@ -386,11 +386,15 @@ export class SolixApi {
                 ['Os-Type']: 'android',
                 ...headers,
             },
+            timeout: 10000,
         });
     }
 
     public withLogin(login: LoginResultResponse): any {
-        const headers = { ['X-Auth-Token']: login.auth_token, gtoken: this.md5(login.user_id) };
+        const headers = {
+            ['X-Auth-Token']: login.auth_token,
+            gtoken: this.md5(login.user_id),
+        };
         const authFetch = async <T>(endpoint: string, data?: any): Promise<ResultResponse<T>> => {
             const response = await this.axios(endpoint, data, headers);
             return (await response.data) as ResultResponse<T>;
@@ -467,7 +471,9 @@ export class SolixApi {
                         case ParamType.SB1_SCHEDULE:
                             return {
                                 ...response,
-                                data: { param_data: JSON.parse(response.data.param_data) as ParamData<T> },
+                                data: {
+                                    param_data: JSON.parse(response.data.param_data) as ParamData<T>,
+                                },
                             };
                         default:
                             return response as ResultResponse<SiteDeviceParamResponse<T>>;
@@ -481,7 +487,12 @@ export class SolixApi {
                 cmd = 17, // Unknown what this means but it's alway 17
                 paramData: ParamData<T>,
             ) => {
-                let data = { site_id: siteId, param_type: paramType, cmd, param_data: paramData as unknown };
+                let data = {
+                    site_id: siteId,
+                    param_type: paramType,
+                    cmd,
+                    param_data: paramData as unknown,
+                };
                 switch (paramType) {
                     case ParamType.SB1_SCHEDULE:
                         data = { ...data, param_data: JSON.stringify(paramData) };
