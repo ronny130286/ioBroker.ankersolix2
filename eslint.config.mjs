@@ -1,77 +1,33 @@
-import tsParser from '@typescript-eslint/parser';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import js from '@eslint/js';
-import { FlatCompat } from '@eslint/eslintrc';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all,
-});
+// ioBroker eslint template configuration file for js and ts files
+// Please note that esm or react based modules need additional modules loaded.
+import config from '@iobroker/eslint-config';
 
 export default [
+    ...config,
+
     {
-        ignores: ['**/build/', '**/.prettierrc.js', '**/.eslintrc.js', 'admin/words.js', '**/test/', '.dev-server/**'],
+        // specify files to exclude from linting here
+        ignores: [
+            '.dev-server/',
+            '.vscode/',
+            '*.test.js',
+            'test/**/*.js',
+            '*.config.mjs',
+            'build',
+            'admin/build',
+            'admin/words.js',
+            'admin/admin.d.ts',
+            '**/adapter-config.d.ts',
+        ],
     },
-    ...compat.extends('plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'),
+
     {
-        plugins: {},
-
-        languageOptions: {
-            parser: tsParser,
-            ecmaVersion: 'latest',
-            sourceType: 'module',
-
-            parserOptions: {
-                project: './tsconfig.json',
-            },
-        },
-
+        // you may disable some 'jsdoc' warnings - but using jsdoc is highly recommended
+        // as this improves maintainability. jsdoc warnings will not block buiuld process.
         rules: {
-            '@typescript-eslint/no-parameter-properties': 'off',
-            '@typescript-eslint/no-explicit-any': 'off',
-
-            '@typescript-eslint/no-use-before-define': [
-                'error',
-                {
-                    functions: false,
-                    typedefs: false,
-                    classes: false,
-                },
-            ],
-
-            '@typescript-eslint/no-unused-vars': [
-                'error',
-                {
-                    ignoreRestSiblings: true,
-                    argsIgnorePattern: '^_',
-                },
-            ],
-
-            '@typescript-eslint/explicit-function-return-type': [
-                'warn',
-                {
-                    allowExpressions: true,
-                    allowTypedFunctionExpressions: true,
-                },
-            ],
-
-            '@typescript-eslint/no-object-literal-type-assertion': 'off',
-            '@typescript-eslint/interface-name-prefix': 'off',
-            '@typescript-eslint/no-non-null-assertion': 'off',
-            'no-var': 'error',
-            'prefer-const': 'error',
-            'no-trailing-spaces': 'error',
-        },
-    },
-    {
-        files: ['**/*.test.ts'],
-
-        rules: {
-            '@typescript-eslint/explicit-function-return-type': 'off',
+            'jsdoc/require-jsdoc': 'off',
+            'jsdoc/require-param-description': 'off',
+            'jsdoc/require-param': 'off',
         },
     },
 ];

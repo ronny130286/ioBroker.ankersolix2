@@ -6,7 +6,7 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import fs, { promises as pfs } from 'fs';
-import { LoginResultResponse, SolixApi } from './api';
+import { type LoginResultResponse, SolixApi } from './api';
 
 // Load your modules here, e.g.:
 
@@ -23,13 +23,13 @@ class Ankersolix2 extends utils.Adapter {
             name: 'ankersolix2',
         });
 
-        this.storeData = utils.getAbsoluteInstanceDataDir(this) + '/session.data';
+        this.storeData = `${utils.getAbsoluteInstanceDataDir(this)}/session.data`;
         this.loginData = null;
         this.refreshTimeout = null;
         this.refreshAnalysisTimeout = null;
         this.api = null;
         this.on('ready', this.onReady.bind(this));
-        this.on('stateChange', this.onStateChange.bind(this));
+        //this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
         // this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
@@ -59,12 +59,10 @@ class Ankersolix2 extends utils.Adapter {
             // create directory to store fetch data
             if (!fs.existsSync(utils.getAbsoluteInstanceDataDir(this))) {
                 fs.mkdirSync(utils.getAbsoluteInstanceDataDir(this));
-                this.log.debug('Folder created: ' + this.storeData);
+                this.log.debug(`Folder created: ${this.storeData}`);
             }
-        } catch (err) {
-            this.log.error(
-                'Could not create storage directory (' + utils.getAbsoluteInstanceDataDir(this) + '): ' + err,
-            );
+        } catch (err: any) {
+            this.log.error(`Could not create storage directory (${utils.getAbsoluteInstanceDataDir(this)}): ${err}`);
             return;
         }
         /*
@@ -75,6 +73,8 @@ class Ankersolix2 extends utils.Adapter {
             log: this.log,
         });
         */
+
+        this.loginData = await this.loginAPI();
 
         this.refreshDate();
         this.refreshAnalysis();
@@ -90,8 +90,12 @@ class Ankersolix2 extends utils.Adapter {
 
         let login = await this.restoreLoginData();
 
-        if (!this.isLoginValid(login)) {
-            this.log.debug('loginAPI: token expires');
+        if (!this.checkLoginToken(this.loginData)) {
+            login = null;
+        }
+
+        if (login?.email == this.api.username) {
+            this.log.debug('stored user and actual user are different');
             login = null;
         }
 
@@ -101,13 +105,13 @@ class Ankersolix2 extends utils.Adapter {
                 login = loginResponse.data ?? null;
 
                 if (login && loginResponse.code == 0) {
-                    this.log.debug('LoginRsponseCode: ' + loginResponse.code);
-
-                    await this.storeLoginData(login);
+                    this.log.debug(`LoginResponseCode: ${loginResponse.code}`);
+                    //store data to file
+                    await pfs.writeFile(this.storeData, JSON.stringify(login), 'utf-8');
                 }
-            } catch (error) {
-                this.log.error('loginAPI: ' + (error as any).message);
-                const status = (error as any).status;
+            } catch (error: any) {
+                this.log.error(`loginAPI: ${error.message}`);
+                const status = error.status;
                 if (status == 401) {
                     if (fs.existsSync(this.storeData)) {
                         fs.unlinkSync(this.storeData);
@@ -124,43 +128,94 @@ class Ankersolix2 extends utils.Adapter {
         return login;
     }
 
-    async storeLoginData(data: LoginResultResponse): Promise<void> {
-        this.log.debug('Write Data to File');
-        await pfs.writeFile(this.storeData, JSON.stringify(data), 'utf-8');
-    }
-
     async restoreLoginData(): Promise<LoginResultResponse | null> {
         try {
             this.log.debug('Try to restore data from File');
             const data = await pfs.readFile(this.storeData, 'utf8');
             return JSON.parse(data);
-        } catch (err) {
-            if ((err as any).code === 'ENOENT') {
-                this.log.error('RestoreLoginData: ' + (err as any).message);
-                return null;
-            } else {
-                this.log.error('RestoreLoginData: ' + (err as any).message);
+        } catch (err: any) {
+            if (err.code === 'ENOENT') {
+                this.log.error(`RestoreLoginData: ${err.message}`);
                 return null;
             }
+            this.log.error(`RestoreLoginData: ${err.message}`);
+            return null;
         }
     }
 
     async refreshDate(): Promise<void> {
-        try {
+        if (!this.checkLoginToken(this.loginData)) {
             this.loginData = await this.loginAPI();
-            await this.fetchAndPublish();
-        } catch (err) {
-            this.log.error('Failed fetching or publishing printer data, Error: ' + err);
+        }
+
+        try {
+            const loggedInApi = await this.api.withLogin(this.loginData);
+            const siteHomepage = await loggedInApi.siteHomepage();
+
+            let sites;
+            if (siteHomepage.data.site_list.length === 0) {
+                // Fallback for Shared Accounts
+                sites = (await loggedInApi.getSiteList()).data.site_list;
+            } else {
+                sites = siteHomepage.data.site_list;
+            }
+
+            for (const site of sites) {
+                const scenInfo = await loggedInApi.scenInfo(site.site_id);
+
+                const message = JSON.stringify(scenInfo.data);
+                const jsonparse = JSON.parse(message);
+
+                await this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
+                await this.CreateOrUpdate(
+                    `${site.site_id}.EXTRA.RAW_JSON`,
+                    'RAW_JSON',
+                    'state',
+                    'string',
+                    'value',
+                    false,
+                    'undefined',
+                );
+                await this.setState(`${site.site_id}.EXTRA.RAW_JSON`, { val: message, ack: true });
+
+                Object.entries(jsonparse).forEach(async entries => {
+                    const [id, value] = entries;
+
+                    const type = this.whatIsIt(value);
+
+                    const key = `${site.site_id}.${id}`;
+
+                    if (type === 'object') {
+                        await this.isObject(key, value);
+                    } else if (type === 'array') {
+                        const array = JSON.parse(JSON.stringify(value));
+                        let i = 0;
+                        array.forEach(async (elem: any, item: any) => {
+                            if (this.whatIsIt(array[item]) === 'object') {
+                                await this.isObject(`${key}.${i}`, array[item]);
+                            } else if (this.whatIsIt(array[item]) === 'string') {
+                                await this.isString(`${key}.${i}`, array[item]);
+                            }
+                            i++;
+                        });
+                    } else {
+                        await this.isString(key, value);
+                    }
+                });
+            }
+            this.log.debug('Published Data.');
+        } catch (err: any) {
+            this.log.error(`Failed fetching or publishing printer data, Error: ${err}`);
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
         } finally {
             if (this.refreshTimeout) {
-                this.log.debug('refreshTimeout clear: ' + this.refreshTimeout.id);
+                this.log.debug(`refreshTimeout clear: ${this.refreshTimeout.id}`);
                 this.clearTimeout(this.refreshTimeout);
             }
 
-            this.refreshTimeout = this.setTimeout(() => {
+            this.refreshTimeout = this.setTimeout(async () => {
                 this.refreshTimeout = null;
-                this.refreshDate();
+                await this.refreshDate();
             }, this.config.POLL_INTERVAL * 1000);
             this.log.debug(`Sleeping for ${this.config.POLL_INTERVAL * 1000}ms... TimerId ${this.refreshTimeout}`);
         }
@@ -168,81 +223,23 @@ class Ankersolix2 extends utils.Adapter {
 
     async refreshAnalysis(): Promise<void> {
         try {
-            this.loginData = await this.loginAPI();
+            //this.loginData = await this.loginAPI();
             await this.fetchAndPublishAnalysis();
-        } catch (err) {
-            this.log.error('Failed fetching or publishing analysisdata: ' + err);
+        } catch (err: any) {
+            this.log.error(`Failed fetching or publishing analysisdata: ${err}`);
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
         } finally {
             if (this.refreshAnalysisTimeout) {
-                this.log.debug('refreshAnalysisTimeout clear: ' + this.refreshAnalysisTimeout.id);
+                this.log.debug(`refreshAnalysisTimeout clear: ${this.refreshAnalysisTimeout.id}`);
                 this.clearTimeout(this.refreshAnalysisTimeout);
             }
 
-            this.refreshAnalysisTimeout = this.setTimeout(() => {
+            this.refreshAnalysisTimeout = this.setTimeout(async () => {
                 this.refreshAnalysisTimeout = null;
-                this.refreshAnalysis();
+                await this.refreshAnalysis();
             }, 600 * 1000);
             this.log.debug(`Analysis Sleeping for ${600 * 1000}ms... TimerId ${this.refreshAnalysisTimeout}`);
         }
-    }
-
-    async fetchAndPublish(): Promise<void> {
-        const loggedInApi = await this.api.withLogin(this.loginData);
-        const siteHomepage = await loggedInApi.siteHomepage();
-
-        let sites;
-        if (siteHomepage.data.site_list.length === 0) {
-            // Fallback for Shared Accounts
-            sites = (await loggedInApi.getSiteList()).data.site_list;
-        } else {
-            sites = siteHomepage.data.site_list;
-        }
-
-        for (const site of sites) {
-            const scenInfo = await loggedInApi.scenInfo(site.site_id);
-
-            const message = JSON.stringify(scenInfo.data);
-            const jsonparse = JSON.parse(message);
-
-            this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
-            this.CreateOrUpdate(
-                site.site_id + '.EXTRA.RAW_JSON',
-                'RAW_JSON',
-                'state',
-                'string',
-                'value',
-                false,
-                'undefined',
-            );
-            await this.setState(site.site_id + '.EXTRA.RAW_JSON', { val: message, ack: true });
-
-            Object.entries(jsonparse).forEach((entries) => {
-                const [id, value] = entries;
-
-                const type = this.whatIsIt(value);
-
-                const key = site.site_id + '.' + id;
-
-                if (type === 'object') {
-                    this.isObject(key, value);
-                } else if (type === 'array') {
-                    const array = JSON.parse(JSON.stringify(value));
-                    let i = 0;
-                    array.forEach((elem: any, item: any) => {
-                        if (this.whatIsIt(array[item]) === 'object') {
-                            this.isObject(key + '.' + i, array[item]);
-                        } else if (this.whatIsIt(array[item]) === 'string') {
-                            this.isString(key + '.' + i, array[item]);
-                        }
-                        i++;
-                    });
-                } else {
-                    this.isString(key, value);
-                }
-            });
-        }
-        this.log.debug('Published Data.');
     }
 
     async fetchAndPublishAnalysis(): Promise<void> {
@@ -261,8 +258,8 @@ class Ankersolix2 extends utils.Adapter {
             const ranges = ['day', 'week'];
 
             for (const range of ranges) {
-                this.CreateOrUpdate(
-                    site.site_id + '.EXTRA.ENERGY_' + range.toUpperCase(),
+                await this.CreateOrUpdate(
+                    `${site.site_id}.EXTRA.ENERGY_${range.toUpperCase()}`,
                     'ENERGY_JSON',
                     'state',
                     'string',
@@ -289,33 +286,33 @@ class Ankersolix2 extends utils.Adapter {
                     energyInfo = await loggedInApi.energyAnalysis(site.site_id, '', 'week', new Date(), new Date());
                 }
                 const energy_message = JSON.stringify(energyInfo.data);
-                await this.setState(site.site_id + '.EXTRA.ENERGY_' + range.toUpperCase(), {
+                await this.setState(`${site.site_id}.EXTRA.ENERGY_${range.toUpperCase()}`, {
                     val: energy_message,
                     ack: true,
                 });
 
-                Object.entries(JSON.parse(energy_message)).forEach((entries) => {
+                Object.entries(JSON.parse(energy_message)).forEach(async entries => {
                     const [id, value] = entries;
 
                     const type = this.whatIsIt(value);
 
-                    const key = site.site_id + '.eneryanalysis.' + range + '.' + id;
+                    const key = `${site.site_id}.eneryanalysis.${range}.${id}`;
 
                     if (type === 'object') {
-                        this.isObject(key, value);
+                        await this.isObject(key, value);
                     } else if (type === 'array') {
                         const array = JSON.parse(JSON.stringify(value));
                         let i = 0;
-                        array.forEach((elem: any, item: any) => {
+                        array.forEach(async (elem: any, item: any) => {
                             if (this.whatIsIt(array[item]) === 'object') {
-                                this.isObject(key + '.' + i, array[item]);
+                                await this.isObject(`${key}.${i}`, array[item]);
                             } else if (this.whatIsIt(array[item]) === 'string') {
-                                this.isString(key + '.' + i, array[item]);
+                                await this.isString(`${key}.${i}`, array[item]);
                             }
                             i++;
                         });
                     } else {
-                        this.isString(key, value);
+                        await this.isString(key, value);
                     }
                 });
             }
@@ -353,33 +350,33 @@ class Ankersolix2 extends utils.Adapter {
             const type = this.whatIsIt(array[item]);
 
             if (type === 'object') {
-                this.isObject(key, array[item]);
+                await this.isObject(key, array[item]);
             } else if (type === 'string') {
-                this.isString(key, array[item]);
+                await this.isString(key, array[item]);
             }
         });
     }
 
-    isObject(key: string, value: any): void {
+    async isObject(key: string, value: any): Promise<void> {
         const name = key.split('.').pop()?.replaceAll('_', ' ');
 
-        this.CreateOrUpdate(key, name, 'folder');
-        Object.entries(value).forEach((subentries) => {
+        await this.CreateOrUpdate(key, name, 'folder');
+        Object.entries(value).forEach(async subentries => {
             const [objkey, objvalue] = subentries;
             const type = this.whatIsIt(objvalue);
             if (type === 'array') {
-                this.isArray(key + '.' + objkey, objvalue);
+                this.isArray(`${key}.${objkey}`, objvalue);
             } else if (type === 'object') {
-                this.isObject(key + '.' + objkey, objvalue);
+                await this.isObject(`${key}.${objkey}`, objvalue);
             } else {
-                this.isString(key + '.' + objkey, objvalue);
+                await this.isString(`${key}.${objkey}`, objvalue);
             }
         });
     }
 
     async isString(key: string, value: any): Promise<void> {
         let parmType: ioBroker.CommonType = 'string';
-        let parmRole: string = 'value';
+        let parmRole = 'value';
         let parmUnit = undefined;
 
         const valType = this.whatIsIt(value);
@@ -449,95 +446,43 @@ class Ankersolix2 extends utils.Adapter {
         max: number | undefined = undefined,
         step: number | undefined = undefined,
     ): Promise<void> {
-        const obj = await this.getObjectAsync(path);
-        if (obj == null) {
-            let newObj: any = null;
-            if (type === 'state') {
-                newObj = {
-                    type: type,
-                    common: {
-                        name: name,
-                        type: commontype,
-                        role: role,
-                        read: true,
-                        write: writable,
-                        unit: unit,
-                        min: min,
-                        max: max,
-                        step: step,
-                    },
-                    native: {},
-                };
-            } else {
-                newObj = {
-                    type: type,
-                    common: { name: name },
-                    native: {},
-                };
-            }
+        let newObj: any = null;
 
-            await this.setObject(path, newObj);
+        if (type === 'state') {
+            newObj = {
+                type: type,
+                common: {
+                    name: this.name2id(name),
+                    type: commontype,
+                    role: role,
+                    read: true,
+                    write: writable,
+                    unit: unit,
+                    min: min,
+                    max: max,
+                    step: step,
+                },
+                native: {},
+            };
         } else {
-            let changed: boolean = false;
-            if (type === 'state') {
-                if (obj.common.name != name) {
-                    obj.common.name = name;
-                    changed = true;
-                }
-                if (obj.common.type != commontype) {
-                    obj.common.type = commontype;
-                    changed = true;
-                }
-                if (obj.common.role != role) {
-                    obj.common.role = role;
-                    changed = true;
-                }
-                if (obj.common.read != true) {
-                    obj.common.read = true;
-                    changed = true;
-                }
-                if (obj.common.write != writable) {
-                    obj.common.write = writable;
-                    changed = true;
-                }
-                if (obj.common.unit != unit) {
-                    obj.common.unit = unit;
-                    changed = true;
-                }
-                if (obj.common.min != min) {
-                    obj.common.min = min;
-                    changed = true;
-                }
-                if (obj.common.max != max) {
-                    obj.common.max = max;
-                    changed = true;
-                }
-                if (obj.common.step != step) {
-                    obj.common.step = step;
-                    changed = true;
-                }
-            } else {
-                if (obj.common.name != name) {
-                    obj.common.name = name;
-                    changed = true;
-                }
-                if (obj.common.type != type) {
-                    obj.common.type = type;
-                    changed = true;
-                }
-            }
-            if (changed) {
-                //this.log.debug(path + ' => has been updated');
-                await this.setObject(path, obj);
-            }
+            newObj = {
+                type: type,
+                common: { name: name },
+                native: {},
+            };
         }
+        await this.extendObject(this.name2id(path), newObj);
     }
 
-    isLoginValid(loginData: LoginResultResponse | null, now: Date = new Date()): boolean {
+    checkLoginToken(loginData: LoginResultResponse | null): boolean {
         if (loginData != null) {
-            return new Date(loginData.token_expires_at * 1000).getTime() > now.getTime();
+            return new Date(loginData.token_expires_at * 1000).getTime() > new Date().getTime();
         }
         return false;
+    }
+
+    name2id(pName: string): string {
+        return (pName || '').replace(this.FORBIDDEN_CHARS, '_');
     }
 
     /**
@@ -560,8 +505,8 @@ class Ankersolix2 extends utils.Adapter {
             }
 
             callback();
-        } catch (e) {
-            this.log.error('onUnload: ' + e);
+        } catch (e: any) {
+            this.log.error(`onUnload: ${e}`);
             callback();
         }
     }
@@ -581,18 +526,21 @@ class Ankersolix2 extends utils.Adapter {
     //     }
     // }
 
-    /**
-     * Is called if a subscribed state changes
-     */
-    private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-        if (state) {
-            // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-        } else {
-            // The state was deleted
-            this.log.info(`state ${id} deleted`);
-        }
-    }
+    ///**
+    // * Is called if a subscribed state changes
+    // *
+    // * @param id
+    // * @param state
+    // */
+    //private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+    //    if (state) {
+    //        // The state was changed
+    //        this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+    //    } else {
+    //        // The state was deleted
+    //        this.log.info(`state ${id} deleted`);
+    //    }
+    //}
 
     // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
     // /**

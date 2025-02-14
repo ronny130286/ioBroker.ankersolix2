@@ -87,11 +87,15 @@ class SolixApi {
         ["App-Name"]: "anker_power",
         ["Os-Type"]: "android",
         ...headers
-      }
+      },
+      timeout: 1e4
     });
   }
   withLogin(login) {
-    const headers = { ["X-Auth-Token"]: login.auth_token, gtoken: this.md5(login.user_id) };
+    const headers = {
+      ["X-Auth-Token"]: login.auth_token,
+      gtoken: this.md5(login.user_id)
+    };
     const authFetch = async (endpoint, data) => {
       const response = await this.axios(endpoint, data, headers);
       return await response.data;
@@ -150,7 +154,9 @@ class SolixApi {
             case "4" /* SB1_SCHEDULE */:
               return {
                 ...response,
-                data: { param_data: JSON.parse(response.data.param_data) }
+                data: {
+                  param_data: JSON.parse(response.data.param_data)
+                }
               };
             default:
               return response;
@@ -159,7 +165,12 @@ class SolixApi {
         return response;
       },
       setSiteDeviceParam: async (paramType, siteId, cmd = 17, paramData) => {
-        let data = { site_id: siteId, param_type: paramType, cmd, param_data: paramData };
+        let data = {
+          site_id: siteId,
+          param_type: paramType,
+          cmd,
+          param_data: paramData
+        };
         switch (paramType) {
           case "4" /* SB1_SCHEDULE */:
             data = { ...data, param_data: JSON.stringify(paramData) };
