@@ -28,6 +28,8 @@ export default [
             'jsdoc/require-jsdoc': 'off',
             'jsdoc/require-param-description': 'off',
             'jsdoc/require-param': 'off',
+            '@typescript-eslint/no-floating-promises': 'off',
+            '@typescript-eslint/require-await': 'off',
         },
     },
 ];

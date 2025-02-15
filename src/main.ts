@@ -48,9 +48,9 @@ class Ankersolix2 extends utils.Adapter {
             return;
         }
 
-        if (!this.config.POLL_INTERVAL || this.config.POLL_INTERVAL < 10) {
+        if (!this.config.POLL_INTERVAL || (this.config.POLL_INTERVAL < 10 && this.config.POLL_INTERVAL > 3600)) {
             this.log.error(
-                `The poll intervall must be greater than 10 - please check instance configuration of ${this.namespace}`,
+                `The poll intervall must be between 10 and 3600 secounds - please check instance configuration of ${this.namespace}`,
             );
             return;
         }
@@ -65,22 +65,13 @@ class Ankersolix2 extends utils.Adapter {
             this.log.error(`Could not create storage directory (${utils.getAbsoluteInstanceDataDir(this)}): ${err}`);
             return;
         }
-        /*
-        this.api = new SolixApi({
-            username: this.config.Username,
-            password: this.config.Password,
-            country: this.config.COUNTRY,
-            log: this.log,
-        });
-        */
 
-        this.loginData = await this.loginAPI();
-
-        this.refreshDate();
-        this.refreshAnalysis();
+        await this.refreshDate();
+        await this.refreshAnalysis();
     }
 
     async loginAPI(): Promise<LoginResultResponse | null> {
+        this.api = null;
         this.api = new SolixApi({
             username: this.config.Username,
             password: this.config.Password,
@@ -90,12 +81,8 @@ class Ankersolix2 extends utils.Adapter {
 
         let login = await this.restoreLoginData();
 
-        if (!this.checkLoginToken(this.loginData)) {
-            login = null;
-        }
-
-        if (login?.email == this.api.username) {
-            this.log.debug('stored user and actual user are different');
+        if (!this.isLoginValid(login)) {
+            this.log.debug('loginAPI: token expires');
             login = null;
         }
 
@@ -103,10 +90,9 @@ class Ankersolix2 extends utils.Adapter {
             try {
                 const loginResponse = await this.api.login();
                 login = loginResponse.data ?? null;
-
+                this.log.debug(`LoginResponseCode: ${loginResponse.code} => ${loginResponse.msg}`);
                 if (login && loginResponse.code == 0) {
-                    this.log.debug(`LoginResponseCode: ${loginResponse.code}`);
-                    //store data to file
+                    this.log.debug(`Write data to file`);
                     await pfs.writeFile(this.storeData, JSON.stringify(login), 'utf-8');
                 }
             } catch (error: any) {
@@ -144,66 +130,9 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     async refreshDate(): Promise<void> {
-        if (!this.checkLoginToken(this.loginData)) {
-            this.loginData = await this.loginAPI();
-        }
-
         try {
-            const loggedInApi = await this.api.withLogin(this.loginData);
-            const siteHomepage = await loggedInApi.siteHomepage();
-
-            let sites;
-            if (siteHomepage.data.site_list.length === 0) {
-                // Fallback for Shared Accounts
-                sites = (await loggedInApi.getSiteList()).data.site_list;
-            } else {
-                sites = siteHomepage.data.site_list;
-            }
-
-            for (const site of sites) {
-                const scenInfo = await loggedInApi.scenInfo(site.site_id);
-
-                const message = JSON.stringify(scenInfo.data);
-                const jsonparse = JSON.parse(message);
-
-                await this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
-                await this.CreateOrUpdate(
-                    `${site.site_id}.EXTRA.RAW_JSON`,
-                    'RAW_JSON',
-                    'state',
-                    'string',
-                    'value',
-                    false,
-                    'undefined',
-                );
-                await this.setState(`${site.site_id}.EXTRA.RAW_JSON`, { val: message, ack: true });
-
-                Object.entries(jsonparse).forEach(async entries => {
-                    const [id, value] = entries;
-
-                    const type = this.whatIsIt(value);
-
-                    const key = `${site.site_id}.${id}`;
-
-                    if (type === 'object') {
-                        await this.isObject(key, value);
-                    } else if (type === 'array') {
-                        const array = JSON.parse(JSON.stringify(value));
-                        let i = 0;
-                        array.forEach(async (elem: any, item: any) => {
-                            if (this.whatIsIt(array[item]) === 'object') {
-                                await this.isObject(`${key}.${i}`, array[item]);
-                            } else if (this.whatIsIt(array[item]) === 'string') {
-                                await this.isString(`${key}.${i}`, array[item]);
-                            }
-                            i++;
-                        });
-                    } else {
-                        await this.isString(key, value);
-                    }
-                });
-            }
-            this.log.debug('Published Data.');
+            this.loginData = await this.loginAPI();
+            await this.fetchAndPublish();
         } catch (err: any) {
             this.log.error(`Failed fetching or publishing printer data, Error: ${err}`);
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
@@ -213,9 +142,9 @@ class Ankersolix2 extends utils.Adapter {
                 this.clearTimeout(this.refreshTimeout);
             }
 
-            this.refreshTimeout = this.setTimeout(async () => {
+            this.refreshTimeout = this.setTimeout(() => {
                 this.refreshTimeout = null;
-                await this.refreshDate();
+                this.refreshDate();
             }, this.config.POLL_INTERVAL * 1000);
             this.log.debug(`Sleeping for ${this.config.POLL_INTERVAL * 1000}ms... TimerId ${this.refreshTimeout}`);
         }
@@ -223,7 +152,7 @@ class Ankersolix2 extends utils.Adapter {
 
     async refreshAnalysis(): Promise<void> {
         try {
-            //this.loginData = await this.loginAPI();
+            this.loginData = await this.loginAPI();
             await this.fetchAndPublishAnalysis();
         } catch (err: any) {
             this.log.error(`Failed fetching or publishing analysisdata: ${err}`);
@@ -234,12 +163,70 @@ class Ankersolix2 extends utils.Adapter {
                 this.clearTimeout(this.refreshAnalysisTimeout);
             }
 
-            this.refreshAnalysisTimeout = this.setTimeout(async () => {
+            this.refreshAnalysisTimeout = this.setTimeout(() => {
                 this.refreshAnalysisTimeout = null;
-                await this.refreshAnalysis();
+                this.refreshAnalysis();
             }, 600 * 1000);
             this.log.debug(`Analysis Sleeping for ${600 * 1000}ms... TimerId ${this.refreshAnalysisTimeout}`);
         }
+    }
+
+    async fetchAndPublish(): Promise<void> {
+        const loggedInApi = await this.api.withLogin(this.loginData);
+        const siteHomepage = await loggedInApi.siteHomepage();
+
+        let sites;
+        if (siteHomepage.data.site_list.length === 0) {
+            // Fallback for Shared Accounts
+            sites = (await loggedInApi.getSiteList()).data.site_list;
+        } else {
+            sites = siteHomepage.data.site_list;
+        }
+
+        for (const site of sites) {
+            const scenInfo = await loggedInApi.scenInfo(site.site_id);
+
+            const message = JSON.stringify(scenInfo.data);
+            const jsonparse = JSON.parse(message);
+
+            this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
+            this.CreateOrUpdate(
+                `${site.site_id}.EXTRA.RAW_JSON`,
+                'RAW_JSON',
+                'state',
+                'string',
+                'value',
+                false,
+                'undefined',
+            );
+            await this.setState(`${site.site_id}.EXTRA.RAW_JSON`, { val: message, ack: true });
+
+            Object.entries(jsonparse).forEach(entries => {
+                const [id, value] = entries;
+
+                const type = this.whatIsIt(value);
+
+                const key = `${site.site_id}.${id}`;
+
+                if (type === 'object') {
+                    this.isObject(key, value);
+                } else if (type === 'array') {
+                    const array = JSON.parse(JSON.stringify(value));
+                    let i = 0;
+                    array.forEach((elem: any, item: any) => {
+                        if (this.whatIsIt(array[item]) === 'object') {
+                            this.isObject(`${key}.${i}`, array[item]);
+                        } else if (this.whatIsIt(array[item]) === 'string') {
+                            this.isString(`${key}.${i}`, array[item]);
+                        }
+                        i++;
+                    });
+                } else {
+                    this.isString(key, value);
+                }
+            });
+        }
+        this.log.debug('Published Data.');
     }
 
     async fetchAndPublishAnalysis(): Promise<void> {
@@ -258,7 +245,7 @@ class Ankersolix2 extends utils.Adapter {
             const ranges = ['day', 'week'];
 
             for (const range of ranges) {
-                await this.CreateOrUpdate(
+                this.CreateOrUpdate(
                     `${site.site_id}.EXTRA.ENERGY_${range.toUpperCase()}`,
                     'ENERGY_JSON',
                     'state',
@@ -291,7 +278,7 @@ class Ankersolix2 extends utils.Adapter {
                     ack: true,
                 });
 
-                Object.entries(JSON.parse(energy_message)).forEach(async entries => {
+                Object.entries(JSON.parse(energy_message)).forEach(entries => {
                     const [id, value] = entries;
 
                     const type = this.whatIsIt(value);
@@ -299,20 +286,20 @@ class Ankersolix2 extends utils.Adapter {
                     const key = `${site.site_id}.eneryanalysis.${range}.${id}`;
 
                     if (type === 'object') {
-                        await this.isObject(key, value);
+                        this.isObject(key, value);
                     } else if (type === 'array') {
                         const array = JSON.parse(JSON.stringify(value));
                         let i = 0;
-                        array.forEach(async (elem: any, item: any) => {
+                        array.forEach((elem: any, item: any) => {
                             if (this.whatIsIt(array[item]) === 'object') {
-                                await this.isObject(`${key}.${i}`, array[item]);
+                                this.isObject(`${key}.${i}`, array[item]);
                             } else if (this.whatIsIt(array[item]) === 'string') {
-                                await this.isString(`${key}.${i}`, array[item]);
+                                this.isString(`${key}.${i}`, array[item]);
                             }
                             i++;
                         });
                     } else {
-                        await this.isString(key, value);
+                        this.isString(key, value);
                     }
                 });
             }
@@ -350,26 +337,26 @@ class Ankersolix2 extends utils.Adapter {
             const type = this.whatIsIt(array[item]);
 
             if (type === 'object') {
-                await this.isObject(key, array[item]);
+                this.isObject(key, array[item]);
             } else if (type === 'string') {
-                await this.isString(key, array[item]);
+                this.isString(key, array[item]);
             }
         });
     }
 
-    async isObject(key: string, value: any): Promise<void> {
+    isObject(key: string, value: any): void {
         const name = key.split('.').pop()?.replaceAll('_', ' ');
 
-        await this.CreateOrUpdate(key, name, 'folder');
-        Object.entries(value).forEach(async subentries => {
+        this.CreateOrUpdate(key, name, 'folder');
+        Object.entries(value).forEach(subentries => {
             const [objkey, objvalue] = subentries;
             const type = this.whatIsIt(objvalue);
             if (type === 'array') {
                 this.isArray(`${key}.${objkey}`, objvalue);
             } else if (type === 'object') {
-                await this.isObject(`${key}.${objkey}`, objvalue);
+                this.isObject(`${key}.${objkey}`, objvalue);
             } else {
-                await this.isString(`${key}.${objkey}`, objvalue);
+                this.isString(`${key}.${objkey}`, objvalue);
             }
         });
     }
@@ -474,9 +461,9 @@ class Ankersolix2 extends utils.Adapter {
         await this.extendObject(this.name2id(path), newObj);
     }
 
-    checkLoginToken(loginData: LoginResultResponse | null): boolean {
+    isLoginValid(loginData: LoginResultResponse | null, now: Date = new Date()): boolean {
         if (loginData != null) {
-            return new Date(loginData.token_expires_at * 1000).getTime() > new Date().getTime();
+            return new Date(loginData.token_expires_at * 1000).getTime() > now.getTime();
         }
         return false;
     }
@@ -526,12 +513,9 @@ class Ankersolix2 extends utils.Adapter {
     //     }
     // }
 
-    ///**
-    // * Is called if a subscribed state changes
-    // *
-    // * @param id
-    // * @param state
-    // */
+    /**
+     * Is called if a subscribed state changes
+     */
     //private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
     //    if (state) {
     //        // The state was changed
@@ -540,7 +524,7 @@ class Ankersolix2 extends utils.Adapter {
     //        // The state was deleted
     //        this.log.info(`state ${id} deleted`);
     //    }
-    //}
+    // }
 
     // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
     // /**
