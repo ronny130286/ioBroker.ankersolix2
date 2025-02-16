@@ -65,13 +65,13 @@ class Ankersolix2 extends utils.Adapter {
             this.log.error(`Could not create storage directory (${utils.getAbsoluteInstanceDataDir(this)}): ${err}`);
             return;
         }
+        this.loginData = await this.loginAPI();
 
-        await this.refreshDate();
-        await this.refreshAnalysis();
+        this.refreshDate();
+        this.refreshAnalysis();
     }
 
     async loginAPI(): Promise<LoginResultResponse | null> {
-        this.api = null;
         this.api = new SolixApi({
             username: this.config.Username,
             password: this.config.Password,
@@ -80,10 +80,17 @@ class Ankersolix2 extends utils.Adapter {
         });
 
         let login = await this.restoreLoginData();
-
-        if (!this.isLoginValid(login)) {
-            this.log.debug('loginAPI: token expires');
-            login = null;
+        if (login) {
+            //check if login token not expired
+            if (!this.isLoginValid(login)) {
+                this.log.debug('loginAPI: token expired');
+                login = null;
+            }
+            //check if username in stored file the same in config
+            if (login?.email != this.config.Username) {
+                this.log.debug('loginAPI: username are different');
+                login = null;
+            }
         }
 
         if (login == null) {
@@ -121,21 +128,28 @@ class Ankersolix2 extends utils.Adapter {
             return JSON.parse(data);
         } catch (err: any) {
             if (err.code === 'ENOENT') {
-                this.log.error(`RestoreLoginData: ${err.message}`);
+                this.log.debug(`RestoreLoginData: ${err.message}`);
                 return null;
             }
-            this.log.error(`RestoreLoginData: ${err.message}`);
+            this.log.debug(`RestoreLoginData: ${err.message}`);
             return null;
         }
     }
 
     async refreshDate(): Promise<void> {
+        let refresh = this.config.POLL_INTERVAL;
         try {
-            this.loginData = await this.loginAPI();
-            await this.fetchAndPublish();
+            if (!this.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
+                this.loginData = await this.loginAPI();
+            }
+
+            if (this.loginData) {
+                await this.fetchAndPublish();
+            }
         } catch (err: any) {
             this.log.error(`Failed fetching or publishing printer data, Error: ${err}`);
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+            refresh = this.config.POLL_INTERVAL * 5;
         } finally {
             if (this.refreshTimeout) {
                 this.log.debug(`refreshTimeout clear: ${this.refreshTimeout.id}`);
@@ -145,15 +159,19 @@ class Ankersolix2 extends utils.Adapter {
             this.refreshTimeout = this.setTimeout(() => {
                 this.refreshTimeout = null;
                 this.refreshDate();
-            }, this.config.POLL_INTERVAL * 1000);
-            this.log.debug(`Sleeping for ${this.config.POLL_INTERVAL * 1000}ms... TimerId ${this.refreshTimeout}`);
+            }, refresh * 1000);
+            this.log.debug(`Sleeping for ${refresh * 1000}ms... TimerId ${this.refreshTimeout}`);
         }
     }
 
     async refreshAnalysis(): Promise<void> {
         try {
-            this.loginData = await this.loginAPI();
-            await this.fetchAndPublishAnalysis();
+            if (!this.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
+                this.loginData = await this.loginAPI();
+            }
+            if (this.loginData) {
+                await this.fetchAndPublishAnalysis();
+            }
         } catch (err: any) {
             this.log.error(`Failed fetching or publishing analysisdata: ${err}`);
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
@@ -345,7 +363,7 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     isObject(key: string, value: any): void {
-        const name = key.split('.').pop()?.replaceAll('_', ' ');
+        const name = key.split('.').pop();
 
         this.CreateOrUpdate(key, name, 'folder');
         Object.entries(value).forEach(subentries => {
@@ -415,7 +433,7 @@ class Ankersolix2 extends utils.Adapter {
             }
         }
 
-        const name = key.split('.').pop()?.replaceAll('_', ' ');
+        const name = key.split('.').pop();
 
         await this.CreateOrUpdate(key, name, 'state', parmType, parmRole, false, parmUnit);
         await this.setState(key, { val: value, ack: true });

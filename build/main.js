@@ -68,12 +68,12 @@ class Ankersolix2 extends utils.Adapter {
       this.log.error(`Could not create storage directory (${utils.getAbsoluteInstanceDataDir(this)}): ${err}`);
       return;
     }
-    await this.refreshDate();
-    await this.refreshAnalysis();
+    this.loginData = await this.loginAPI();
+    this.refreshDate();
+    this.refreshAnalysis();
   }
   async loginAPI() {
     var _a;
-    this.api = null;
     this.api = new import_api.SolixApi({
       username: this.config.Username,
       password: this.config.Password,
@@ -81,9 +81,15 @@ class Ankersolix2 extends utils.Adapter {
       log: this.log
     });
     let login = await this.restoreLoginData();
-    if (!this.isLoginValid(login)) {
-      this.log.debug("loginAPI: token expires");
-      login = null;
+    if (login) {
+      if (!this.isLoginValid(login)) {
+        this.log.debug("loginAPI: token expired");
+        login = null;
+      }
+      if ((login == null ? void 0 : login.email) != this.config.Username) {
+        this.log.debug("loginAPI: username are different");
+        login = null;
+      }
     }
     if (login == null) {
       try {
@@ -117,20 +123,27 @@ class Ankersolix2 extends utils.Adapter {
       return JSON.parse(data);
     } catch (err) {
       if (err.code === "ENOENT") {
-        this.log.error(`RestoreLoginData: ${err.message}`);
+        this.log.debug(`RestoreLoginData: ${err.message}`);
         return null;
       }
-      this.log.error(`RestoreLoginData: ${err.message}`);
+      this.log.debug(`RestoreLoginData: ${err.message}`);
       return null;
     }
   }
   async refreshDate() {
+    var _a;
+    let refresh = this.config.POLL_INTERVAL;
     try {
-      this.loginData = await this.loginAPI();
-      await this.fetchAndPublish();
+      if (!this.isLoginValid(this.loginData) || ((_a = this.loginData) == null ? void 0 : _a.email) != this.config.Username) {
+        this.loginData = await this.loginAPI();
+      }
+      if (this.loginData) {
+        await this.fetchAndPublish();
+      }
     } catch (err) {
       this.log.error(`Failed fetching or publishing printer data, Error: ${err}`);
       this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+      refresh = this.config.POLL_INTERVAL * 5;
     } finally {
       if (this.refreshTimeout) {
         this.log.debug(`refreshTimeout clear: ${this.refreshTimeout.id}`);
@@ -139,14 +152,19 @@ class Ankersolix2 extends utils.Adapter {
       this.refreshTimeout = this.setTimeout(() => {
         this.refreshTimeout = null;
         this.refreshDate();
-      }, this.config.POLL_INTERVAL * 1e3);
-      this.log.debug(`Sleeping for ${this.config.POLL_INTERVAL * 1e3}ms... TimerId ${this.refreshTimeout}`);
+      }, refresh * 1e3);
+      this.log.debug(`Sleeping for ${refresh * 1e3}ms... TimerId ${this.refreshTimeout}`);
     }
   }
   async refreshAnalysis() {
+    var _a;
     try {
-      this.loginData = await this.loginAPI();
-      await this.fetchAndPublishAnalysis();
+      if (!this.isLoginValid(this.loginData) || ((_a = this.loginData) == null ? void 0 : _a.email) != this.config.Username) {
+        this.loginData = await this.loginAPI();
+      }
+      if (this.loginData) {
+        await this.fetchAndPublishAnalysis();
+      }
     } catch (err) {
       this.log.error(`Failed fetching or publishing analysisdata: ${err}`);
       this.log.debug(`Error Object: ${JSON.stringify(err)}`);
@@ -311,8 +329,7 @@ class Ankersolix2 extends utils.Adapter {
     });
   }
   isObject(key, value) {
-    var _a;
-    const name = (_a = key.split(".").pop()) == null ? void 0 : _a.replaceAll("_", " ");
+    const name = key.split(".").pop();
     this.CreateOrUpdate(key, name, "folder");
     Object.entries(value).forEach((subentries) => {
       const [objkey, objvalue] = subentries;
@@ -327,7 +344,6 @@ class Ankersolix2 extends utils.Adapter {
     });
   }
   async isString(key, value) {
-    var _a;
     let parmType = "string";
     let parmRole = "value";
     let parmUnit = void 0;
@@ -370,7 +386,7 @@ class Ankersolix2 extends utils.Adapter {
           break;
       }
     }
-    const name = (_a = key.split(".").pop()) == null ? void 0 : _a.replaceAll("_", " ");
+    const name = key.split(".").pop();
     await this.CreateOrUpdate(key, name, "state", parmType, parmRole, false, parmUnit);
     await this.setState(key, { val: value, ack: true });
   }

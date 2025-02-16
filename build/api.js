@@ -88,7 +88,7 @@ class SolixApi {
         ["Os-Type"]: "android",
         ...headers
       },
-      timeout: 2e4
+      timeout: 1e4
     });
   }
   withLogin(login) {
