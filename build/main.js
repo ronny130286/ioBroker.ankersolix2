@@ -53,7 +53,7 @@ class Ankersolix2 extends utils.Adapter {
       );
       return;
     }
-    if (!this.config.POLL_INTERVAL || this.config.POLL_INTERVAL < 10 && this.config.POLL_INTERVAL > 3600) {
+    if (!this.config.POLL_INTERVAL && (this.config.POLL_INTERVAL < 10 || this.config.POLL_INTERVAL > 3600)) {
       this.log.error(
         `The poll intervall must be between 10 and 3600 secounds - please check instance configuration of ${this.namespace}`
       );
