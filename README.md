@@ -19,6 +19,15 @@ Integrade Anker Solix 2
 
 This project is derived from https://github.com/tomquist/solix2mqtt and brings information from the anker api directly into ioBroker.
 
+## Supported Devices
+
+I don't have every [Anker hardware](https://www.ankersolix.com/) available for testing. I can only list the hardware, i have tested. It is possible that all other [Anker hardware](https://www.ankersolix.com/) is also compatible
+
+| Device       | Description                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `Solarbank`  | - A17C0: Solarbank E1600 (Gen 1)<br>- A17C1: Solarbank 2 E1600 Pro<br>- A17C3: Solarbank 2 E1600 Plus<br>          |
+| `Smartmeter` | - A17X7: Anker 3 Phase Wifi Smart Meter<br>- SHEM3: Shelly 3EM Smart Meter<br>- SHEMP3: Shelly 3EM Pro Smart Meter |
+
 ## Config
 
 1. Create a familie-account in anker app and add it to your main-account
@@ -38,6 +47,7 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
 ### 1.1.0 (2025-02-08)
 
 - (ronny130286) add analysis data for week/day
