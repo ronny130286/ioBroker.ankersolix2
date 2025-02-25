@@ -512,7 +512,7 @@ class Ankersolix2 extends utils.Adapter {
      *
      * @param status
      */
-    async setApiCon(status: boolean) {
+    async setApiCon(status: boolean): Promise<void> {
         this.apiConnection = status;
         this.setStateChangedAsync('info.apiconnection', { val: status, ack: true });
     }
