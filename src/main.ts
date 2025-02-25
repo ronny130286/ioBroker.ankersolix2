@@ -16,6 +16,7 @@ class Ankersolix2 extends utils.Adapter {
     private refreshAnalysisTimeout: any;
     private loginData: LoginResultResponse | null;
     private api: any;
+    private apiConnection: boolean;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -28,6 +29,7 @@ class Ankersolix2 extends utils.Adapter {
         this.refreshTimeout = null;
         this.refreshAnalysisTimeout = null;
         this.api = null;
+        this.apiConnection = false;
         this.on('ready', this.onReady.bind(this));
         //this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
@@ -144,11 +146,13 @@ class Ankersolix2 extends utils.Adapter {
             }
 
             if (this.loginData) {
+                this.setApiCon(true);
                 await this.fetchAndPublish();
             }
         } catch (err: any) {
             this.log.error(`Failed fetching or publishing printer data, Error: ${err}`);
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+            this.setApiCon(false);
             refresh = this.config.POLL_INTERVAL * 5;
         } finally {
             if (this.refreshTimeout) {
@@ -170,11 +174,13 @@ class Ankersolix2 extends utils.Adapter {
                 this.loginData = await this.loginAPI();
             }
             if (this.loginData) {
+                this.setApiCon(true);
                 await this.fetchAndPublishAnalysis();
             }
         } catch (err: any) {
             this.log.error(`Failed fetching or publishing analysisdata: ${err}`);
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+            this.setApiCon(false);
         } finally {
             if (this.refreshAnalysisTimeout) {
                 this.log.debug(`refreshAnalysisTimeout clear: ${this.refreshAnalysisTimeout.id}`);
@@ -499,6 +505,16 @@ class Ankersolix2 extends utils.Adapter {
 
     name2id(pName: string): string {
         return (pName || '').replace(this.FORBIDDEN_CHARS, '_');
+    }
+
+    /**
+     * Set api connection status
+     *
+     * @param status
+     */
+    async setApiCon(status: boolean) {
+        this.apiConnection = status;
+        this.setStateChangedAsync('info.apiconnection', { val: status, ack: true });
     }
 
     /**

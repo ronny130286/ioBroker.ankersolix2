@@ -30,6 +30,7 @@ class Ankersolix2 extends utils.Adapter {
   refreshAnalysisTimeout;
   loginData;
   api;
+  apiConnection;
   constructor(options = {}) {
     super({
       ...options,
@@ -40,6 +41,7 @@ class Ankersolix2 extends utils.Adapter {
     this.refreshTimeout = null;
     this.refreshAnalysisTimeout = null;
     this.api = null;
+    this.apiConnection = false;
     this.on("ready", this.onReady.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
@@ -138,11 +140,13 @@ class Ankersolix2 extends utils.Adapter {
         this.loginData = await this.loginAPI();
       }
       if (this.loginData) {
+        this.setApiCon(true);
         await this.fetchAndPublish();
       }
     } catch (err) {
       this.log.error(`Failed fetching or publishing printer data, Error: ${err}`);
       this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+      this.setApiCon(false);
       refresh = this.config.POLL_INTERVAL * 5;
     } finally {
       if (this.refreshTimeout) {
@@ -163,11 +167,13 @@ class Ankersolix2 extends utils.Adapter {
         this.loginData = await this.loginAPI();
       }
       if (this.loginData) {
+        this.setApiCon(true);
         await this.fetchAndPublishAnalysis();
       }
     } catch (err) {
       this.log.error(`Failed fetching or publishing analysisdata: ${err}`);
       this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+      this.setApiCon(false);
     } finally {
       if (this.refreshAnalysisTimeout) {
         this.log.debug(`refreshAnalysisTimeout clear: ${this.refreshAnalysisTimeout.id}`);
@@ -432,6 +438,15 @@ class Ankersolix2 extends utils.Adapter {
   }
   name2id(pName) {
     return (pName || "").replace(this.FORBIDDEN_CHARS, "_");
+  }
+  /**
+   * Set api connection status
+   *
+   * @param status
+   */
+  async setApiCon(status) {
+    this.apiConnection = status;
+    this.setStateChangedAsync("info.apiconnection", { val: status, ack: true });
   }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances!

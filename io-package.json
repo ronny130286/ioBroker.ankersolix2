@@ -142,7 +142,33 @@
     },
     "native": {},
     "objects": [],
-    "instanceObjects": [],
+    "instanceObjects": [
+        {
+            "_id": "info.apiconnection",
+            "type": "state",
+            "common": {
+                "name": {
+                    "en": "api connected",
+                    "de": "API verbunden",
+                    "ru": "API подключен",
+                    "pt": "api conectado",
+                    "nl": "api verbonden",
+                    "fr": "API connectée",
+                    "it": "api connessa",
+                    "es": "API conectada",
+                    "pl": "API połączone",
+                    "uk": "api підключено",
+                    "zh-cn": "API 已连接"
+                },
+                "type": "boolean",
+                "role": "indicator.connected",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ],
     "encryptedNative": ["password"],
     "protectedNative": ["password"]
 }
