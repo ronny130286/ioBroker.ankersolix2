@@ -208,7 +208,9 @@ class Ankersolix2 extends utils.Adapter {
             const jsonparse = JSON.parse(message);
 
             this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
-            this.CreateOrUpdate(
+            this.CreateOrUpdate(`${site.site_id}.EXTRA`, 'EXTRA', 'folder');
+
+            await this.CreateOrUpdate(
                 `${site.site_id}.EXTRA.RAW_JSON`,
                 'RAW_JSON',
                 'state',
@@ -217,7 +219,7 @@ class Ankersolix2 extends utils.Adapter {
                 false,
                 'undefined',
             );
-            await this.setState(`${site.site_id}.EXTRA.RAW_JSON`, { val: message, ack: true });
+            this.setState(`${site.site_id}.EXTRA.RAW_JSON`, { val: message, ack: true });
 
             Object.entries(jsonparse).forEach(entries => {
                 const [id, value] = entries;
@@ -229,6 +231,8 @@ class Ankersolix2 extends utils.Adapter {
                 if (type === 'object') {
                     this.isObject(key, value);
                 } else if (type === 'array') {
+                    const name = key.split('.').pop();
+                    this.CreateOrUpdate(key, name, 'folder');
                     const array = JSON.parse(JSON.stringify(value));
                     let i = 0;
                     array.forEach((elem: any, item: any) => {
@@ -262,6 +266,8 @@ class Ankersolix2 extends utils.Adapter {
         for (const site of sites) {
             const ranges = ['day', 'week'];
 
+            this.CreateOrUpdate(`${site.site_id}.energyanalysis`, 'energyanalysis', 'folder');
+
             for (const range of ranges) {
                 this.CreateOrUpdate(
                     `${site.site_id}.EXTRA.ENERGY_${range.toUpperCase()}`,
@@ -290,6 +296,9 @@ class Ankersolix2 extends utils.Adapter {
                 } else {
                     energyInfo = await loggedInApi.energyAnalysis(site.site_id, '', 'week', new Date(), new Date());
                 }
+
+                this.CreateOrUpdate(`${site.site_id}.energyanalysis.${range}`, `${range}`, 'folder');
+
                 const energy_message = JSON.stringify(energyInfo.data);
                 await this.setState(`${site.site_id}.EXTRA.ENERGY_${range.toUpperCase()}`, {
                     val: energy_message,
@@ -301,11 +310,13 @@ class Ankersolix2 extends utils.Adapter {
 
                     const type = this.whatIsIt(value);
 
-                    const key = `${site.site_id}.eneryanalysis.${range}.${id}`;
+                    const key = `${site.site_id}.energyanalysis.${range}.${id}`;
 
                     if (type === 'object') {
                         this.isObject(key, value);
                     } else if (type === 'array') {
+                        const name = key.split('.').pop();
+                        this.CreateOrUpdate(key, name, 'folder');
                         const array = JSON.parse(JSON.stringify(value));
                         let i = 0;
                         array.forEach((elem: any, item: any) => {
