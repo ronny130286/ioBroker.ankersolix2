@@ -154,6 +154,12 @@ class Ankersolix2 extends utils.Adapter {
             this.log.debug(`Error Object: ${JSON.stringify(err)}`);
             this.setApiCon(false);
             refresh = this.config.POLL_INTERVAL * 5;
+            if (err.status == 401) {
+                if (fs.existsSync(this.storeData)) {
+                    fs.unlinkSync(this.storeData);
+                }
+                this.terminate('Credentials are wrong, please check and restart', err);
+            }
         } finally {
             if (this.refreshTimeout) {
                 this.log.debug(`refreshTimeout clear: ${this.refreshTimeout.id}`);
@@ -212,7 +218,19 @@ class Ankersolix2 extends utils.Adapter {
 
             const message = JSON.stringify(scenInfo.data);
             const jsonparse = JSON.parse(message);
+            /*
+            //DEGUB
 
+            await pfs.writeFile(
+                `${utils.getAbsoluteInstanceDataDir(this)}/debug.json`,
+                JSON.stringify(scenInfo.data, null, 2),
+                'utf8',
+            );
+            
+            const message = await pfs.readFile(`${utils.getAbsoluteInstanceDataDir(this)}/debug.json`, 'utf8');
+            
+            const jsonparse = JSON.parse(message);
+            */
             this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
             this.CreateOrUpdate(`${site.site_id}.EXTRA`, 'EXTRA', 'folder');
 
@@ -234,21 +252,10 @@ class Ankersolix2 extends utils.Adapter {
 
                 const key = `${site.site_id}.${id}`;
 
-                if (type === 'object') {
+                if (type === 'array') {
+                    this.isArray(key, value);
+                } else if (type === 'object') {
                     this.isObject(key, value);
-                } else if (type === 'array') {
-                    const name = key.split('.').pop();
-                    this.CreateOrUpdate(key, name, 'folder');
-                    const array = JSON.parse(JSON.stringify(value));
-                    let i = 0;
-                    array.forEach((elem: any, item: any) => {
-                        if (this.whatIsIt(array[item]) === 'object') {
-                            this.isObject(`${key}.${i}`, array[item]);
-                        } else if (this.whatIsIt(array[item]) === 'string') {
-                            this.isString(`${key}.${i}`, array[item]);
-                        }
-                        i++;
-                    });
                 } else {
                     this.isString(key, value);
                 }
@@ -318,21 +325,10 @@ class Ankersolix2 extends utils.Adapter {
 
                     const key = `${site.site_id}.energyanalysis.${range}.${id}`;
 
-                    if (type === 'object') {
+                    if (type === 'array') {
+                        this.isArray(key, value);
+                    } else if (type === 'object') {
                         this.isObject(key, value);
-                    } else if (type === 'array') {
-                        const name = key.split('.').pop();
-                        this.CreateOrUpdate(key, name, 'folder');
-                        const array = JSON.parse(JSON.stringify(value));
-                        let i = 0;
-                        array.forEach((elem: any, item: any) => {
-                            if (this.whatIsIt(array[item]) === 'object') {
-                                this.isObject(`${key}.${i}`, array[item]);
-                            } else if (this.whatIsIt(array[item]) === 'string') {
-                                this.isString(`${key}.${i}`, array[item]);
-                            }
-                            i++;
-                        });
                     } else {
                         this.isString(key, value);
                     }
@@ -367,25 +363,61 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     isArray(key: string, value: any): void {
-        const array = JSON.parse(JSON.stringify(value));
-        array.forEach(async (elem: any, item: any) => {
-            const type = this.whatIsIt(array[item]);
+        const name = key.split('.').pop();
+        this.CreateOrUpdate(`${key}`, name, 'folder');
 
-            if (type === 'object') {
-                this.isObject(key, array[item]);
-            } else if (type === 'string') {
-                this.isString(key, array[item]);
-            }
-        });
+        const array = JSON.parse(JSON.stringify(value));
+        let i: any = '0';
+
+        //for statistics
+        if (key.includes('statistics')) {
+            Object.entries(value).forEach(subentries => {
+                const [objkey, objvalue] = subentries;
+                const json = JSON.parse(JSON.stringify(objvalue));
+                let role = 'value';
+                let idname = objkey;
+
+                if (json.type === '1') {
+                    role = 'value.energy';
+                    idname = 'total_energy';
+                } else if (json.type === '2') {
+                    role = 'value';
+                    idname = 'total_co2_savings';
+                } else if (json.type === '3') {
+                    role = 'value';
+                    idname = 'total_money_savings';
+                }
+
+                //this.log.debug(`array stat:${key}.${idname}, ${json.total}, ${json.unit}, ${role}`);
+
+                this.isString(`${key}.${idname}`, json.total, json.unit, role);
+            });
+        } else {
+            array.forEach((elem: any, item: any) => {
+                if ('device_pn' in array[item]) {
+                    i = array[item].device_pn;
+                }
+                if (this.whatIsIt(array[item]) === 'object') {
+                    this.isObject(`${key}.${i}`, array[item]);
+                } else if (this.whatIsIt(array[item]) === 'string') {
+                    this.isString(`${key}.${i}`, array[item]);
+                }
+
+                i++;
+            });
+        }
     }
 
     isObject(key: string, value: any): void {
         const name = key.split('.').pop();
-
         this.CreateOrUpdate(key, name, 'folder');
+
+        //this.log.debug(`isObject: ${name}`);
+
         Object.entries(value).forEach(subentries => {
             const [objkey, objvalue] = subentries;
             const type = this.whatIsIt(objvalue);
+
             if (type === 'array') {
                 this.isArray(`${key}.${objkey}`, objvalue);
             } else if (type === 'object') {
@@ -396,10 +428,12 @@ class Ankersolix2 extends utils.Adapter {
         });
     }
 
-    async isString(key: string, value: any): Promise<void> {
+    async isString(key: string, value: any, unit?: string, role: string = 'value'): Promise<void> {
+        //this.log.debug(`isString: ${key}`);
+
         let parmType: ioBroker.CommonType = 'string';
-        let parmRole = 'value';
-        let parmUnit = undefined;
+        let parmRole = role;
+        let parmUnit = unit;
 
         const valType = this.whatIsIt(value);
 

@@ -148,6 +148,12 @@ class Ankersolix2 extends utils.Adapter {
       this.log.debug(`Error Object: ${JSON.stringify(err)}`);
       this.setApiCon(false);
       refresh = this.config.POLL_INTERVAL * 5;
+      if (err.status == 401) {
+        if (import_fs.default.existsSync(this.storeData)) {
+          import_fs.default.unlinkSync(this.storeData);
+        }
+        this.terminate("Credentials are wrong, please check and restart", err);
+      }
     } finally {
       if (this.refreshTimeout) {
         this.log.debug(`refreshTimeout clear: ${this.refreshTimeout.id}`);
@@ -215,21 +221,10 @@ class Ankersolix2 extends utils.Adapter {
         const [id, value] = entries;
         const type = this.whatIsIt(value);
         const key = `${site.site_id}.${id}`;
-        if (type === "object") {
+        if (type === "array") {
+          this.isArray(key, value);
+        } else if (type === "object") {
           this.isObject(key, value);
-        } else if (type === "array") {
-          const name = key.split(".").pop();
-          this.CreateOrUpdate(key, name, "folder");
-          const array = JSON.parse(JSON.stringify(value));
-          let i = 0;
-          array.forEach((elem, item) => {
-            if (this.whatIsIt(array[item]) === "object") {
-              this.isObject(`${key}.${i}`, array[item]);
-            } else if (this.whatIsIt(array[item]) === "string") {
-              this.isString(`${key}.${i}`, array[item]);
-            }
-            i++;
-          });
         } else {
           this.isString(key, value);
         }
@@ -284,21 +279,10 @@ class Ankersolix2 extends utils.Adapter {
           const [id, value] = entries;
           const type = this.whatIsIt(value);
           const key = `${site.site_id}.energyanalysis.${range}.${id}`;
-          if (type === "object") {
+          if (type === "array") {
+            this.isArray(key, value);
+          } else if (type === "object") {
             this.isObject(key, value);
-          } else if (type === "array") {
-            const name = key.split(".").pop();
-            this.CreateOrUpdate(key, name, "folder");
-            const array = JSON.parse(JSON.stringify(value));
-            let i = 0;
-            array.forEach((elem, item) => {
-              if (this.whatIsIt(array[item]) === "object") {
-                this.isObject(`${key}.${i}`, array[item]);
-              } else if (this.whatIsIt(array[item]) === "string") {
-                this.isString(`${key}.${i}`, array[item]);
-              }
-              i++;
-            });
           } else {
             this.isString(key, value);
           }
@@ -331,15 +315,41 @@ class Ankersolix2 extends utils.Adapter {
     }
   }
   isArray(key, value) {
+    const name = key.split(".").pop();
+    this.CreateOrUpdate(`${key}`, name, "folder");
     const array = JSON.parse(JSON.stringify(value));
-    array.forEach(async (elem, item) => {
-      const type = this.whatIsIt(array[item]);
-      if (type === "object") {
-        this.isObject(key, array[item]);
-      } else if (type === "string") {
-        this.isString(key, array[item]);
-      }
-    });
+    let i = "0";
+    if (key.includes("statistics")) {
+      Object.entries(value).forEach((subentries) => {
+        const [objkey, objvalue] = subentries;
+        const json = JSON.parse(JSON.stringify(objvalue));
+        let role = "value";
+        let idname = objkey;
+        if (json.type === "1") {
+          role = "value.energy";
+          idname = "total_energy";
+        } else if (json.type === "2") {
+          role = "value";
+          idname = "total_co2_savings";
+        } else if (json.type === "3") {
+          role = "value";
+          idname = "total_money_savings";
+        }
+        this.isString(`${key}.${idname}`, json.total, json.unit, role);
+      });
+    } else {
+      array.forEach((elem, item) => {
+        if ("device_pn" in array[item]) {
+          i = array[item].device_pn;
+        }
+        if (this.whatIsIt(array[item]) === "object") {
+          this.isObject(`${key}.${i}`, array[item]);
+        } else if (this.whatIsIt(array[item]) === "string") {
+          this.isString(`${key}.${i}`, array[item]);
+        }
+        i++;
+      });
+    }
   }
   isObject(key, value) {
     const name = key.split(".").pop();
@@ -356,10 +366,10 @@ class Ankersolix2 extends utils.Adapter {
       }
     });
   }
-  async isString(key, value) {
+  async isString(key, value, unit, role = "value") {
     let parmType = "string";
-    let parmRole = "value";
-    let parmUnit = void 0;
+    let parmRole = role;
+    let parmUnit = unit;
     const valType = this.whatIsIt(value);
     if (valType === "boolean") {
       parmType = "boolean";
