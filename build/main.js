@@ -318,7 +318,6 @@ class Ankersolix2 extends utils.Adapter {
     const name = key.split(".").pop();
     this.CreateOrUpdate(`${key}`, name, "folder");
     const array = JSON.parse(JSON.stringify(value));
-    let i = "0";
     if (key.includes("statistics")) {
       Object.entries(value).forEach((subentries) => {
         const [objkey, objvalue] = subentries;
@@ -338,9 +337,10 @@ class Ankersolix2 extends utils.Adapter {
         this.isString(`${key}.${idname}`, json.total, json.unit, role);
       });
     } else {
+      let i = "0";
       array.forEach((elem, item) => {
-        if ("device_pn" in array[item]) {
-          i = array[item].device_pn;
+        if ("device_sn" in array[item]) {
+          i = array[item].device_sn;
         }
         if (this.whatIsIt(array[item]) === "object") {
           this.isObject(`${key}.${i}`, array[item]);

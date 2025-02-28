@@ -136,11 +136,16 @@
         ],
         "globalDependencies": [
             {
-                "admin": ">=6.17.14"
+                "admin": ">=7.4.10"
             }
         ]
     },
-    "native": {},
+    "native": {
+        "Password": "",
+        "Username": ""
+    },
+    "encryptedNative": ["Password"],
+    "protectedNative": ["Password"],
     "objects": [],
     "instanceObjects": [
         {
@@ -168,7 +173,5 @@
             },
             "native": {}
         }
-    ],
-    "encryptedNative": ["password"],
-    "protectedNative": ["password"]
+    ]
 }
