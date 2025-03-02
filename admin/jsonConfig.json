@@ -29,31 +29,114 @@
                     "xl": 6,
                     "label": "Solix Password"
                 },
+                "API_Server": {
+                    "type": "select",
+                    "label": "API Server",
+                    "options": [
+                        {
+                            "label": "https://ankerpower-api-eu.anker.com",
+                            "value": "https://ankerpower-api-eu.anker.com"
+                        },
+                        {
+                            "label": "https://ankerpower-api.anker.com",
+                            "value": "https://ankerpower-api.anker.com"
+                        }
+                    ],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "COUNTRY": {
                     "type": "select",
                     "label": "Country Code",
                     "options": [
-                        {
-                            "label": "DE",
-                            "value": "DE"
-                        },
-                        {
-                            "label": "EN",
-                            "value": "EN"
-                        },
-                        {
-                            "label": "ES",
-                            "value": "ES"
-                        },
-                        {
-                            "label": "FR",
-                            "value": "FR"
-                        },
-                        {
-                            "label": "AT",
-                            "value": "AT"
-                        }
+                        { "label": "DE", "value": "DE" },
+                        { "label": "BE", "value": "BE" },
+                        { "label": "EL", "value": "EL" },
+                        { "label": "LT", "value": "LT" },
+                        { "label": "PT", "value": "PT" },
+                        { "label": "BG", "value": "BG" },
+                        { "label": "ES", "value": "ES" },
+                        { "label": "LU", "value": "LU" },
+                        { "label": "RO", "value": "RO" },
+                        { "label": "CZ", "value": "CZ" },
+                        { "label": "FR", "value": "FR" },
+                        { "label": "HU", "value": "HU" },
+                        { "label": "SI", "value": "SI" },
+                        { "label": "DK", "value": "DK" },
+                        { "label": "HR", "value": "HR" },
+                        { "label": "MT", "value": "MT" },
+                        { "label": "SK", "value": "SK" },
+                        { "label": "IT", "value": "IT" },
+                        { "label": "NL", "value": "NL" },
+                        { "label": "FI", "value": "FI" },
+                        { "label": "EE", "value": "EE" },
+                        { "label": "CY", "value": "CY" },
+                        { "label": "AT", "value": "AT" },
+                        { "label": "SE", "value": "SE" },
+                        { "label": "IE", "value": "IE" },
+                        { "label": "LV", "value": "LV" },
+                        { "label": "PL", "value": "PL" },
+                        { "label": "UK", "value": "UK" },
+                        { "label": "IS", "value": "IS" },
+                        { "label": "NO", "value": "NO" },
+                        { "label": "LI", "value": "LI" },
+                        { "label": "CH", "value": "CH" },
+                        { "label": "BA", "value": "BA" },
+                        { "label": "ME", "value": "ME" },
+                        { "label": "MD", "value": "MD" },
+                        { "label": "MK", "value": "MK" },
+                        { "label": "GE", "value": "GE" },
+                        { "label": "AL", "value": "AL" },
+                        { "label": "RS", "value": "RS" },
+                        { "label": "TR", "value": "TR" },
+                        { "label": "UA", "value": "UA" },
+                        { "label": "XK", "value": "XK" },
+                        { "label": "AM", "value": "AM" },
+                        { "label": "BY", "value": "BY" },
+                        { "label": "AZ", "value": "AZ" }
                     ],
+                    "hidden": "data.API_Server === 'https://ankerpower-api.anker.com'",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "COUNTRY2": {
+                    "type": "select",
+                    "label": "Country Code",
+                    "options": [
+                        { "label": "DZ", "value": "DZ" },
+                        { "label": "LB", "value": "LB" },
+                        { "label": " SY", "value": " SY" },
+                        { "label": " EG", "value": " EG" },
+                        { "label": " LY", "value": " LY" },
+                        { "label": " TN", "value": " TN" },
+                        { "label": " IL", "value": " IL" },
+                        { "label": " MA", "value": " MA" },
+                        { "label": " JO", "value": " JO" },
+                        { "label": " PS", "value": " PS" },
+                        { "label": " AR", "value": " AR" },
+                        { "label": " AU", "value": " AU" },
+                        { "label": " BR", "value": " BR" },
+                        { "label": " HK", "value": " HK" },
+                        { "label": " IN", "value": " IN" },
+                        { "label": " JP", "value": " JP" },
+                        { "label": " MX", "value": " MX" },
+                        { "label": " NG", "value": " NG" },
+                        { "label": " NZ", "value": " NZ" },
+                        { "label": " RU", "value": " RU" },
+                        { "label": " SG", "value": " SG" },
+                        { "label": " ZA", "value": " ZA" },
+                        { "label": " KR", "value": " KR" },
+                        { "label": " TW", "value": " TW" },
+                        { "label": " US", "value": " US" },
+                        { "label": " CA", "value": " CA" }
+                    ],
+                    "hidden": "data.API_Server === 'https://ankerpower-api-eu.anker.com'",
                     "xs": 12,
                     "sm": 12,
                     "md": 4,

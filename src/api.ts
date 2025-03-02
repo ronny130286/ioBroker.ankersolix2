@@ -5,6 +5,7 @@ import type { Logger } from './utils';
 export interface Options {
     username: string;
     password: string;
+    server: string;
     country: string;
     log?: Logger;
 }
@@ -338,10 +339,13 @@ export class SolixApi {
 
     private readonly log: Logger;
 
+    private readonly server: string;
+
     constructor(options: Options) {
         this.username = options.username;
         this.password = options.password;
         this.log = options.log ?? console;
+        this.server = options.server;
         this.country = options.country.toUpperCase();
         this.timezone = this.getTimezoneGMTString();
         this.ecdh.generateKeys();
@@ -370,7 +374,7 @@ export class SolixApi {
 
     private async axios(endpoint: string, data?: any, headers?: Record<string, string>): Promise<axios.AxiosResponse> {
         //this.log.debug(JSON.stringify(data));
-        const urlBuilder = new URL(endpoint, 'https://ankerpower-api-eu.anker.com');
+        const urlBuilder = new URL(endpoint, this.server);
         const url = urlBuilder.href;
 
         return axios({

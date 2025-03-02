@@ -47,11 +47,13 @@ class SolixApi {
   timezone;
   ecdh = (0, import_crypto.createECDH)("prime256v1");
   log;
+  server;
   constructor(options) {
     var _a;
     this.username = options.username;
     this.password = options.password;
     this.log = (_a = options.log) != null ? _a : console;
+    this.server = options.server;
     this.country = options.country.toUpperCase();
     this.timezone = this.getTimezoneGMTString();
     this.ecdh.generateKeys();
@@ -73,7 +75,7 @@ class SolixApi {
     return cipher.update(data, "utf8", "base64") + cipher.final("base64");
   }
   async axios(endpoint, data, headers) {
-    const urlBuilder = new URL(endpoint, "https://ankerpower-api-eu.anker.com");
+    const urlBuilder = new URL(endpoint, this.server);
     const url = urlBuilder.href;
     return (0, import_axios.default)({
       method: "POST",

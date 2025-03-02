@@ -67,6 +67,7 @@ class Ankersolix2 extends utils.Adapter {
             this.log.error(`Could not create storage directory (${utils.getAbsoluteInstanceDataDir(this)}): ${err}`);
             return;
         }
+
         this.loginData = await this.loginAPI();
 
         this.refreshDate();
@@ -74,10 +75,16 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     async loginAPI(): Promise<LoginResultResponse | null> {
+        const country =
+            this.config.API_Server === 'https://ankerpower-api-eu.anker.com'
+                ? this.config.COUNTRY
+                : this.config.COUNTRY2;
+
         this.api = new SolixApi({
             username: this.config.Username,
             password: this.config.Password,
-            country: this.config.COUNTRY,
+            server: this.config.API_Server,
+            country: country,
             log: this.log,
         });
 

@@ -76,10 +76,12 @@ class Ankersolix2 extends utils.Adapter {
   }
   async loginAPI() {
     var _a;
+    const country = this.config.API_Server === "https://ankerpower-api-eu.anker.com" ? this.config.COUNTRY : this.config.COUNTRY2;
     this.api = new import_api.SolixApi({
       username: this.config.Username,
       password: this.config.Password,
-      country: this.config.COUNTRY,
+      server: this.config.API_Server,
+      country,
       log: this.log
     });
     let login = await this.restoreLoginData();

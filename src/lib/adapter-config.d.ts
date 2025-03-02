@@ -6,7 +6,9 @@ declare global {
         interface AdapterConfig {
             Username: string;
             Password: string;
-            COUNTRY: 'DE' | 'EN' | 'FR' | 'ES';
+            API_Server: string;
+            COUNTRY: string;
+            COUNTRY2: string;
             POLL_INTERVAL: number;
         }
     }

@@ -142,7 +142,8 @@
     },
     "native": {
         "Password": "",
-        "Username": ""
+        "Username": "",
+        "API_Server": "https://ankerpower-api-eu.anker.com"
     },
     "encryptedNative": ["Password"],
     "protectedNative": ["Password"],
