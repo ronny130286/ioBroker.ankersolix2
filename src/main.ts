@@ -87,17 +87,20 @@ class Ankersolix2 extends utils.Adapter {
             country: country,
             log: this.log,
         });
-
         let login = await this.restoreLoginData();
         if (login) {
+            let newneed = false;
             //check if login token not expired
             if (!this.isLoginValid(login)) {
                 this.log.debug('loginAPI: token expired');
-                login = null;
+                newneed = true;
             }
             //check if username in stored file the same in config
-            if (login?.email != this.config.Username) {
+            if (login?.email !== this.config.Username) {
                 this.log.debug('loginAPI: username are different');
+                newneed = true;
+            }
+            if (newneed) {
                 login = null;
             }
         }
