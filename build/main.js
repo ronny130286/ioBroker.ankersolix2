@@ -43,6 +43,7 @@ class Ankersolix2 extends utils.Adapter {
     this.api = null;
     this.apiConnection = false;
     this.on("ready", this.onReady.bind(this));
+    this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
   /**
@@ -91,8 +92,6 @@ class Ankersolix2 extends utils.Adapter {
         this.log.debug("loginAPI: token expired");
         newneed = true;
       }
-      this.log.debug(`Login: ${JSON.stringify(login)}`);
-      this.log.debug(`LoginEmail: ${login == null ? void 0 : login.email} : ConfigUsername: ${this.config.Username}`);
       if ((login == null ? void 0 : login.email) !== this.config.Username) {
         this.log.debug("loginAPI: username are different");
         newneed = true;
@@ -213,7 +212,7 @@ class Ankersolix2 extends utils.Adapter {
       const scenInfo = await loggedInApi.scenInfo(site.site_id);
       const message = JSON.stringify(scenInfo.data);
       const jsonparse = JSON.parse(message);
-      this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, "device");
+      this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, "folder");
       this.CreateOrUpdate(`${site.site_id}.EXTRA`, "EXTRA", "folder");
       await this.CreateOrUpdate(
         `${site.site_id}.EXTRA.RAW_JSON`,
@@ -361,7 +360,11 @@ class Ankersolix2 extends utils.Adapter {
   }
   isObject(key, value) {
     const name = key.split(".").pop();
-    this.CreateOrUpdate(key, name, "folder");
+    if (value == null ? void 0 : value.device_sn) {
+      this.CreateOrUpdate(key, name, "device");
+    } else {
+      this.CreateOrUpdate(key, name, "folder");
+    }
     Object.entries(value).forEach((subentries) => {
       const [objkey, objvalue] = subentries;
       const type = this.whatIsIt(objvalue);
@@ -516,16 +519,16 @@ class Ankersolix2 extends utils.Adapter {
   //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
-  // private onMessage(obj: ioBroker.Message): void {
-  //     if (typeof obj === 'object' && obj.message) {
-  //         if (obj.command === 'send') {
-  //             // e.g. send email or pushover or whatever
-  //             this.log.info('send command');
-  //             // Send response in callback if required
-  //             if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-  //         }
-  //     }
-  // }
+  onMessage(obj) {
+    if (typeof obj === "object" && obj.message) {
+      if (obj.command === "deleteToken") {
+        this.log.info(`deleteToken - ${JSON.stringify(obj)}`);
+        if (obj.callback) {
+          this.sendTo(obj.from, obj.command, "Message received", obj.callback);
+        }
+      }
+    }
+  }
 }
 if (require.main !== module) {
   module.exports = (options) => new Ankersolix2(options);

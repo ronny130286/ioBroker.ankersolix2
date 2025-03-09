@@ -28,6 +28,10 @@ I don't have every [Anker hardware](https://www.ankersolix.com/) available for t
 | `Solarbank`  | - A17C0: Solarbank E1600 (Gen 1)<br>- A17C1: Solarbank 2 E1600 Pro<br>- A17C3: Solarbank 2 E1600 Plus<br>          |
 | `Smartmeter` | - A17X7: Anker 3 Phase Wifi Smart Meter<br>- SHEM3: Shelly 3EM Smart Meter<br>- SHEMP3: Shelly 3EM Pro Smart Meter |
 
+## Important Change
+
+If your updating from v1.x to 2.x, you have to reinsert your password again! If you dont do this, you will lock your account!!!
+
 ## Config
 
 1. Create a familie-account in anker app and add it to your main-account
@@ -47,6 +51,13 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ronny130286) update packages
+- (ronny130286) decrypt password in adminui
+- (ronny130286) add more language codes
+- (ronny130286) reorganized some DP
 
 ### 1.1.0 (2025-02-08)
 

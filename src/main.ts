@@ -33,7 +33,7 @@ class Ankersolix2 extends utils.Adapter {
         this.on('ready', this.onReady.bind(this));
         //this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
-        // this.on('message', this.onMessage.bind(this));
+        //this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
 
@@ -241,7 +241,7 @@ class Ankersolix2 extends utils.Adapter {
             
             const jsonparse = JSON.parse(message);
             */
-            this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'device');
+            this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'folder');
             this.CreateOrUpdate(`${site.site_id}.EXTRA`, 'EXTRA', 'folder');
 
             await this.CreateOrUpdate(
@@ -420,8 +420,12 @@ class Ankersolix2 extends utils.Adapter {
 
     isObject(key: string, value: any): void {
         const name = key.split('.').pop();
-        this.CreateOrUpdate(key, name, 'folder');
 
+        if (value?.device_sn) {
+            this.CreateOrUpdate(key, name, 'device');
+        } else {
+            this.CreateOrUpdate(key, name, 'folder');
+        }
         //this.log.debug(`isObject: ${name}`);
 
         Object.entries(value).forEach(subentries => {
@@ -621,16 +625,18 @@ class Ankersolix2 extends utils.Adapter {
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
     // private onMessage(obj: ioBroker.Message): void {
-    //     if (typeof obj === 'object' && obj.message) {
-    //         if (obj.command === 'send') {
-    //             // e.g. send email or pushover or whatever
-    //             this.log.info('send command');
-
-    //             // Send response in callback if required
-    //             if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-    //         }
-    //     }
-    // }
+    //    if (typeof obj === 'object' && obj.message) {
+    //        if (obj.command === 'deleteToken') {
+    //            //             // e.g. send email or pushover or whatever
+    //            this.log.info(`deleteToken - ${JSON.stringify(obj)}`);
+    //
+    //            //             // Send response in callback if required
+    //            if (obj.callback) {
+    //                this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
+    //            }
+    //        }
+    //    }
+    //}
 }
 
 if (require.main !== module) {
