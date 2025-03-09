@@ -51,8 +51,7 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 2.0.0 (2025-03-09)
 
 - (ronny130286) update packages
 - (ronny130286) decrypt password in adminui

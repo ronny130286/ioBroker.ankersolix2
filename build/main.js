@@ -43,7 +43,6 @@ class Ankersolix2 extends utils.Adapter {
     this.api = null;
     this.apiConnection = false;
     this.on("ready", this.onReady.bind(this));
-    this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
   /**
@@ -519,16 +518,19 @@ class Ankersolix2 extends utils.Adapter {
   //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
-  onMessage(obj) {
-    if (typeof obj === "object" && obj.message) {
-      if (obj.command === "deleteToken") {
-        this.log.info(`deleteToken - ${JSON.stringify(obj)}`);
-        if (obj.callback) {
-          this.sendTo(obj.from, obj.command, "Message received", obj.callback);
-        }
-      }
-    }
-  }
+  // private onMessage(obj: ioBroker.Message): void {
+  //    if (typeof obj === 'object' && obj.message) {
+  //        if (obj.command === 'deleteToken') {
+  //            //             // e.g. send email or pushover or whatever
+  //            this.log.info(`deleteToken - ${JSON.stringify(obj)}`);
+  //
+  //            //             // Send response in callback if required
+  //            if (obj.callback) {
+  //                this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
+  //            }
+  //        }
+  //    }
+  //}
 }
 if (require.main !== module) {
   module.exports = (options) => new Ankersolix2(options);
