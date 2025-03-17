@@ -15,8 +15,8 @@
                     "md": 6,
                     "lg": 6,
                     "xl": 6,
-                    "label": "Solix Username",
-                    "help": "Please use a Family-Acoount how can only watch, dont use your main account."
+                    "label": "Solix-Username",
+                    "help": "Please use a Family-Account how can only watch, dont use your main account."
                 },
                 "Password": {
                     "type": "password",
@@ -27,7 +27,7 @@
                     "md": 6,
                     "lg": 6,
                     "xl": 6,
-                    "label": "Solix Password"
+                    "label": "Solix-Password"
                 },
                 "API_Server": {
                     "type": "select",
@@ -154,6 +154,130 @@
                     "min": 10,
                     "max": 3600,
                     "label": "Polltime in secounds"
+                },
+                "AnalysisHdr": {
+                    "type": "header",
+                    "text": "Analysis Option",
+                    "size": 2
+                },
+                "AnalysisTxt1": {
+                    "type": "staticText",
+                    "text": "This allows you to retrieve various statistical data.",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "AnalysisTxt2": {
+                    "type": "staticText",
+                    "text": "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "AnalysisGrid": {
+                    "type": "checkbox",
+                    "label": "Getting grid info data",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "AnalysisGridDay": {
+                    "type": "checkbox",
+                    "label": "day",
+                    "default": false,
+                    "disabled": "!data.AnalysisGrid",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 2,
+                    "xl": 2
+                },
+                "AnalysisGridWeek": {
+                    "type": "checkbox",
+                    "label": "week",
+                    "default": false,
+                    "disabled": "!data.AnalysisGrid",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 2,
+                    "xl": 2
+                },
+                "AnalysisSolarproduction": {
+                    "type": "checkbox",
+                    "label": "Getting solar production data",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "AnalysisSolarproductionDay": {
+                    "type": "checkbox",
+                    "label": "day",
+                    "default": false,
+                    "disabled": "!data.AnalysisSolarproduction",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 2,
+                    "xl": 2
+                },
+                "AnalysisSolarproductionWeek": {
+                    "type": "checkbox",
+                    "label": "week",
+                    "default": false,
+                    "disabled": "!data.AnalysisSolarproduction",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 2,
+                    "xl": 2
+                },
+                "AnalysisHomeUsage": {
+                    "type": "checkbox",
+                    "label": "Getting home usage data",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "AnalysisHomeUsageDay": {
+                    "type": "checkbox",
+                    "label": "day",
+                    "default": false,
+                    "disabled": "!data.AnalysisHomeUsage",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 2,
+                    "xl": 2
+                },
+                "AnalysisHomeUsageWeek": {
+                    "type": "checkbox",
+                    "label": "week",
+                    "default": false,
+                    "disabled": "!data.AnalysisHomeUsage",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 2,
+                    "xl": 2
                 }
             }
         }

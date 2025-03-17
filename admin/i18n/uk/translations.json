@@ -1,13 +1,16 @@
 {
-    "ankersolix2 adapter settings": "Налаштування адаптера для ankersolix2",
-    "Solix Username": "Ім'я користувача Solix",
-    "Solix Password": "Пароль Solix",
+    "ankersolix2 adapter settings": "Налаштування адаптера для Ankersolix2",
+    "Solix Username": "Solix-username",
+    "Solix Password": "Solix-Password",
     "Country Code": "Код країни",
-    "DE": "DE",
-    "EN": "EN",
-    "ES": "ES",
-    "FR": "FR",
-    "AT": "AT",
     "Polltime in secounds": "Час опитування в секундах",
-    "Please use a Family-Acoount how can only watch, dont use your main account.": "Будь ласка, використовуйте сімейний обліковий запис, щоб лише дивитися, не використовуйте свій основний обліковий запис."
+    "Please use a Family-Account how can only watch, dont use your main account.": "Будь ласка, скористайтеся сімейним рахунком, як можна лише дивитись, не використовуйте свій основний рахунок.",
+    "Analysis Option": "Варіант аналізу",
+    "Getting grid info data": "Отримання даних про мережу",
+    "Getting solar production data": "Отримання даних про виробництво сонячної енергії",
+    "Getting home usage data": "Отримання даних про використання додому",
+    "This allows you to retrieve various statistical data.": "Це дозволяє отримати різні статистичні дані.",
+    "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.": "Рекомендується деактивувати непотрібні дані. Примітка. Не буде видалено точки даних, це потрібно зробити вручну.",
+    "day": "день",
+    "week": "тиждень"
 }

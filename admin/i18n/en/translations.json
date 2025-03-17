@@ -1,13 +1,16 @@
 {
     "ankersolix2 adapter settings": "Adapter settings for ankersolix2",
-    "Solix Username": "Solix Username",
-    "Solix Password": "Solix Password",
+    "Solix Username": "Solix-Username",
+    "Solix Password": "Solix-Password",
     "Country Code": "Country Code",
-    "DE": "DE",
-    "EN": "EN",
-    "ES": "ES",
-    "FR": "FR",
-    "AT": "AT",
     "Polltime in secounds": "Polltime in secounds",
-    "Please use a Family-Acoount how can only watch, dont use your main account.": "Please use a Family-Acoount how can only watch, dont use your main account."
+    "Please use a Family-Account how can only watch, dont use your main account.": "Please use a Family-Account how can only watch, dont use your main account.",
+    "Analysis Option": "Analysis Option",
+    "Getting grid info data": "Getting grid info data",
+    "Getting solar production data": "Getting solar production data",
+    "Getting home usage data": "Getting home usage data",
+    "This allows you to retrieve various statistical data.": "This allows you to retrieve various statistical data.",
+    "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.": "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.",
+    "day": "day",
+    "week": "week"
 }

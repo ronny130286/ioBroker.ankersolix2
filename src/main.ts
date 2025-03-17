@@ -17,6 +17,7 @@ class Ankersolix2 extends utils.Adapter {
     private loginData: LoginResultResponse | null;
     private api: any;
     private apiConnection: boolean;
+    private sleep: any;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -24,10 +25,11 @@ class Ankersolix2 extends utils.Adapter {
             name: 'ankersolix2',
         });
 
-        this.storeData = `${utils.getAbsoluteInstanceDataDir(this)}/session.data`;
+        this.storeData = `${utils.getAbsoluteInstanceDataDir(this)}/session.json`;
         this.loginData = null;
         this.refreshTimeout = null;
         this.refreshAnalysisTimeout = null;
+        this.sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         this.api = null;
         this.apiConnection = false;
         this.on('ready', this.onReady.bind(this));
@@ -71,7 +73,10 @@ class Ankersolix2 extends utils.Adapter {
         this.loginData = await this.loginAPI();
 
         this.refreshDate();
-        this.refreshAnalysis();
+
+        if (this.config.AnalysisGrid || this.config.AnalysisHomeUsage || this.config.AnalysisSolarproduction) {
+            this.refreshAnalysis();
+        }
     }
 
     async loginAPI(): Promise<LoginResultResponse | null> {
@@ -227,7 +232,6 @@ class Ankersolix2 extends utils.Adapter {
             const scenInfo = await loggedInApi.scenInfo(site.site_id);
 
             const message = JSON.stringify(scenInfo.data);
-            const jsonparse = JSON.parse(message);
             /*
             //DEGUB
 
@@ -238,9 +242,9 @@ class Ankersolix2 extends utils.Adapter {
             );
             
             const message = await pfs.readFile(`${utils.getAbsoluteInstanceDataDir(this)}/debug.json`, 'utf8');
-            
-            const jsonparse = JSON.parse(message);
             */
+            const jsonparse = JSON.parse(message);
+
             this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'folder');
             this.CreateOrUpdate(`${site.site_id}.EXTRA`, 'EXTRA', 'folder');
 
@@ -254,22 +258,7 @@ class Ankersolix2 extends utils.Adapter {
                 'undefined',
             );
             this.setState(`${site.site_id}.EXTRA.RAW_JSON`, { val: message, ack: true });
-
-            Object.entries(jsonparse).forEach(entries => {
-                const [id, value] = entries;
-
-                const type = this.whatIsIt(value);
-
-                const key = `${site.site_id}.${id}`;
-
-                if (type === 'array') {
-                    this.isArray(key, value);
-                } else if (type === 'object') {
-                    this.isObject(key, value);
-                } else {
-                    this.isString(key, value);
-                }
-            });
+            this.parseObjects(`${site.site_id}`, JSON.parse(message));
         }
         this.log.debug('Published Data.');
     }
@@ -279,6 +268,7 @@ class Ankersolix2 extends utils.Adapter {
         const siteHomepage = await loggedInApi.siteHomepage();
 
         let sites;
+        let scenInfo;
         if (siteHomepage.data.site_list.length === 0) {
             // Fallback for Shared Accounts
             sites = (await loggedInApi.getSiteList()).data.site_list;
@@ -289,60 +279,131 @@ class Ankersolix2 extends utils.Adapter {
         for (const site of sites) {
             const ranges = ['day', 'week'];
 
+            scenInfo = !scenInfo ? await loggedInApi.scenInfo(site.site_id) : scenInfo;
+
+            const scenInfoData = JSON.parse(JSON.stringify(scenInfo.data));
+
             this.CreateOrUpdate(`${site.site_id}.energyanalysis`, 'energyanalysis', 'folder');
 
             for (const range of ranges) {
-                this.CreateOrUpdate(
-                    `${site.site_id}.EXTRA.ENERGY_${range.toUpperCase()}`,
-                    'ENERGY_JSON',
-                    'state',
-                    'string',
-                    'value',
-                    false,
-                    'undefined',
-                );
-
-                let energyInfo;
                 const date = new Date();
-                if (range == 'year') {
-                    const startDate = new Date(new Date().getFullYear(), 0, 1);
-                    const endDate = new Date(new Date().getFullYear(), 11, 31);
+                const start =
+                    range === 'week'
+                        ? new Date(date.setDate(date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1)))
+                        : new Date();
+                const ende = range === 'week' ? new Date(date.setDate(start.getDate() + 6)) : new Date();
+                //Solarpoduction Info
+                if (
+                    this.config.AnalysisSolarproduction &&
+                    ((range === 'day' && this.config.AnalysisSolarproductionDay) ||
+                        (range === 'week' && this.config.AnalysisSolarproductionWeek))
+                ) {
+                    try {
+                        const energyInfo = await loggedInApi.energyAnalysis(
+                            site.site_id,
+                            '',
+                            'week',
+                            start,
+                            ende,
+                            'solar_production',
+                        );
 
-                    energyInfo = await loggedInApi.energyAnalysis(site.site_id, '', range, startDate, endDate);
-                } else if (range == 'week') {
-                    const start = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
-                    const end = start + 6;
+                        this.CreateOrUpdate(
+                            `${site.site_id}.energyanalysis.solar_production`,
+                            `solar_production`,
+                            'folder',
+                        );
+                        this.CreateOrUpdate(
+                            `${site.site_id}.energyanalysis.solar_production.${range}`,
+                            `${range}`,
+                            'folder',
+                        );
 
-                    const startDate = new Date(date.setDate(start));
-                    const endDate = new Date(date.setDate(end));
-                    energyInfo = await loggedInApi.energyAnalysis(site.site_id, '', range, startDate, endDate);
-                } else {
-                    energyInfo = await loggedInApi.energyAnalysis(site.site_id, '', 'week', new Date(), new Date());
+                        const energy_message = JSON.stringify(energyInfo.data);
+                        this.parseObjects(
+                            `${site.site_id}.energyanalysis.solar_production.${range}`,
+                            JSON.parse(energy_message),
+                        );
+
+                        await this.sleep(5000);
+                    } catch (err: any) {
+                        this.log.debug(`Published Analysis SolarProd ${range} Error: ${err.code}`);
+                    }
+                }
+                //GRID Infos
+                if (
+                    this.config.AnalysisGrid &&
+                    ((range === 'day' && this.config.AnalysisGridDay) ||
+                        (range === 'week' && this.config.AnalysisGridWeek))
+                ) {
+                    try {
+                        const gridInfo = await loggedInApi.energyAnalysis(
+                            site.site_id,
+                            '',
+                            'week',
+                            start,
+                            ende,
+                            'grid',
+                        );
+                        this.CreateOrUpdate(`${site.site_id}.energyanalysis.grid`, `grid`, 'folder');
+                        this.CreateOrUpdate(`${site.site_id}.energyanalysis.grid.${range}`, `${range}`, 'folder');
+                        this.parseObjects(
+                            `${site.site_id}.energyanalysis.grid.${range}`,
+                            JSON.parse(JSON.stringify(gridInfo.data)),
+                        );
+
+                        await this.sleep(5000);
+                    } catch (err: any) {
+                        this.log.debug(`Published Analysis Grid ${range} Error: ${err.code}`);
+                    }
                 }
 
-                this.CreateOrUpdate(`${site.site_id}.energyanalysis.${range}`, `${range}`, 'folder');
+                //HOME_USAGE Infos
+                if (
+                    scenInfoData.grid_info.grid_list.length > 0 &&
+                    this.config.AnalysisHomeUsage &&
+                    ((range === 'day' && this.config.AnalysisHomeUsageDay) ||
+                        (range === 'week' && this.config.AnalysisHomeUsageWeek))
+                ) {
+                    try {
+                        for (const i in scenInfoData.grid_info.grid_list) {
+                            if ('device_sn' in scenInfoData.grid_info.grid_list[i]) {
+                                const device_sn = scenInfoData.grid_info.grid_list[i].device_sn;
+                                this.CreateOrUpdate(
+                                    `${site.site_id}.energyanalysis.home_usage`,
+                                    `home_usage`,
+                                    'folder',
+                                );
+                                this.CreateOrUpdate(
+                                    `${site.site_id}.energyanalysis.home_usage.${device_sn}`,
+                                    `${device_sn}`,
+                                    'folder',
+                                );
+                                this.CreateOrUpdate(
+                                    `${site.site_id}.energyanalysis.home_usage.${device_sn}.${range}`,
+                                    `${range}`,
+                                    'folder',
+                                );
+                                const homeusageInfo = await loggedInApi.energyAnalysis(
+                                    site.site_id,
+                                    device_sn,
+                                    'week',
+                                    start,
+                                    ende,
+                                    'home_usage',
+                                );
 
-                const energy_message = JSON.stringify(energyInfo.data);
-                await this.setState(`${site.site_id}.EXTRA.ENERGY_${range.toUpperCase()}`, {
-                    val: energy_message,
-                    ack: true,
-                });
-
-                Object.entries(JSON.parse(energy_message)).forEach(entries => {
-                    const [id, value] = entries;
-
-                    const type = this.whatIsIt(value);
-
-                    const key = `${site.site_id}.energyanalysis.${range}.${id}`;
-
-                    if (type === 'array') {
-                        this.isArray(key, value);
-                    } else if (type === 'object') {
-                        this.isObject(key, value);
-                    } else {
-                        this.isString(key, value);
+                                this.parseObjects(
+                                    `${site.site_id}.energyanalysis.home_usage.${device_sn}.${range}`,
+                                    JSON.parse(JSON.stringify(homeusageInfo.data)),
+                                );
+                            }
+                        }
+                        await this.sleep(5000);
+                    } catch (err: any) {
+                        this.log.debug(`Published Analysis HomeUsage ${range} Error: ${err.code}`);
                     }
-                });
+                }
             }
         }
         this.log.debug('Published Analysis Data.');
@@ -370,6 +431,26 @@ class Ankersolix2 extends utils.Adapter {
         if (obj != null && typeof obj === 'object') {
             return 'object';
         }
+    }
+    /**
+     * @param key
+     * @param jOb
+     */
+    parseObjects(key: string, jOb: any): void {
+        //this.log.debug(`parseObjects : ${JSON.stringify(jOb)}`);
+        Object.entries(JSON.parse(JSON.stringify(jOb))).forEach(entries => {
+            const [id, value] = entries;
+
+            const type = this.whatIsIt(value);
+
+            if (type === 'array') {
+                this.isArray(`${key}.${id}`, value);
+            } else if (type === 'object') {
+                this.isObject(`${key}.${id}`, value);
+            } else {
+                this.isString(`${key}.${id}`, value);
+            }
+        });
     }
 
     isArray(key: string, value: any): void {

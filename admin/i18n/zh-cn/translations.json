@@ -1,13 +1,16 @@
 {
-    "ankersolix2 adapter settings": "ankersolix2 的适配器设置",
-    "Solix Username": "索利克斯用户名",
-    "Solix Password": "索利克斯密码",
-    "Country Code": "国家/地区代码",
-    "DE": "DE",
-    "EN": "EN",
-    "ES": "ES",
-    "FR": "FR",
-    "AT": "AT",
-    "Polltime in secounds": "轮询时间（以秒为单位）",
-    "Please use a Family-Acoount how can only watch, dont use your main account.": "请使用家庭帐户，这样只能观看，不要使用您的主帐户。"
+    "ankersolix2 adapter settings": "Ankersolix2的适配器设置",
+    "Solix Username": "solix-username",
+    "Solix Password": "solix-password",
+    "Country Code": "国家代码",
+    "Polltime in secounds": "民意调查时间为偏斜",
+    "Please use a Family-Account how can only watch, dont use your main account.": "请使用家庭帐户，只能观看，不要使用您的主帐户。",
+    "Analysis Option": "分析选项",
+    "Getting grid info data": "获取网格信息数据",
+    "Getting solar production data": "获取太阳能生产数据",
+    "Getting home usage data": "回家使用数据",
+    "This allows you to retrieve various statistical data.": "这使您可以检索各种统计数据。",
+    "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.": "建议停用不必要的数据。注意：不会删除数据点，必须手动完成。",
+    "day": "天",
+    "week": "星期"
 }

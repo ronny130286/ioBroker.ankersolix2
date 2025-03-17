@@ -10,6 +10,15 @@ declare global {
             COUNTRY: string;
             COUNTRY2: string;
             POLL_INTERVAL: number;
+            AnalysisGrid: boolean;
+            AnalysisGridDay: boolean;
+            AnalysisGridWeek: boolean;
+            AnalysisSolarproduction: boolean;
+            AnalysisSolarproductionDay: boolean;
+            AnalysisSolarproductionWeek: boolean;
+            AnalysisHomeUsage: boolean;
+            AnalysisHomeUsageDay: boolean;
+            AnalysisHomeUsageWeek: boolean;
         }
     }
 }
