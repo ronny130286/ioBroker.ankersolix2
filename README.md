@@ -55,6 +55,8 @@ If you have erros again and cant login, stop the adapter and delete the session.
 ### **WORK IN PROGRESS**
 
 - (ronny130286) reorganized analysis option (now selectable in adminconsole)
+- (ronny130286) add battery energy to solix devices
+- (ronny130286) update packages
 
 ### 2.0.0 (2025-03-09)
 

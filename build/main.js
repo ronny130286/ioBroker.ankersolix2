@@ -428,6 +428,21 @@ class Ankersolix2 extends utils.Adapter {
     } else {
       this.CreateOrUpdate(key, name, "folder");
     }
+    if ((value == null ? void 0 : value.device_pn) && (value == null ? void 0 : value.battery_power) && import_api.DeviceCapacity[value == null ? void 0 : value.device_pn] > 0) {
+      if (value == null ? void 0 : value.battery_power) {
+        const bat_power = (value == null ? void 0 : value.battery_power) ? value == null ? void 0 : value.battery_power : 0;
+        const num_of_batteries = (value == null ? void 0 : value.sub_package_num) ? value == null ? void 0 : value.sub_package_num : 0;
+        let cap = 0;
+        if (value == null ? void 0 : value.device_pn) {
+          cap = import_api.DeviceCapacity[value == null ? void 0 : value.device_pn];
+        }
+        cap = cap * (1 + num_of_batteries);
+        if (cap > 0 && bat_power > 0) {
+          const battery_energy = Math.round(cap * bat_power / 100);
+          this.isString(`${key}.battery_energy`, battery_energy, "Wh", "value.energy");
+        }
+      }
+    }
     Object.entries(value).forEach((subentries) => {
       const [objkey, objvalue] = subentries;
       const type = this.whatIsIt(objvalue);

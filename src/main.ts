@@ -6,7 +6,7 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import fs, { promises as pfs } from 'fs';
-import { type LoginResultResponse, SolixApi } from './api';
+import { DeviceCapacity, type LoginResultResponse, SolixApi } from './api';
 
 // Load your modules here, e.g.:
 
@@ -508,6 +508,26 @@ class Ankersolix2 extends utils.Adapter {
             this.CreateOrUpdate(key, name, 'folder');
         }
         //this.log.debug(`isObject: ${name}`);
+
+        //calculate battery capacity
+        if (value?.device_pn && value?.battery_power && DeviceCapacity[value?.device_pn] > 0) {
+            if (value?.battery_power) {
+                //this.log.debug(`isObject: ${key}, ${value}`);
+                const bat_power: number = value?.battery_power ? value?.battery_power : 0;
+                const num_of_batteries = value?.sub_package_num ? value?.sub_package_num : 0;
+                let cap = 0;
+                if (value?.device_pn) {
+                    cap = DeviceCapacity[value?.device_pn];
+                }
+
+                cap = cap * (1 + num_of_batteries);
+
+                if (cap > 0 && bat_power > 0) {
+                    const battery_energy = Math.round((cap * bat_power) / 100);
+                    this.isString(`${key}.battery_energy`, battery_energy, 'Wh', 'value.energy');
+                }
+            }
+        }
 
         Object.entries(value).forEach(subentries => {
             const [objkey, objvalue] = subentries;

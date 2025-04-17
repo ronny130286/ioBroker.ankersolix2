@@ -323,6 +323,36 @@ export interface SiteDeviceParamResponse<T extends ParamType> {
     param_data: ParamData<T>;
 }
 
+export const DeviceCapacity: Record<string, number> = {
+    A17C0: 1600, // SOLIX E1600 Solarbank
+    A17C1: 1600, // SOLIX E1600 Solarbank 2 Pro
+    A17C2: 1600, // SOLIX E1600 Solarbank 2 AC
+    A17C3: 1600, // SOLIX E1600 Solarbank 2 Plus
+    A1720: 256, // Anker PowerHouse 521 Portable Power Station
+    A1722: 288, // SOLIX C300 Portable Power Station
+    A1723: 230, // SOLIX C200 Portable Power Station
+    A1725: 230, // SOLIX C200 Portable Power Station
+    A1726: 288, // SOLIX C300 DC Portable Power Station
+    A1727: 230, // SOLIX C200 DC Portable Power Station
+    A1728: 288, // SOLIX C300 X Portable Power Station
+    A1751: 512, // Anker PowerHouse 535 Portable Power Station
+    A1753: 768, // SOLIX C800 Portable Power Station
+    A1754: 768, // SOLIX C800 Plus Portable Power Station
+    A1755: 768, // SOLIX C800X Portable Power Station
+    A1760: 1024, // Anker PowerHouse 555 Portable Power Station
+    A1761: 1056, // SOLIX C1000(X) Portable Power Station
+    A1770: 1229, // Anker PowerHouse 757 Portable Power Station
+    A1771: 1229, // SOLIX F1200 Portable Power Station
+    A1772: 1536, // SOLIX F1500 Portable Power Station
+    A1780: 2048, // SOLIX F2000 Portable Power Station (PowerHouse 767)
+    A1780_1: 2048, // Expansion Battery for F2000
+    A1780P: 2048, // SOLIX F2000 Portable Power Station (PowerHouse 767) with WIFI
+    A1781: 2560, // SOLIX F2600 Portable Power Station
+    A1790: 3840, // SOLIX F3800 Portable Power Station
+    A1790_1: 3840, // SOLIX BP3800 Expansion Battery for F3800
+    A5220: 5000, // SOLIX X1 Battery module
+};
+
 export class SolixApi {
     private readonly SERVER_PUBLIC_KEY =
         '04c5c00c4f8d1197cc7c3167c52bf7acb054d722f0ef08dcd7e0883236e0d72a3868d9750cb47fa4619248f3d83f0f662671dadc6e2d31c2f41db0161651c7c076';
