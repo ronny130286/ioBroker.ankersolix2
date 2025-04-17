@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "news": {
+      "2.1.0": {
+        "en": "reorganized analysis option (now selectable in adminconsole)\nadd battery energy to solix devices\nupdate packages",
+        "de": "reorganisierte analyseoption (jetzt wählbar in adminconsole)\nbatterieenergie zu solix-geräten hinzufügen\nupdate-pakete",
+        "ru": "вариант реорганизованного анализа (сейчас выбираемый в админконсоле)\nдобавьте энергию аккумулятора в устройства solix\nобновление пакетов",
+        "pt": "opção de análise reorganizada (agora selecionável em adminconsole)\nadicionar energia da bateria a dispositivos de solix\npacotes de atualização",
+        "nl": "gereorganiseerde analyse optie (nu te selecteren in adminconsole)\nbatterij energie toevoegen aan solix apparaten\npakketten bijwerken",
+        "fr": "option d'analyse réorganisée (maintenant sélectionnable dans adminconsole)\najouter de l'énergie de batterie aux dispositifs solix\nmettre à jour les paquets",
+        "it": "opzione di analisi riorganizzata (ora selezionabile in adminconsole)\naggiungere energia della batteria ai dispositivi solix\npacchetti di aggiornamento",
+        "es": "opción de análisis reorganizado (ahora seleccionable en administración consola)\nañadir energía de batería a los dispositivos de solix\nactualizar paquetes",
+        "pl": "reorganizowana opcja analizy (teraz wybierana w konsoli adminowej)\ndodać energię akumulatora do urządzeń stałych\naktualizacja pakietów",
+        "uk": "реорганізований варіант аналізу (нижчий вибір в адмінконсолі)\nдодавати енергію акумулятора для пристроїв солі\nоновлення пакетів",
+        "zh-cn": "重组分析选项( 现可在管理控制台中选择)\n在 solix 设备中添加电池能量\n更新软件包"
+      },
       "2.0.0": {
         "en": "update packages\ndecrypt password in adminui\nadd more language codes\nreorganized some DP",
         "de": "update-pakete\npasswort decrypt in adminui\nweitere sprachcodes hinzufügen\nreorganisiert einige DP",
@@ -80,19 +93,6 @@
         "pl": "uwalnianie beta",
         "uk": "бета реліз",
         "zh-cn": "β释放"
-      },
-      "0.0.3-alpha.0": {
-        "en": "fix session.data\nnpm release",
-        "de": "die sitzung zu reparieren. daten\nnpm release",
-        "ru": "починить сеанс. данные\nnpm релиз",
-        "pt": "corrigir sessão. dados\nliberação npm",
-        "nl": "maak een sessie. gegevens\nnpm release",
-        "fr": "la séance de réparation. données\nnpm libération",
-        "it": "sessione di correzione. dati\nnpm rilascio",
-        "es": "fijar sesión. datos\nnpm de liberación",
-        "pl": "napraw sesję. dane\nuwolnienie npm",
-        "uk": "фіксація сеансу. дані\nnpm реліз",
-        "zh-cn": "固定会话。 数据\nnpm 发布"
       }
     },
     "titleLang": {
