@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "news": {
+      "2.1.1": {
+        "en": "bugfix",
+        "de": "fehlerbehebung",
+        "ru": "исправление ошибок",
+        "pt": "correção de erros",
+        "nl": "bugfix",
+        "fr": "correction du bug",
+        "it": "bugfix",
+        "es": "bugfix",
+        "pl": "bugfix",
+        "uk": "панчохи",
+        "zh-cn": "错误修正"
+      },
       "2.1.0": {
         "en": "reorganized analysis option (now selectable in adminconsole)\nadd battery energy to solix devices\nupdate packages",
         "de": "reorganisierte analyseoption (jetzt wählbar in adminconsole)\nbatterieenergie zu solix-geräten hinzufügen\nupdate-pakete",
@@ -80,19 +93,6 @@
         "pl": "ESLint 9.x",
         "uk": "ESLint 9.х",
         "zh-cn": "ESLint 9.x (英语)"
-      },
-      "0.1.0-beta.0": {
-        "en": "beta release",
-        "de": "beta release",
-        "ru": "beta release",
-        "pt": "versão beta",
-        "nl": "beta release",
-        "fr": "libération bêta",
-        "it": "beta release",
-        "es": "beta release",
-        "pl": "uwalnianie beta",
-        "uk": "бета реліз",
-        "zh-cn": "β释放"
       }
     },
     "titleLang": {

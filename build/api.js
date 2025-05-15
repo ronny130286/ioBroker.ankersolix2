@@ -49,6 +49,8 @@ const DeviceCapacity = {
   // SOLIX E1600 Solarbank 2 AC
   A17C3: 1600,
   // SOLIX E1600 Solarbank 2 Plus
+  A17C5: 2700,
+  // SOLIX E2700 Solarbank 3 Pro
   A1720: 256,
   // Anker PowerHouse 521 Portable Power Station
   A1722: 288,
