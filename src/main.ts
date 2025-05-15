@@ -242,7 +242,7 @@ class Ankersolix2 extends utils.Adapter {
             );
             
             const message = await pfs.readFile(`${utils.getAbsoluteInstanceDataDir(this)}/debug.json`, 'utf8');
-            */
+*/
             const jsonparse = JSON.parse(message);
 
             this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'folder');
@@ -280,8 +280,9 @@ class Ankersolix2 extends utils.Adapter {
             const ranges = ['day', 'week'];
 
             scenInfo = !scenInfo ? await loggedInApi.scenInfo(site.site_id) : scenInfo;
-
             const scenInfoData = JSON.parse(JSON.stringify(scenInfo.data));
+
+            //const scenInfoData = JSON.parse(await pfs.readFile(`${utils.getAbsoluteInstanceDataDir(this)}/debug.json`, 'utf8'),);
 
             this.CreateOrUpdate(`${site.site_id}.energyanalysis`, 'energyanalysis', 'folder');
 
@@ -360,48 +361,53 @@ class Ankersolix2 extends utils.Adapter {
 
                 //HOME_USAGE Infos
                 if (
-                    scenInfoData.grid_info.grid_list.length > 0 &&
                     this.config.AnalysisHomeUsage &&
                     ((range === 'day' && this.config.AnalysisHomeUsageDay) ||
                         (range === 'week' && this.config.AnalysisHomeUsageWeek))
                 ) {
-                    try {
-                        for (const i in scenInfoData.grid_info.grid_list) {
-                            if ('device_sn' in scenInfoData.grid_info.grid_list[i]) {
-                                const device_sn = scenInfoData.grid_info.grid_list[i].device_sn;
-                                this.CreateOrUpdate(
-                                    `${site.site_id}.energyanalysis.home_usage`,
-                                    `home_usage`,
-                                    'folder',
-                                );
-                                this.CreateOrUpdate(
-                                    `${site.site_id}.energyanalysis.home_usage.${device_sn}`,
-                                    `${device_sn}`,
-                                    'folder',
-                                );
-                                this.CreateOrUpdate(
-                                    `${site.site_id}.energyanalysis.home_usage.${device_sn}.${range}`,
-                                    `${range}`,
-                                    'folder',
-                                );
-                                const homeusageInfo = await loggedInApi.energyAnalysis(
-                                    site.site_id,
-                                    device_sn,
-                                    'week',
-                                    start,
-                                    ende,
-                                    'home_usage',
-                                );
+                    if (scenInfoData.grid_info != null) {
+                        try {
+                            for (const i in scenInfoData.grid_info.grid_list) {
+                                if ('device_sn' in scenInfoData.grid_info.grid_list[i]) {
+                                    const device_sn = scenInfoData.grid_info.grid_list[i].device_sn;
+                                    this.CreateOrUpdate(
+                                        `${site.site_id}.energyanalysis.home_usage`,
+                                        `home_usage`,
+                                        'folder',
+                                    );
+                                    this.CreateOrUpdate(
+                                        `${site.site_id}.energyanalysis.home_usage.${device_sn}`,
+                                        `${device_sn}`,
+                                        'folder',
+                                    );
+                                    this.CreateOrUpdate(
+                                        `${site.site_id}.energyanalysis.home_usage.${device_sn}.${range}`,
+                                        `${range}`,
+                                        'folder',
+                                    );
+                                    const homeusageInfo = await loggedInApi.energyAnalysis(
+                                        site.site_id,
+                                        device_sn,
+                                        'week',
+                                        start,
+                                        ende,
+                                        'home_usage',
+                                    );
 
-                                this.parseObjects(
-                                    `${site.site_id}.energyanalysis.home_usage.${device_sn}.${range}`,
-                                    JSON.parse(JSON.stringify(homeusageInfo.data)),
-                                );
+                                    this.parseObjects(
+                                        `${site.site_id}.energyanalysis.home_usage.${device_sn}.${range}`,
+                                        JSON.parse(JSON.stringify(homeusageInfo.data)),
+                                    );
+                                }
                             }
+                            await this.sleep(5000);
+                        } catch (err: any) {
+                            this.log.debug(`Published Analysis HomeUsage ${range} Error: ${err.code}`);
                         }
-                        await this.sleep(5000);
-                    } catch (err: any) {
-                        this.log.debug(`Published Analysis HomeUsage ${range} Error: ${err.code}`);
+                    } else {
+                        this.log.debug(
+                            `Published Analysis HomeUsage ${range} Error: No smart meter found, you can disable it in config of instance`,
+                        );
                     }
                 }
             }

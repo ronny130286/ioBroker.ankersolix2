@@ -51,6 +51,11 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ronny130286) bugfix
+
 ### 2.1.0 (2025-04-17)
 
 - (ronny130286) reorganized analysis option (now selectable in adminconsole)
