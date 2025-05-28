@@ -554,7 +554,7 @@ class Ankersolix2 extends utils.Adapter {
 
         let parmType: ioBroker.CommonType = 'string';
         let parmRole = role;
-        let parmUnit = unit;
+        let parmUnit = unit ? unit : '';
 
         const valType = this.whatIsIt(value);
 
@@ -565,7 +565,7 @@ class Ankersolix2 extends utils.Adapter {
             parmType = 'number';
         }
 
-        if (key.includes('time') && !key.includes('backup_info')) {
+        if (key.includes('time') && !key.includes('backup_info') && !key.includes('feature_switch')) {
             parmType = 'string';
             parmRole = 'value.time';
 
@@ -577,7 +577,21 @@ class Ankersolix2 extends utils.Adapter {
             }
         }
 
-        if (key.includes('_power') && !key.includes('display') && !key.includes('battery')) {
+        if (key.includes('unit')) {
+            switch (value) {
+                case 'kWh':
+                case 'W':
+                    parmRole = 'value.energy';
+                    break;
+            }
+        }
+
+        if (
+            key.includes('_power') &&
+            !key.includes('display') &&
+            !key.includes('battery') &&
+            !key.includes('feature_switch')
+        ) {
             parmType = 'number';
             value = +value;
             parmUnit = 'W';
@@ -593,15 +607,6 @@ class Ankersolix2 extends utils.Adapter {
                 value = +value * 100;
             } else {
                 value = +value;
-            }
-        }
-
-        if (key.includes('unit')) {
-            switch (value) {
-                case 'kWh':
-                case 'W':
-                    parmRole = 'value.energy';
-                    break;
             }
         }
 

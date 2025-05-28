@@ -464,7 +464,7 @@ class Ankersolix2 extends utils.Adapter {
   async isString(key, value, unit, role = "value") {
     let parmType = "string";
     let parmRole = role;
-    let parmUnit = unit;
+    let parmUnit = unit ? unit : "";
     const valType = this.whatIsIt(value);
     if (valType === "boolean") {
       parmType = "boolean";
@@ -472,7 +472,7 @@ class Ankersolix2 extends utils.Adapter {
     if (valType === "number") {
       parmType = "number";
     }
-    if (key.includes("time") && !key.includes("backup_info")) {
+    if (key.includes("time") && !key.includes("backup_info") && !key.includes("feature_switch")) {
       parmType = "string";
       parmRole = "value.time";
       if (key.includes("create")) {
@@ -481,7 +481,15 @@ class Ankersolix2 extends utils.Adapter {
         value = (/* @__PURE__ */ new Date()).getTime().toString();
       }
     }
-    if (key.includes("_power") && !key.includes("display") && !key.includes("battery")) {
+    if (key.includes("unit")) {
+      switch (value) {
+        case "kWh":
+        case "W":
+          parmRole = "value.energy";
+          break;
+      }
+    }
+    if (key.includes("_power") && !key.includes("display") && !key.includes("battery") && !key.includes("feature_switch")) {
       parmType = "number";
       value = +value;
       parmUnit = "W";
@@ -494,14 +502,6 @@ class Ankersolix2 extends utils.Adapter {
         value = +value * 100;
       } else {
         value = +value;
-      }
-    }
-    if (key.includes("unit")) {
-      switch (value) {
-        case "kWh":
-        case "W":
-          parmRole = "value.energy";
-          break;
       }
     }
     const name = key.split(".").pop();
