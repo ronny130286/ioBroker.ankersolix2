@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "news": {
+      "2.1.2": {
+        "en": "fix for Solix 3",
+        "de": "fixierung für Solix 3",
+        "ru": "обсуждение Solix 3",
+        "pt": "correção para Solix 3",
+        "nl": "fix voor Solix 3",
+        "fr": "correctif pour Solix 3",
+        "it": "fissaggio per Solix 3",
+        "es": "fijado para Solix 3",
+        "pl": "fix dla Solix 3",
+        "uk": "фіксатор для Solix 3",
+        "zh-cn": "用于 Solix 3 的修复"
+      },
       "2.1.1": {
         "en": "bugfix",
         "de": "fehlerbehebung",
@@ -80,19 +93,6 @@
         "pl": "bugfix",
         "uk": "панчохи",
         "zh-cn": "错误修正"
-      },
-      "1.0.1": {
-        "en": "ESLint 9.x",
-        "de": "ESLint 9.x",
-        "ru": "ESLint 9.x",
-        "pt": "ESLint 9.x",
-        "nl": "ESLint 9.x",
-        "fr": "ESLint 9.x",
-        "it": "ESLint 9.x",
-        "es": "ESLint 9.x",
-        "pl": "ESLint 9.x",
-        "uk": "ESLint 9.х",
-        "zh-cn": "ESLint 9.x (英语)"
       }
     },
     "titleLang": {
