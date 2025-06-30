@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "2.1.2",
+    "version": "2.2.0",
     "news": {
+      "2.2.0": {
+        "en": "battery types and number are adjustable in the instance",
+        "de": "batterietypen und anzahl sind im beispiel einstellbar",
+        "ru": "типы и количество батарей регулируются в данном случае",
+        "pt": "tipos de bateria e número são ajustáveis na instância",
+        "nl": "batterij types en aantal zijn instelbaar in het geval",
+        "fr": "types et nombre de piles sont réglables dans l'instance",
+        "it": "tipi di batteria e numero sono regolabili nell'istanza",
+        "es": "tipos de batería y número son ajustables en la instancia",
+        "pl": "typy baterii i liczba są regulowane w przypadku",
+        "uk": "типи акумуляторів і кількість регульовані в екземплярі",
+        "zh-cn": "电池类型和数量在实例中可以调整"
+      },
       "2.1.2": {
         "en": "fix for Solix 3",
         "de": "fixierung für Solix 3",
@@ -80,19 +93,6 @@
         "pl": "edytuj odświeżacz\ndodaj do repo",
         "uk": "редагувати таймер\nдодати в репо",
         "zh-cn": "编辑刷新时间\n添加到还原"
-      },
-      "1.0.2": {
-        "en": "bugfix",
-        "de": "fehlerbehebung",
-        "ru": "исправления",
-        "pt": "correção de erros",
-        "nl": "bugfix",
-        "fr": "correction du bug",
-        "it": "bugfix",
-        "es": "bugfix",
-        "pl": "bugfix",
-        "uk": "панчохи",
-        "zh-cn": "错误修正"
       }
     },
     "titleLang": {

@@ -75,6 +75,7 @@ class Ankersolix2 extends utils.Adapter {
     this.loginData = await this.loginAPI();
     this.refreshDate();
     if (this.config.AnalysisGrid || this.config.AnalysisHomeUsage || this.config.AnalysisSolarproduction) {
+      this.refreshAnalysis();
     }
   }
   async loginAPI() {
@@ -442,9 +443,6 @@ class Ankersolix2 extends utils.Adapter {
           cap = import_api.DeviceCapacity[value == null ? void 0 : value.device_pn];
           this.log.debug(`device: ${value == null ? void 0 : value.device_pn} ,Capacity: ${cap}`);
         }
-        this.log.debug(
-          `isObject: ${key}, BatteryBP1600Count: ${this.config.BatteryBP1600Count}, BatteryBP2700Count: ${this.config.BatteryBP2700Count}`
-        );
         if (this.config.BatteryBP1600Count > 0 && num_of_batteries > 0) {
           cap = cap + this.config.BatteryBP1600Count * 1600;
           this.log.debug(`BatteryBP1600Count: ${key},Capacity: ${cap}`);
@@ -456,9 +454,6 @@ class Ankersolix2 extends utils.Adapter {
         if (this.config.BatteryBP2700Count == 0 && this.config.BatteryBP1600Count == 0 && num_of_batteries > 0) {
           cap = cap + num_of_batteries * 1600;
         }
-        this.log.debug(
-          `isObject: ${key}, Battery Power: ${bat_power}, Capacity: ${cap}, Number of Batteries: ${num_of_batteries}`
-        );
         if (cap > 0 && bat_power > 0) {
           const battery_energy = Math.round(cap * bat_power / 100);
           this.isString(`${key}.battery_energy`, battery_energy, "Wh", "value.energy");
