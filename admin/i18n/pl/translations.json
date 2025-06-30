@@ -12,5 +12,6 @@
     "This allows you to retrieve various statistical data.": "Pozwala to pobrać różne dane statystyczne.",
     "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.": "Zaleca się dezaktywację niepotrzebnych danych. Uwaga: Żadne punkty danych nie zostaną usunięte, należy to zrobić ręcznie.",
     "day": "dzień",
-    "week": "tydzień"
+    "week": "tydzień",
+    "Which additional batteries are installed? Do not specify more than installed!": "Które dodatkowe baterie są instalowane? Nie określić więcej niż zainstalowane!"
 }

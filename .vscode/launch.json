@@ -4,9 +4,18 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}\\main.ts",
-            "args": ["--debug"]
+            "name": "default Launch ioBroker Adapter",
+            "skipFiles": ["<node_internals>/**"],
+            "args": ["--debug", "0"],
+            "program": "node_modules/iobroker.ankersolix2/build/main.js",
+            //"program": "${workspaceFolder}\\main.ts",
+            "cwd": "${workspaceFolder}/.dev-server/default",
+            "runtimeExecutable": "c:/Users/Ronny/AppData/Roaming/fnm/aliases/default/node.exe",
+            "stopOnEntry": true,
+            "sourceMaps": true,
+            "console": "internalConsole",
+            "outputCapture": "std",
+            "resolveSourceMapLocations": ["${workspaceFolder}/**", "**/node_modules/**"]
         },
         {
             "name": "Attach to Process",

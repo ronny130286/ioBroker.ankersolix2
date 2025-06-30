@@ -245,7 +245,7 @@ class Ankersolix2 extends utils.Adapter {
 */
             const jsonparse = JSON.parse(message);
 
-            this.CreateOrUpdate(site.site_id, jsonparse.home_info.home_name, 'folder');
+            this.CreateOrUpdate(site.site_id, site.site_name, 'folder');
             this.CreateOrUpdate(`${site.site_id}.EXTRA`, 'EXTRA', 'folder');
 
             await this.CreateOrUpdate(
@@ -258,7 +258,7 @@ class Ankersolix2 extends utils.Adapter {
                 'undefined',
             );
             this.setState(`${site.site_id}.EXTRA.RAW_JSON`, { val: message, ack: true });
-            this.parseObjects(`${site.site_id}`, JSON.parse(message));
+            this.parseObjects(`${site.site_id}`, jsonparse);
         }
         this.log.debug('Published Data.');
     }
@@ -524,10 +524,25 @@ class Ankersolix2 extends utils.Adapter {
                 let cap = 0;
                 if (value?.device_pn) {
                     cap = DeviceCapacity[value?.device_pn];
+                    this.log.debug(`device: ${value?.device_pn} ,Capacity: ${cap}`);
                 }
-
-                cap = cap * (1 + num_of_batteries);
-
+                //this.log.debug(`isObject: ${key}, BatteryBP1600Count: ${this.config.BatteryBP1600Count}, BatteryBP2700Count: ${this.config.BatteryBP2700Count}`,);
+                if (this.config.BatteryBP1600Count > 0 && num_of_batteries > 0) {
+                    cap = cap + this.config.BatteryBP1600Count * 1600;
+                    this.log.debug(`BatteryBP1600Count: ${key},Capacity: ${cap}`);
+                }
+                if (this.config.BatteryBP2700Count > 0 && num_of_batteries > 0) {
+                    cap = cap + this.config.BatteryBP2700Count * 2700;
+                    this.log.debug(`BatteryBP2700Count: ${key},Capacity: ${cap}`);
+                }
+                if (
+                    this.config.BatteryBP2700Count == 0 &&
+                    this.config.BatteryBP1600Count == 0 &&
+                    num_of_batteries > 0
+                ) {
+                    cap = cap + num_of_batteries * 1600;
+                }
+                //this.log.debug(`isObject: ${key}, Battery Power: ${bat_power}, Capacity: ${cap}, Number of Batteries: ${num_of_batteries}`,);
                 if (cap > 0 && bat_power > 0) {
                     const battery_energy = Math.round((cap * bat_power) / 100);
                     this.isString(`${key}.battery_energy`, battery_energy, 'Wh', 'value.energy');

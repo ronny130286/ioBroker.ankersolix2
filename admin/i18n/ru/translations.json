@@ -12,5 +12,6 @@
     "This allows you to retrieve various statistical data.": "Это позволяет вам получать различные статистические данные.",
     "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.": "Рекомендуется деактивировать ненужные данные. Примечание: точки данных не будут удалены, это должно быть сделано вручную.",
     "day": "день",
-    "week": "неделя"
+    "week": "неделя",
+    "Which additional batteries are installed? Do not specify more than installed!": "Какие дополнительные батареи установлены? Не указывайте больше, чем установлено!"
 }

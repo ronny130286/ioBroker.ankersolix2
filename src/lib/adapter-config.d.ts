@@ -19,6 +19,8 @@ declare global {
             AnalysisHomeUsage: boolean;
             AnalysisHomeUsageDay: boolean;
             AnalysisHomeUsageWeek: boolean;
+            BatteryBP1600Count: number;
+            BatteryBP2700Count: number;
         }
     }
 }

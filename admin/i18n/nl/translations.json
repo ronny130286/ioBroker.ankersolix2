@@ -12,5 +12,6 @@
     "This allows you to retrieve various statistical data.": "Hiermee kunt u verschillende statistische gegevens ophalen.",
     "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.": "Het wordt aanbevolen om onnodige gegevens te deactiveren. Opmerking: er worden geen gegevenspunten verwijderd, dit moet handmatig worden gedaan.",
     "day": "dag",
-    "week": "week"
+    "week": "week",
+    "Which additional batteries are installed? Do not specify more than installed!": "Welke extra batterijen zijn geïnstalleerd? Geef niet meer op dan geïnstalleerd!"
 }

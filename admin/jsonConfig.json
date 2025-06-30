@@ -278,6 +278,63 @@
                     "md": 4,
                     "lg": 2,
                     "xl": 2
+                },
+                "BatteryHdr": {
+                    "type": "header",
+                    "text": "Battery Option",
+                    "size": 2
+                },
+                "BatteryTxt1": {
+                    "type": "staticText",
+                    "text": "Which additional batteries are installed? Do not specify more than installed!",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "BatteryBP1600": {
+                    "type": "staticText",
+                    "text": "Anker BP1600",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "BatteryBP1600Count": {
+                    "type": "number",
+                    "default": 0,
+                    "min": 0,
+                    "max": 5,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "BatteryBP2700": {
+                    "type": "staticText",
+                    "text": "Anker BP2700",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "BatteryBP2700Count": {
+                    "type": "number",
+                    "default": 0,
+                    "min": 0,
+                    "max": 5,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 3
                 }
             }
         }

@@ -12,5 +12,6 @@
     "This allows you to retrieve various statistical data.": "这使您可以检索各种统计数据。",
     "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.": "建议停用不必要的数据。注意：不会删除数据点，必须手动完成。",
     "day": "天",
-    "week": "星期"
+    "week": "星期",
+    "Which additional batteries are installed? Do not specify more than installed!": "安装了哪些其他电池？不要指定超过安装的更多！"
 }
