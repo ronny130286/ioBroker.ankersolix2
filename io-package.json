@@ -1,191 +1,203 @@
 {
-    "common": {
-        "name": "ankersolix2",
-        "version": "2.2.0",
-        "news": {
-            "2.2.0": {
-                "en": "battery types and number are adjustable in the instance",
-                "de": "batterietypen und anzahl sind im beispiel einstellbar",
-                "ru": "типы и количество батарей регулируются в данном случае",
-                "pt": "tipos de bateria e número são ajustáveis na instância",
-                "nl": "batterij types en aantal zijn instelbaar in het geval",
-                "fr": "types et nombre de piles sont réglables dans l'instance",
-                "it": "tipi di batteria e numero sono regolabili nell'istanza",
-                "es": "tipos de batería y número son ajustables en la instancia",
-                "pl": "typy baterii i liczba są regulowane w przypadku",
-                "uk": "типи акумуляторів і кількість регульовані в екземплярі",
-                "zh-cn": "电池类型和数量在实例中可以调整"
-            },
-            "2.1.2": {
-                "en": "fix for Solix 3",
-                "de": "fixierung für Solix 3",
-                "ru": "обсуждение Solix 3",
-                "pt": "correção para Solix 3",
-                "nl": "fix voor Solix 3",
-                "fr": "correctif pour Solix 3",
-                "it": "fissaggio per Solix 3",
-                "es": "fijado para Solix 3",
-                "pl": "fix dla Solix 3",
-                "uk": "фіксатор для Solix 3",
-                "zh-cn": "用于 Solix 3 的修复"
-            },
-            "2.1.1": {
-                "en": "bugfix",
-                "de": "fehlerbehebung",
-                "ru": "исправление ошибок",
-                "pt": "correção de erros",
-                "nl": "bugfix",
-                "fr": "correction du bug",
-                "it": "bugfix",
-                "es": "bugfix",
-                "pl": "bugfix",
-                "uk": "панчохи",
-                "zh-cn": "错误修正"
-            },
-            "2.1.0": {
-                "en": "reorganized analysis option (now selectable in adminconsole)\nadd battery energy to solix devices\nupdate packages",
-                "de": "reorganisierte analyseoption (jetzt wählbar in adminconsole)\nbatterieenergie zu solix-geräten hinzufügen\nupdate-pakete",
-                "ru": "вариант реорганизованного анализа (сейчас выбираемый в админконсоле)\nдобавьте энергию аккумулятора в устройства solix\nобновление пакетов",
-                "pt": "opção de análise reorganizada (agora selecionável em adminconsole)\nadicionar energia da bateria a dispositivos de solix\npacotes de atualização",
-                "nl": "gereorganiseerde analyse optie (nu te selecteren in adminconsole)\nbatterij energie toevoegen aan solix apparaten\npakketten bijwerken",
-                "fr": "option d'analyse réorganisée (maintenant sélectionnable dans adminconsole)\najouter de l'énergie de batterie aux dispositifs solix\nmettre à jour les paquets",
-                "it": "opzione di analisi riorganizzata (ora selezionabile in adminconsole)\naggiungere energia della batteria ai dispositivi solix\npacchetti di aggiornamento",
-                "es": "opción de análisis reorganizado (ahora seleccionable en administración consola)\nañadir energía de batería a los dispositivos de solix\nactualizar paquetes",
-                "pl": "reorganizowana opcja analizy (teraz wybierana w konsoli adminowej)\ndodać energię akumulatora do urządzeń stałych\naktualizacja pakietów",
-                "uk": "реорганізований варіант аналізу (нижчий вибір в адмінконсолі)\nдодавати енергію акумулятора для пристроїв солі\nоновлення пакетів",
-                "zh-cn": "重组分析选项( 现可在管理控制台中选择)\n在 solix 设备中添加电池能量\n更新软件包"
-            },
-            "2.0.0": {
-                "en": "update packages\ndecrypt password in adminui\nadd more language codes\nreorganized some DP",
-                "de": "update-pakete\npasswort decrypt in adminui\nweitere sprachcodes hinzufügen\nreorganisiert einige DP",
-                "ru": "обновление пакетов\nрасшифровать пароль в adminui\nдобавьте больше языковых кодов\nреорганизовано несколько ДП",
-                "pt": "pacotes de atualização\ndescriptografar senha em adminui\nadicionar mais códigos de idioma\nreorganizado alguns DP",
-                "nl": "pakketten bijwerken\nwachtwoord ontcijferen in adminui\nmeer taalcodes toevoegen\ngereorganiseerd sommige DP",
-                "fr": "mettre à jour les paquets\ndéchiffrer le mot de passe dans adminui\najouter plus de codes linguistiques\nréorganisation de certains PDD",
-                "it": "pacchetti di aggiornamento\ndecrypt password in adminui\naggiungere altri codici linguistici\nriorganizzazione di alcuni DP",
-                "es": "actualizar paquetes\ndescifrar contraseña en adminui\nañadir más códigos de idioma\nreorganizar algunos DP",
-                "pl": "aktualizacja pakietów\ndeszyfrowanie hasła w adminui\ndodaj więcej kodów językowych\nreorganizacja niektórych DP",
-                "uk": "оновлення пакетів\nдешифрувати пароль в адміні\nдодати більше мовних кодів\nреорганізовано деякі ДП",
-                "zh-cn": "更新软件包\n解密管理员密码\n添加更多语言代码\n重组一些DP"
-            },
-            "1.1.0": {
-                "en": "add analysis data for week/day\nupdate packages",
-                "de": "analysedaten für woche/tag hinzufügen\nupdate-pakete",
-                "ru": "добавить данные анализа на неделю/день\nобновления пакетов",
-                "pt": "adicionar dados de análise para semana/dia\npacotes de atualização",
-                "nl": "analysegegevens voor week/dag toevoegen\npakketten bijwerken",
-                "fr": "ajouter des données d'analyse pour semaine/jour\nmettre à jour les paquets",
-                "it": "aggiungere i dati di analisi per settimana/giorno\npacchetti di aggiornamento",
-                "es": "añadir datos de análisis para semana/día\nactualizar paquetes",
-                "pl": "dodać dane z analizy za tydzień / dzień\naktualizacja pakietów",
-                "uk": "додавати аналіз даних за тиждень/день\nоновлення пакетів",
-                "zh-cn": "增加周/日分析数据\n更新软件包"
-            },
-            "1.0.3": {
-                "en": "edit refreshtimer\nadd to repo",
-                "de": "updatetimer bearbeiten\nin den warenkorb",
-                "ru": "отредактировать время обновления\nдобавить repo",
-                "pt": "edição de atualização\nadicionar ao repo",
-                "nl": "verversentimer bewerken\naan repo toevoegen",
-                "fr": "modifier le rafraîchisseur\najouter à repo",
-                "it": "modifica aggiornamento\naggiungere a repo",
-                "es": "edición de actualización\nañadir a repo",
-                "pl": "edytuj odświeżacz\ndodaj do repo",
-                "uk": "редагувати таймер\nдодати в репо",
-                "zh-cn": "编辑刷新时间\n添加到还原"
-            }
-        },
-        "titleLang": {
-            "en": "Anker Solix 2",
-            "de": "Anker Solix 2",
-            "ru": "Анкер Соликс 2",
-            "pt": "Anker Solix 2",
-            "nl": "Anker Solix 2",
-            "fr": "Anker Solix 2",
-            "it": "Anker Solix 2",
-            "es": "Anker Solix 2",
-            "pl": "Anker Solix 2",
-            "uk": "Анкер Солікс 2",
-            "zh-cn": "安克索利克斯 2"
-        },
-        "desc": {
-            "en": "Integrade Anker Solix 2",
-            "de": "Integrieren Sie Anker Solix 2",
-            "ru": "Интеграция Анкер Соликс 2",
-            "pt": "Integração Anker Solix 2",
-            "nl": "Integreer Anker Solix 2",
-            "fr": "Intégrer Anker Solix 2",
-            "it": "Integrato Anker Solix 2",
-            "es": "Integrar Anker Solix 2",
-            "pl": "Zintegruj Anker Solix 2",
-            "uk": "Інтеграція Anker Solix 2",
-            "zh-cn": "集成 Anker Solix 2"
-        },
-        "authors": ["ronny130286 <ronnymatthei@gmx.de>"],
-        "keywords": ["Anker", "Solix", "Solarbank", "Solarbank 2", "IoT"],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "ankersolix2.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/ronny130286/ioBroker.ankersolix2/main/admin/ankersolix2.png",
-        "readme": "https://github.com/ronny130286/ioBroker.ankersolix2/blob/main/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "iot-systems",
-        "compact": true,
-        "connectionType": "cloud",
-        "dataSource": "poll",
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.6.17"
-            }
-        ]
+  "common": {
+    "name": "ankersolix2",
+    "version": "2.3.0",
+    "news": {
+      "2.3.0": {
+        "en": "you can use now same account in app and adapter\nnow you can control the solarbank with adapter (if you use adminaccount)",
+        "de": "sie können jetzt dasselbe konto in app und adapter verwenden\njetzt können sie die solarbank mit adapter steuern (wenn sie adminaccount verwenden)",
+        "ru": "теперь вы можете использовать ту же учетную запись в приложении и адаптере\nтеперь вы можете управлять солнечным банком с помощью адаптера (если вы используете админаккаунт)",
+        "pt": "você pode usar agora a mesma conta no aplicativo e adaptador\nagora você pode controlar o banco solar com adaptador (se você usar adminaccount)",
+        "nl": "u kunt nu hetzelfde account gebruiken in app en adapter\nnu kunt u de zonnebank met adapter bedienen (als u adminaccount gebruikt)",
+        "fr": "vous pouvez maintenant utiliser le même compte dans l'application et l'adaptateur\nmaintenant vous pouvez contrôler la banque solaire avec adaptateur (si vous utilisez admincount)",
+        "it": "è possibile utilizzare ora stesso account in app e adattatore\nora è possibile controllare la banca solare con adattatore (se si utilizza conto amministratore)",
+        "es": "puede utilizar ahora la misma cuenta en la aplicación y adaptador\nahora puedes controlar el banco solar con adaptador (si utilizas adminaccount)",
+        "pl": "możesz użyć teraz tego samego konta w aplikacji i adapterze\nteraz możesz kontrolować solarbank z adapterem (jeśli używasz adminaccount)",
+        "uk": "ви можете використовувати цей же обліковий запис у додатку та адаптері\nтепер ви можете контролювати сонячний банк з адаптером (якщо ви використовуєте adminaccount)",
+        "zh-cn": "您现在可以在应用程序和适配器中使用同一账户\n现在可以用适配器控制太阳库( 如果您使用管理账户)"
+      },
+      "2.2.0": {
+        "en": "battery types and number are adjustable in the instance",
+        "de": "batterietypen und anzahl sind im beispiel einstellbar",
+        "ru": "типы и количество батарей регулируются в данном случае",
+        "pt": "tipos de bateria e número são ajustáveis na instância",
+        "nl": "batterij types en aantal zijn instelbaar in het geval",
+        "fr": "types et nombre de piles sont réglables dans l'instance",
+        "it": "tipi di batteria e numero sono regolabili nell'istanza",
+        "es": "tipos de batería y número son ajustables en la instancia",
+        "pl": "typy baterii i liczba są regulowane w przypadku",
+        "uk": "типи акумуляторів і кількість регульовані в екземплярі",
+        "zh-cn": "电池类型和数量在实例中可以调整"
+      },
+      "2.1.2": {
+        "en": "fix for Solix 3",
+        "de": "fixierung für Solix 3",
+        "ru": "обсуждение Solix 3",
+        "pt": "correção para Solix 3",
+        "nl": "fix voor Solix 3",
+        "fr": "correctif pour Solix 3",
+        "it": "fissaggio per Solix 3",
+        "es": "fijado para Solix 3",
+        "pl": "fix dla Solix 3",
+        "uk": "фіксатор для Solix 3",
+        "zh-cn": "用于 Solix 3 的修复"
+      },
+      "2.1.1": {
+        "en": "bugfix",
+        "de": "fehlerbehebung",
+        "ru": "исправление ошибок",
+        "pt": "correção de erros",
+        "nl": "bugfix",
+        "fr": "correction du bug",
+        "it": "bugfix",
+        "es": "bugfix",
+        "pl": "bugfix",
+        "uk": "панчохи",
+        "zh-cn": "错误修正"
+      },
+      "2.1.0": {
+        "en": "reorganized analysis option (now selectable in adminconsole)\nadd battery energy to solix devices\nupdate packages",
+        "de": "reorganisierte analyseoption (jetzt wählbar in adminconsole)\nbatterieenergie zu solix-geräten hinzufügen\nupdate-pakete",
+        "ru": "вариант реорганизованного анализа (сейчас выбираемый в админконсоле)\nдобавьте энергию аккумулятора в устройства solix\nобновление пакетов",
+        "pt": "opção de análise reorganizada (agora selecionável em adminconsole)\nadicionar energia da bateria a dispositivos de solix\npacotes de atualização",
+        "nl": "gereorganiseerde analyse optie (nu te selecteren in adminconsole)\nbatterij energie toevoegen aan solix apparaten\npakketten bijwerken",
+        "fr": "option d'analyse réorganisée (maintenant sélectionnable dans adminconsole)\najouter de l'énergie de batterie aux dispositifs solix\nmettre à jour les paquets",
+        "it": "opzione di analisi riorganizzata (ora selezionabile in adminconsole)\naggiungere energia della batteria ai dispositivi solix\npacchetti di aggiornamento",
+        "es": "opción de análisis reorganizado (ahora seleccionable en administración consola)\nañadir energía de batería a los dispositivos de solix\nactualizar paquetes",
+        "pl": "reorganizowana opcja analizy (teraz wybierana w konsoli adminowej)\ndodać energię akumulatora do urządzeń stałych\naktualizacja pakietów",
+        "uk": "реорганізований варіант аналізу (нижчий вибір в адмінконсолі)\nдодавати енергію акумулятора для пристроїв солі\nоновлення пакетів",
+        "zh-cn": "重组分析选项( 现可在管理控制台中选择)\n在 solix 设备中添加电池能量\n更新软件包"
+      },
+      "2.0.0": {
+        "en": "update packages\ndecrypt password in adminui\nadd more language codes\nreorganized some DP",
+        "de": "update-pakete\npasswort decrypt in adminui\nweitere sprachcodes hinzufügen\nreorganisiert einige DP",
+        "ru": "обновление пакетов\nрасшифровать пароль в adminui\nдобавьте больше языковых кодов\nреорганизовано несколько ДП",
+        "pt": "pacotes de atualização\ndescriptografar senha em adminui\nadicionar mais códigos de idioma\nreorganizado alguns DP",
+        "nl": "pakketten bijwerken\nwachtwoord ontcijferen in adminui\nmeer taalcodes toevoegen\ngereorganiseerd sommige DP",
+        "fr": "mettre à jour les paquets\ndéchiffrer le mot de passe dans adminui\najouter plus de codes linguistiques\nréorganisation de certains PDD",
+        "it": "pacchetti di aggiornamento\ndecrypt password in adminui\naggiungere altri codici linguistici\nriorganizzazione di alcuni DP",
+        "es": "actualizar paquetes\ndescifrar contraseña en adminui\nañadir más códigos de idioma\nreorganizar algunos DP",
+        "pl": "aktualizacja pakietów\ndeszyfrowanie hasła w adminui\ndodaj więcej kodów językowych\nreorganizacja niektórych DP",
+        "uk": "оновлення пакетів\nдешифрувати пароль в адміні\nдодати більше мовних кодів\nреорганізовано деякі ДП",
+        "zh-cn": "更新软件包\n解密管理员密码\n添加更多语言代码\n重组一些DP"
+      },
+      "1.1.0": {
+        "en": "add analysis data for week/day\nupdate packages",
+        "de": "analysedaten für woche/tag hinzufügen\nupdate-pakete",
+        "ru": "добавить данные анализа на неделю/день\nобновления пакетов",
+        "pt": "adicionar dados de análise para semana/dia\npacotes de atualização",
+        "nl": "analysegegevens voor week/dag toevoegen\npakketten bijwerken",
+        "fr": "ajouter des données d'analyse pour semaine/jour\nmettre à jour les paquets",
+        "it": "aggiungere i dati di analisi per settimana/giorno\npacchetti di aggiornamento",
+        "es": "añadir datos de análisis para semana/día\nactualizar paquetes",
+        "pl": "dodać dane z analizy za tydzień / dzień\naktualizacja pakietów",
+        "uk": "додавати аналіз даних за тиждень/день\nоновлення пакетів",
+        "zh-cn": "增加周/日分析数据\n更新软件包"
+      }
     },
-    "native": {
-        "Password": "",
-        "Username": "",
-        "API_Server": "https://ankerpower-api-eu.anker.com"
+    "titleLang": {
+      "en": "Anker Solix 2",
+      "de": "Anker Solix 2",
+      "ru": "Анкер Соликс 2",
+      "pt": "Anker Solix 2",
+      "nl": "Anker Solix 2",
+      "fr": "Anker Solix 2",
+      "it": "Anker Solix 2",
+      "es": "Anker Solix 2",
+      "pl": "Anker Solix 2",
+      "uk": "Анкер Солікс 2",
+      "zh-cn": "安克索利克斯 2"
     },
-    "encryptedNative": ["Password"],
-    "protectedNative": ["Password"],
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info.apiconnection",
-            "type": "state",
-            "common": {
-                "name": {
-                    "en": "api connected",
-                    "de": "API verbunden",
-                    "ru": "API подключен",
-                    "pt": "api conectado",
-                    "nl": "api verbonden",
-                    "fr": "API connectée",
-                    "it": "api connessa",
-                    "es": "API conectada",
-                    "pl": "API połączone",
-                    "uk": "api підключено",
-                    "zh-cn": "API 已连接"
-                },
-                "type": "boolean",
-                "role": "indicator.connected",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "Integrade Anker Solix 2",
+      "de": "Integrieren Sie Anker Solix 2",
+      "ru": "Интеграция Анкер Соликс 2",
+      "pt": "Integração Anker Solix 2",
+      "nl": "Integreer Anker Solix 2",
+      "fr": "Intégrer Anker Solix 2",
+      "it": "Integrato Anker Solix 2",
+      "es": "Integrar Anker Solix 2",
+      "pl": "Zintegruj Anker Solix 2",
+      "uk": "Інтеграція Anker Solix 2",
+      "zh-cn": "集成 Anker Solix 2"
+    },
+    "authors": [
+      "ronny130286 <ronnymatthei@gmx.de>"
+    ],
+    "keywords": [
+      "Anker",
+      "Solix",
+      "Solarbank",
+      "Solarbank 2",
+      "IoT"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "ankersolix2.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/ronny130286/ioBroker.ankersolix2/main/admin/ankersolix2.png",
+    "readme": "https://github.com/ronny130286/ioBroker.ankersolix2/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "iot-systems",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.6.17"
+      }
     ]
+  },
+  "native": {
+    "Password": "",
+    "Username": "",
+    "API_Server": "https://ankerpower-api-eu.anker.com"
+  },
+  "encryptedNative": [
+    "Password"
+  ],
+  "protectedNative": [
+    "Password"
+  ],
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info.apiconnection",
+      "type": "state",
+      "common": {
+        "name": {
+          "en": "api connected",
+          "de": "API verbunden",
+          "ru": "API подключен",
+          "pt": "api conectado",
+          "nl": "api verbonden",
+          "fr": "API connectée",
+          "it": "api connessa",
+          "es": "API conectada",
+          "pl": "API połączone",
+          "uk": "api підключено",
+          "zh-cn": "API 已连接"
+        },
+        "type": "boolean",
+        "role": "indicator.connected",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }

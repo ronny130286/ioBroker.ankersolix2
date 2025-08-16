@@ -61,8 +61,7 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 2.3.0 (2025-08-16)
 
 - (ronny130286) you can use now same account in app and adapter
 - (ronny130286) now you can control the solarbank with adapter (if you use adminaccount)
