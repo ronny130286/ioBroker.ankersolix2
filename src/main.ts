@@ -47,7 +47,7 @@ class Ankersolix2 extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         // Initialize your adapter here
-        if (this.config.HomeLoadID.length > 0 && this.config.EnableControl) {
+        if (this.config.HomeLoadID.trim() !== '' && this.config.EnableControl) {
             //this.log.debug(`HomeLoadID: ${this.config.HomeLoadID}`);
 
             this.subscribeForeignStates(`${this.config.HomeLoadID}`);

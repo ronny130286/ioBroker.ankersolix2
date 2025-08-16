@@ -55,7 +55,7 @@ class Ankersolix2 extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    if (this.config.HomeLoadID.length > 0 && this.config.EnableControl) {
+    if (this.config.HomeLoadID.trim() !== "" && this.config.EnableControl) {
       this.subscribeForeignStates(`${this.config.HomeLoadID}`);
     }
     if (!this.config.Username || !this.config.Password) {
