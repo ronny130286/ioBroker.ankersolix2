@@ -34,11 +34,21 @@ If your updating from v1.x to 2.x, you have to reinsert your password again! If 
 
 ## Config
 
-1. Create a familie-account in anker app and add it to your main-account
+1. ~~Create a familie-account in anker app and add it to your main-account~~ Since end of july 2025, you can use the same account in app and adapter.
 2. install the adapter
 3. go to adapter setting and set your credentials
 4. at first time, pleas use a high poll time (180sec), so you have enought time to stop the adapter if everything goes wrong.
    Normally you can see in logfile that you have an site_id and you got the message: Published.
+
+## Control with Adapter
+
+1. You need to login in your admin account
+2. go to adapter settings, tab control and activet the control
+3. select a datapoint witch you want use to control. It can be a manuel data point witch set by a script or you a smartmeter data point. (Important: it must be a numerical value)
+4. select you site id witch you want control.
+5. click save and restart adapter
+
+$${\color{red}Note: The adapter overwrites the settings in the app. If you want to use the app again, you must deactivate the adapter or the control function.$$
 
 ## Helps
 
@@ -51,6 +61,12 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ronny130286) you can use now same account in app and adapter
+- (ronny130286) now you can control the solarbank with adapter (if you use adminaccount)
+
 ### 2.2.0 (2025-06-30)
 
 - (ronny130286) battery types and number are adjustable in the instance

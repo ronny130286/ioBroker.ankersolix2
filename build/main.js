@@ -24,6 +24,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_fs = __toESM(require("fs"));
 var import_api = require("./api");
+var import_apitypes = require("./apitypes");
 class Ankersolix2 extends utils.Adapter {
   storeData = "";
   refreshTimeout;
@@ -32,6 +33,8 @@ class Ankersolix2 extends utils.Adapter {
   api;
   apiConnection;
   sleep;
+  isAdmin = false;
+  loggedInApi;
   constructor(options = {}) {
     super({
       ...options,
@@ -45,12 +48,16 @@ class Ankersolix2 extends utils.Adapter {
     this.api = null;
     this.apiConnection = false;
     this.on("ready", this.onReady.bind(this));
+    this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
   /**
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
+    if (this.config.HomeLoadID.length > 0 && this.config.EnableControl) {
+      this.subscribeForeignStates(`${this.config.HomeLoadID}`);
+    }
     if (!this.config.Username || !this.config.Password) {
       this.log.error(
         `User name and/or user password empty - please check instance configuration of ${this.namespace}`
@@ -125,6 +132,13 @@ class Ankersolix2 extends utils.Adapter {
       }
     } else {
       this.log.debug("Using auth data from savefile");
+    }
+    this.loggedInApi = await this.api.withLogin(login);
+    const bindedDevice = await this.loggedInApi.bind_device();
+    if (bindedDevice.data.data.length > 0) {
+      this.isAdmin = true;
+    } else {
+      this.isAdmin = false;
     }
     return login;
   }
@@ -203,16 +217,15 @@ class Ankersolix2 extends utils.Adapter {
     }
   }
   async fetchAndPublish() {
-    const loggedInApi = await this.api.withLogin(this.loginData);
-    const siteHomepage = await loggedInApi.siteHomepage();
+    const siteHomepage = await this.loggedInApi.siteHomepage();
     let sites;
     if (siteHomepage.data.site_list.length === 0) {
-      sites = (await loggedInApi.getSiteList()).data.site_list;
+      sites = (await this.loggedInApi.getSiteList()).data.site_list;
     } else {
       sites = siteHomepage.data.site_list;
     }
     for (const site of sites) {
-      const scenInfo = await loggedInApi.scenInfo(site.site_id);
+      const scenInfo = await this.loggedInApi.scenInfo(site.site_id);
       const message = JSON.stringify(scenInfo.data);
       const jsonparse = JSON.parse(message);
       this.CreateOrUpdate(site.site_id, site.site_name, "folder");
@@ -232,18 +245,17 @@ class Ankersolix2 extends utils.Adapter {
     this.log.debug("Published Data.");
   }
   async fetchAndPublishAnalysis() {
-    const loggedInApi = await this.api.withLogin(this.loginData);
-    const siteHomepage = await loggedInApi.siteHomepage();
+    const siteHomepage = await this.loggedInApi.siteHomepage();
     let sites;
     let scenInfo;
     if (siteHomepage.data.site_list.length === 0) {
-      sites = (await loggedInApi.getSiteList()).data.site_list;
+      sites = (await this.loggedInApi.getSiteList()).data.site_list;
     } else {
       sites = siteHomepage.data.site_list;
     }
     for (const site of sites) {
       const ranges = ["day", "week"];
-      scenInfo = !scenInfo ? await loggedInApi.scenInfo(site.site_id) : scenInfo;
+      scenInfo = !scenInfo ? await this.loggedInApi.scenInfo(site.site_id) : scenInfo;
       const scenInfoData = JSON.parse(JSON.stringify(scenInfo.data));
       this.CreateOrUpdate(`${site.site_id}.energyanalysis`, "energyanalysis", "folder");
       for (const range of ranges) {
@@ -252,7 +264,7 @@ class Ankersolix2 extends utils.Adapter {
         const ende = range === "week" ? new Date(date.setDate(start.getDate() + 6)) : /* @__PURE__ */ new Date();
         if (this.config.AnalysisSolarproduction && (range === "day" && this.config.AnalysisSolarproductionDay || range === "week" && this.config.AnalysisSolarproductionWeek)) {
           try {
-            const energyInfo = await loggedInApi.energyAnalysis(
+            const energyInfo = await this.loggedInApi.energyAnalysis(
               site.site_id,
               "",
               "week",
@@ -282,7 +294,7 @@ class Ankersolix2 extends utils.Adapter {
         }
         if (this.config.AnalysisGrid && (range === "day" && this.config.AnalysisGridDay || range === "week" && this.config.AnalysisGridWeek)) {
           try {
-            const gridInfo = await loggedInApi.energyAnalysis(
+            const gridInfo = await this.loggedInApi.energyAnalysis(
               site.site_id,
               "",
               "week",
@@ -322,7 +334,7 @@ class Ankersolix2 extends utils.Adapter {
                     `${range}`,
                     "folder"
                   );
-                  const homeusageInfo = await loggedInApi.energyAnalysis(
+                  const homeusageInfo = await this.loggedInApi.energyAnalysis(
                     site.site_id,
                     device_sn,
                     "week",
@@ -427,29 +439,27 @@ class Ankersolix2 extends utils.Adapter {
       });
     }
   }
-  isObject(key, value) {
+  async isObject(key, value) {
     const name = key.split(".").pop();
     if (value == null ? void 0 : value.device_sn) {
+      value = { ...value, is_admin: this.isAdmin };
       this.CreateOrUpdate(key, name, "device");
     } else {
       this.CreateOrUpdate(key, name, "folder");
     }
-    if ((value == null ? void 0 : value.device_pn) && (value == null ? void 0 : value.battery_power) && import_api.DeviceCapacity[value == null ? void 0 : value.device_pn] > 0) {
+    if ((value == null ? void 0 : value.device_pn) && (value == null ? void 0 : value.battery_power) && import_apitypes.DeviceCapacity[value == null ? void 0 : value.device_pn] > 0) {
       if (value == null ? void 0 : value.battery_power) {
         const bat_power = (value == null ? void 0 : value.battery_power) ? value == null ? void 0 : value.battery_power : 0;
         const num_of_batteries = (value == null ? void 0 : value.sub_package_num) ? value == null ? void 0 : value.sub_package_num : 0;
         let cap = 0;
         if (value == null ? void 0 : value.device_pn) {
-          cap = import_api.DeviceCapacity[value == null ? void 0 : value.device_pn];
-          this.log.debug(`device: ${value == null ? void 0 : value.device_pn} ,Capacity: ${cap}`);
+          cap = import_apitypes.DeviceCapacity[value == null ? void 0 : value.device_pn];
         }
         if (this.config.BatteryBP1600Count > 0 && num_of_batteries > 0) {
           cap = cap + this.config.BatteryBP1600Count * 1600;
-          this.log.debug(`BatteryBP1600Count: ${key},Capacity: ${cap}`);
         }
         if (this.config.BatteryBP2700Count > 0 && num_of_batteries > 0) {
           cap = cap + this.config.BatteryBP2700Count * 2700;
-          this.log.debug(`BatteryBP2700Count: ${key},Capacity: ${cap}`);
         }
         if (this.config.BatteryBP2700Count == 0 && this.config.BatteryBP1600Count == 0 && num_of_batteries > 0) {
           cap = cap + num_of_batteries * 1600;
@@ -564,6 +574,36 @@ class Ankersolix2 extends utils.Adapter {
     this.apiConnection = status;
     this.setStateChangedAsync("info.apiconnection", { val: status, ack: true });
   }
+  rundeAufZehner(value, max = 800) {
+    const val = Math.round(value / 10) * 10;
+    if (val > max) {
+      return max;
+    }
+    return val;
+  }
+  async setParam(value) {
+    var _a;
+    try {
+      if (!this.isLoginValid(this.loginData) || ((_a = this.loginData) == null ? void 0 : _a.email) != this.config.Username) {
+        this.loginData = await this.loginAPI();
+      }
+      if (this.loginData) {
+        this.setApiCon(true);
+        const siteID = this.config.ControlSiteID.split(".")[2];
+        const { data: powerLimit } = await this.loggedInApi.getPowerLimit(siteID);
+        const roundedValue = this.rundeAufZehner(value, powerLimit.max_power_limit);
+        const jsonstring = '{"mode_type":3,"custom_rate_plan":[{"index":0,"week":[0,1,2,3,4,5,6],"ranges":[{"start_time":"00:00","end_time":"24:00","power":400}]}],"blend_plan":null,"default_home_load":200,"max_load":800,"min_load":0,"step":10}';
+        const config = JSON.parse(jsonstring);
+        config.mode_type = 3;
+        config.custom_rate_plan[0].ranges[0].power = roundedValue;
+        await this.loggedInApi.setSiteDeviceParam("6", siteID, JSON.stringify(config));
+      }
+    } catch (err) {
+      this.log.error(`setParam: ${err}`);
+      this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+      this.setApiCon(false);
+    }
+  }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances!
    */
@@ -600,15 +640,17 @@ class Ankersolix2 extends utils.Adapter {
   /**
    * Is called if a subscribed state changes
    */
-  //private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-  //    if (state) {
-  //        // The state was changed
-  //        this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-  //    } else {
-  //        // The state was deleted
-  //        this.log.info(`state ${id} deleted`);
-  //    }
-  // }
+  onStateChange(id, state) {
+    if (id === `${this.config.HomeLoadID}` && this.config.EnableControl && this.isAdmin) {
+      this.log.info(`HomeLoadID state changed: ${id} - ${JSON.stringify(state)}`);
+      const value = state == null ? void 0 : state.val;
+      if (typeof value !== "number") {
+        this.log.warn(`HomeLoadID state value is not a number: ${value}`);
+      } else {
+        this.setParam(value);
+      }
+    }
+  }
   // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
   // /**
   //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...

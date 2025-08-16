@@ -21,6 +21,9 @@ declare global {
             AnalysisHomeUsageWeek: boolean;
             BatteryBP1600Count: number;
             BatteryBP2700Count: number;
+            HomeLoadID: string;
+            ControlSiteID: string;
+            EnableControl: boolean;
         }
     }
 }

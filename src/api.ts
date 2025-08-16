@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { type ECDH, createCipheriv, createECDH, createHash } from 'crypto';
+import { ParamType, type PowerLimit } from './apitypes';
 import type { Logger } from './utils';
 
 export interface Options {
@@ -107,59 +108,16 @@ interface SiteListResponse {
 }
 
 export interface UserMqttInfo {
-    /**
-     * A unique identifier for the user.
-     * Typically a SHA-1 hash or similar.
-     */
     user_id: string;
-
-    /**
-     * A string that denotes the name of the application.
-     */
     app_name: string;
-
-    /**
-     * Formed as a combination of the user_id and app_name.
-     */
     thing_name: string;
-
-    /**
-     * Identifier for a certificate.
-     */
     certificate_id: string;
-
-    /**
-     * A PEM-formatted X.509 certificate.
-     */
     certificate_pem: string;
-
-    /**
-     * The RSA private key, PEM-formatted.
-     */
     private_key: string;
-
-    /**
-     * RSA Public key, PEM-formatted. Was always empty
-     */
     public_key: string;
-
-    /**
-     * Address of the MQTT endpoint.
-     */
     endpoint_addr: string;
-
-    /**
-     * A PEM-formatted Root CA certificate.
-     * Used to validate the authenticity of the remote server.
-     */
     aws_root_ca1_pem: string;
-
     origin: string;
-
-    /**
-     * PKCS#12, a binary format for storing the server certificate,
-     * any intermediate certificates, and the private key in one encryptable file.
-     */
     pkcs12: string;
 }
 
@@ -253,6 +211,10 @@ export interface EnergyAnalysis {
     }>;
 }
 
+export interface PowerLimitResponse {
+    data: PowerLimit;
+}
+
 export interface LoadData {
     time: string;
     load: number;
@@ -290,69 +252,11 @@ export interface SB1_LoadConfiguration {
     step: number;
 }
 
-export interface SB2_LoadConfiguration {
-    mode_type: number;
-    custom_rate_plan: Custom_Rate_Plan[];
-    blend_plan: Custom_Rate_Plan[];
-    default_home_load: number;
-    max_load: number;
-    min_load: number;
-    step: number;
-}
-
-export interface Custom_Rate_Plan {
-    index: number;
-    week: Array<number>[];
-    ranges: SB2_Range[];
-}
-
-export interface SB2_Range {
-    start_time: string;
-    end_time: string;
-    powerr: number;
-}
-
-export enum ParamType {
-    SB1_SCHEDULE = '4',
-    SB2_SCHEDULE = '6',
-}
-
 export type ParamData<T extends ParamType> = T extends ParamType.SB1_SCHEDULE ? SB1_LoadConfiguration : string;
 
 export interface SiteDeviceParamResponse<T extends ParamType> {
     param_data: ParamData<T>;
 }
-
-export const DeviceCapacity: Record<string, number> = {
-    A17C0: 1600, // SOLIX E1600 Solarbank
-    A17C1: 1600, // SOLIX E1600 Solarbank 2 Pro
-    A17C2: 1600, // SOLIX E1600 Solarbank 2 AC
-    A17C3: 1600, // SOLIX E1600 Solarbank 2 Plus
-    A17C5: 2700, // SOLIX E2700 Solarbank 3 Pro
-    A1720: 256, // Anker PowerHouse 521 Portable Power Station
-    A1722: 288, // SOLIX C300 Portable Power Station
-    A1723: 230, // SOLIX C200 Portable Power Station
-    A1725: 230, // SOLIX C200 Portable Power Station
-    A1726: 288, // SOLIX C300 DC Portable Power Station
-    A1727: 230, // SOLIX C200 DC Portable Power Station
-    A1728: 288, // SOLIX C300 X Portable Power Station
-    A1751: 512, // Anker PowerHouse 535 Portable Power Station
-    A1753: 768, // SOLIX C800 Portable Power Station
-    A1754: 768, // SOLIX C800 Plus Portable Power Station
-    A1755: 768, // SOLIX C800X Portable Power Station
-    A1760: 1024, // Anker PowerHouse 555 Portable Power Station
-    A1761: 1056, // SOLIX C1000(X) Portable Power Station
-    A1770: 1229, // Anker PowerHouse 757 Portable Power Station
-    A1771: 1229, // SOLIX F1200 Portable Power Station
-    A1772: 1536, // SOLIX F1500 Portable Power Station
-    A1780: 2048, // SOLIX F2000 Portable Power Station (PowerHouse 767)
-    A1780_1: 2048, // Expansion Battery for F2000
-    A1780P: 2048, // SOLIX F2000 Portable Power Station (PowerHouse 767) with WIFI
-    A1781: 2560, // SOLIX F2600 Portable Power Station
-    A1790: 3840, // SOLIX F3800 Portable Power Station
-    A1790_1: 3840, // SOLIX BP3800 Expansion Battery for F3800
-    A5220: 5000, // SOLIX X1 Battery module
-};
 
 export class SolixApi {
     private readonly SERVER_PUBLIC_KEY =
@@ -519,13 +423,12 @@ export class SolixApi {
             setSiteDeviceParam: async <T extends ParamType>(
                 paramType: ParamType,
                 siteId: string,
-                cmd = 17, // Unknown what this means but it's alway 17
                 paramData: ParamData<T>,
             ) => {
                 let data = {
                     site_id: siteId,
                     param_type: paramType,
-                    cmd,
+                    cmd: 17,
                     param_data: paramData as unknown,
                 };
                 switch (paramType) {
@@ -536,6 +439,18 @@ export class SolixApi {
                     // Should be a string already
                 }
                 return authFetch<Record<string, never>>('/power_service/v1/site/set_site_device_param', data);
+            },
+            getPowerLimit: async (siteId: string) => {
+                const data = { site_id: siteId };
+                return authFetch<PowerLimit>('/power_service/v1/site/get_power_limit', data);
+            },
+            getAccountInfo: async () => {
+                const data = {};
+                return authFetch<LoginResultResponse>('/passport/get_account_info', data);
+            },
+            bind_device: async () => {
+                const data = {};
+                return authFetch<Record<string, never>>('power_service/v1/app/get_relate_and_bind_devices', data);
             },
         };
     }

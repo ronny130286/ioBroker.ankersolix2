@@ -13,5 +13,11 @@
     "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.": "It is recommended to deactivate unnecessary data. Note: No data points will be deleted, this must be done manually.",
     "day": "day",
     "week": "week",
-    "Which additional batteries are installed? Do not specify more than installed!": "Which additional batteries are installed? Do not specify more than installed!"
+    "Which additional batteries are installed? Do not specify more than installed!": "Which additional batteries are installed? Do not specify more than installed!",
+    "Option for Grid to Home": "Option for Grid to Home",
+    "Select a data point that, f.e. indicates the house's consumption.": "Select a data point that, f.e. indicates the house's consumption. A change in the data point is passed on to the solarbank.",
+    "Select the Site device, that will be used to control.": "Select the Site device, that will be used to control.",
+    "Control": "Control",
+    "Options": "Options",
+    "Enable control": "Enable control"
 }

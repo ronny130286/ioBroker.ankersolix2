@@ -337,6 +337,44 @@
                     "xl": 3
                 }
             }
+        },
+        "_control": {
+            "type": "panel",
+            "label": "Control",
+            "items": {
+                "EnableControl": {
+                    "type": "checkbox",
+                    "label": "Enable control",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "HomeLoadID": {
+                    "type": "objectId",
+                    "label": "Select a data point that, f.e. indicates the house's consumption.",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "newLine": true
+                },
+                "ControlSiteID": {
+                    "type": "objectId",
+                    "label": "Select the Site device, that will be used to control.",
+                    "types": ["folder"],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "newLine": true
+                }
+            }
         }
     }
 }

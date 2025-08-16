@@ -28,76 +28,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var api_exports = {};
 __export(api_exports, {
-  DeviceCapacity: () => DeviceCapacity,
-  ParamType: () => ParamType,
   SolixApi: () => SolixApi
 });
 module.exports = __toCommonJS(api_exports);
 var import_axios = __toESM(require("axios"));
 var import_crypto = require("crypto");
-var ParamType = /* @__PURE__ */ ((ParamType2) => {
-  ParamType2["SB1_SCHEDULE"] = "4";
-  ParamType2["SB2_SCHEDULE"] = "6";
-  return ParamType2;
-})(ParamType || {});
-const DeviceCapacity = {
-  A17C0: 1600,
-  // SOLIX E1600 Solarbank
-  A17C1: 1600,
-  // SOLIX E1600 Solarbank 2 Pro
-  A17C2: 1600,
-  // SOLIX E1600 Solarbank 2 AC
-  A17C3: 1600,
-  // SOLIX E1600 Solarbank 2 Plus
-  A17C5: 2700,
-  // SOLIX E2700 Solarbank 3 Pro
-  A1720: 256,
-  // Anker PowerHouse 521 Portable Power Station
-  A1722: 288,
-  // SOLIX C300 Portable Power Station
-  A1723: 230,
-  // SOLIX C200 Portable Power Station
-  A1725: 230,
-  // SOLIX C200 Portable Power Station
-  A1726: 288,
-  // SOLIX C300 DC Portable Power Station
-  A1727: 230,
-  // SOLIX C200 DC Portable Power Station
-  A1728: 288,
-  // SOLIX C300 X Portable Power Station
-  A1751: 512,
-  // Anker PowerHouse 535 Portable Power Station
-  A1753: 768,
-  // SOLIX C800 Portable Power Station
-  A1754: 768,
-  // SOLIX C800 Plus Portable Power Station
-  A1755: 768,
-  // SOLIX C800X Portable Power Station
-  A1760: 1024,
-  // Anker PowerHouse 555 Portable Power Station
-  A1761: 1056,
-  // SOLIX C1000(X) Portable Power Station
-  A1770: 1229,
-  // Anker PowerHouse 757 Portable Power Station
-  A1771: 1229,
-  // SOLIX F1200 Portable Power Station
-  A1772: 1536,
-  // SOLIX F1500 Portable Power Station
-  A1780: 2048,
-  // SOLIX F2000 Portable Power Station (PowerHouse 767)
-  A1780_1: 2048,
-  // Expansion Battery for F2000
-  A1780P: 2048,
-  // SOLIX F2000 Portable Power Station (PowerHouse 767) with WIFI
-  A1781: 2560,
-  // SOLIX F2600 Portable Power Station
-  A1790: 3840,
-  // SOLIX F3800 Portable Power Station
-  A1790_1: 3840,
-  // SOLIX BP3800 Expansion Battery for F3800
-  A5220: 5e3
-  // SOLIX X1 Battery module
-};
+var import_apitypes = require("./apitypes");
 class SolixApi {
   SERVER_PUBLIC_KEY = "04c5c00c4f8d1197cc7c3167c52bf7acb054d722f0ef08dcd7e0883236e0d72a3868d9750cb47fa4619248f3d83f0f662671dadc6e2d31c2f41db0161651c7c076";
   username;
@@ -212,7 +148,7 @@ class SolixApi {
         );
         if (response.data != null) {
           switch (paramType) {
-            case "4" /* SB1_SCHEDULE */:
+            case import_apitypes.ParamType.SB1_SCHEDULE:
               return {
                 ...response,
                 data: {
@@ -225,20 +161,32 @@ class SolixApi {
         }
         return response;
       },
-      setSiteDeviceParam: async (paramType, siteId, cmd = 17, paramData) => {
+      setSiteDeviceParam: async (paramType, siteId, paramData) => {
         let data = {
           site_id: siteId,
           param_type: paramType,
-          cmd,
+          cmd: 17,
           param_data: paramData
         };
         switch (paramType) {
-          case "4" /* SB1_SCHEDULE */:
+          case import_apitypes.ParamType.SB1_SCHEDULE:
             data = { ...data, param_data: JSON.stringify(paramData) };
             break;
           default:
         }
         return authFetch("/power_service/v1/site/set_site_device_param", data);
+      },
+      getPowerLimit: async (siteId) => {
+        const data = { site_id: siteId };
+        return authFetch("/power_service/v1/site/get_power_limit", data);
+      },
+      getAccountInfo: async () => {
+        const data = {};
+        return authFetch("/passport/get_account_info", data);
+      },
+      bind_device: async () => {
+        const data = {};
+        return authFetch("power_service/v1/app/get_relate_and_bind_devices", data);
       }
     };
   }
@@ -263,8 +211,6 @@ class SolixApi {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  DeviceCapacity,
-  ParamType,
   SolixApi
 });
 //# sourceMappingURL=api.js.map

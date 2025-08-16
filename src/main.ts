@@ -6,7 +6,8 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import fs, { promises as pfs } from 'fs';
-import { DeviceCapacity, type LoginResultResponse, SolixApi } from './api';
+import { SolixApi, type LoginResultResponse } from './api';
+import { DeviceCapacity, type EnergyConfig } from './apitypes';
 
 // Load your modules here, e.g.:
 
@@ -18,6 +19,8 @@ class Ankersolix2 extends utils.Adapter {
     private api: any;
     private apiConnection: boolean;
     private sleep: any;
+    private isAdmin: boolean = false;
+    private loggedInApi: any;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -33,7 +36,7 @@ class Ankersolix2 extends utils.Adapter {
         this.api = null;
         this.apiConnection = false;
         this.on('ready', this.onReady.bind(this));
-        //this.on('stateChange', this.onStateChange.bind(this));
+        this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
         //this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
@@ -44,6 +47,11 @@ class Ankersolix2 extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         // Initialize your adapter here
+        if (this.config.HomeLoadID.length > 0 && this.config.EnableControl) {
+            //this.log.debug(`HomeLoadID: ${this.config.HomeLoadID}`);
+
+            this.subscribeForeignStates(`${this.config.HomeLoadID}`);
+        }
 
         if (!this.config.Username || !this.config.Password) {
             this.log.error(
@@ -135,6 +143,19 @@ class Ankersolix2 extends utils.Adapter {
             this.log.debug('Using auth data from savefile');
         }
 
+        this.loggedInApi = await this.api.withLogin(login);
+
+        //check if User is Admin
+        const bindedDevice = await this.loggedInApi.bind_device();
+
+        if (bindedDevice.data.data.length > 0) {
+            this.isAdmin = true;
+            //this.log.info(`User ist Admin:`);
+        } else {
+            this.isAdmin = false;
+            //this.log.info(`User is not Admin, only read access to own devices.`);
+        }
+
         return login;
     }
 
@@ -162,6 +183,7 @@ class Ankersolix2 extends utils.Adapter {
 
             if (this.loginData) {
                 this.setApiCon(true);
+
                 await this.fetchAndPublish();
             }
         } catch (err: any) {
@@ -217,19 +239,19 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     async fetchAndPublish(): Promise<void> {
-        const loggedInApi = await this.api.withLogin(this.loginData);
-        const siteHomepage = await loggedInApi.siteHomepage();
+        //const loggedInApi = await this.api.withLogin(this.loginData);
+        const siteHomepage = await this.loggedInApi.siteHomepage();
 
         let sites;
         if (siteHomepage.data.site_list.length === 0) {
             // Fallback for Shared Accounts
-            sites = (await loggedInApi.getSiteList()).data.site_list;
+            sites = (await this.loggedInApi.getSiteList()).data.site_list;
         } else {
             sites = siteHomepage.data.site_list;
         }
 
         for (const site of sites) {
-            const scenInfo = await loggedInApi.scenInfo(site.site_id);
+            const scenInfo = await this.loggedInApi.scenInfo(site.site_id);
 
             const message = JSON.stringify(scenInfo.data);
             /*
@@ -264,14 +286,14 @@ class Ankersolix2 extends utils.Adapter {
     }
 
     async fetchAndPublishAnalysis(): Promise<void> {
-        const loggedInApi = await this.api.withLogin(this.loginData);
-        const siteHomepage = await loggedInApi.siteHomepage();
+        //const loggedInApi = await this.api.withLogin(this.loginData);
+        const siteHomepage = await this.loggedInApi.siteHomepage();
 
         let sites;
         let scenInfo;
         if (siteHomepage.data.site_list.length === 0) {
             // Fallback for Shared Accounts
-            sites = (await loggedInApi.getSiteList()).data.site_list;
+            sites = (await this.loggedInApi.getSiteList()).data.site_list;
         } else {
             sites = siteHomepage.data.site_list;
         }
@@ -279,7 +301,7 @@ class Ankersolix2 extends utils.Adapter {
         for (const site of sites) {
             const ranges = ['day', 'week'];
 
-            scenInfo = !scenInfo ? await loggedInApi.scenInfo(site.site_id) : scenInfo;
+            scenInfo = !scenInfo ? await this.loggedInApi.scenInfo(site.site_id) : scenInfo;
             const scenInfoData = JSON.parse(JSON.stringify(scenInfo.data));
 
             //const scenInfoData = JSON.parse(await pfs.readFile(`${utils.getAbsoluteInstanceDataDir(this)}/debug.json`, 'utf8'),);
@@ -300,7 +322,7 @@ class Ankersolix2 extends utils.Adapter {
                         (range === 'week' && this.config.AnalysisSolarproductionWeek))
                 ) {
                     try {
-                        const energyInfo = await loggedInApi.energyAnalysis(
+                        const energyInfo = await this.loggedInApi.energyAnalysis(
                             site.site_id,
                             '',
                             'week',
@@ -338,7 +360,7 @@ class Ankersolix2 extends utils.Adapter {
                         (range === 'week' && this.config.AnalysisGridWeek))
                 ) {
                     try {
-                        const gridInfo = await loggedInApi.energyAnalysis(
+                        const gridInfo = await this.loggedInApi.energyAnalysis(
                             site.site_id,
                             '',
                             'week',
@@ -385,7 +407,7 @@ class Ankersolix2 extends utils.Adapter {
                                         `${range}`,
                                         'folder',
                                     );
-                                    const homeusageInfo = await loggedInApi.energyAnalysis(
+                                    const homeusageInfo = await this.loggedInApi.energyAnalysis(
                                         site.site_id,
                                         device_sn,
                                         'week',
@@ -505,10 +527,13 @@ class Ankersolix2 extends utils.Adapter {
         }
     }
 
-    isObject(key: string, value: any): void {
+    async isObject(key: string, value: any): Promise<void> {
         const name = key.split('.').pop();
 
         if (value?.device_sn) {
+            //if User is Admin, set is_admin to true to all devices
+            value = { ...value, is_admin: this.isAdmin };
+
             this.CreateOrUpdate(key, name, 'device');
         } else {
             this.CreateOrUpdate(key, name, 'folder');
@@ -524,16 +549,16 @@ class Ankersolix2 extends utils.Adapter {
                 let cap = 0;
                 if (value?.device_pn) {
                     cap = DeviceCapacity[value?.device_pn];
-                    this.log.debug(`device: ${value?.device_pn} ,Capacity: ${cap}`);
+                    //this.log.debug(`device: ${value?.device_pn} ,Capacity: ${cap}`);
                 }
                 //this.log.debug(`isObject: ${key}, BatteryBP1600Count: ${this.config.BatteryBP1600Count}, BatteryBP2700Count: ${this.config.BatteryBP2700Count}`,);
                 if (this.config.BatteryBP1600Count > 0 && num_of_batteries > 0) {
                     cap = cap + this.config.BatteryBP1600Count * 1600;
-                    this.log.debug(`BatteryBP1600Count: ${key},Capacity: ${cap}`);
+                    //this.log.debug(`BatteryBP1600Count: ${key},Capacity: ${cap}`);
                 }
                 if (this.config.BatteryBP2700Count > 0 && num_of_batteries > 0) {
                     cap = cap + this.config.BatteryBP2700Count * 2700;
-                    this.log.debug(`BatteryBP2700Count: ${key},Capacity: ${cap}`);
+                    //this.log.debug(`BatteryBP2700Count: ${key},Capacity: ${cap}`);
                 }
                 if (
                     this.config.BatteryBP2700Count == 0 &&
@@ -692,6 +717,44 @@ class Ankersolix2 extends utils.Adapter {
         this.setStateChangedAsync('info.apiconnection', { val: status, ack: true });
     }
 
+    rundeAufZehner(value: number, max: number = 800): number {
+        const val = Math.round(value / 10) * 10;
+        if (val > max) {
+            //max 800W Einspeisung
+            return max;
+        }
+        return val;
+    }
+
+    async setParam(value: number): Promise<void> {
+        try {
+            if (!this.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
+                this.loginData = await this.loginAPI();
+            }
+            if (this.loginData) {
+                this.setApiCon(true);
+
+                const siteID = this.config.ControlSiteID.split('.')[2];
+                const { data: powerLimit } = await this.loggedInApi.getPowerLimit(siteID);
+                const roundedValue = this.rundeAufZehner(value, powerLimit.max_power_limit);
+
+                /**/
+                const jsonstring =
+                    '{"mode_type":3,"custom_rate_plan":[{"index":0,"week":[0,1,2,3,4,5,6],"ranges":[{"start_time":"00:00","end_time":"24:00","power":400}]}],"blend_plan":null,"default_home_load":200,"max_load":800,"min_load":0,"step":10}';
+                const config: EnergyConfig = JSON.parse(jsonstring);
+
+                config.mode_type = 3; //3 = Benutzerdefiniert Modus
+                config.custom_rate_plan[0].ranges[0].power = roundedValue; //
+
+                await this.loggedInApi.setSiteDeviceParam('6', siteID, JSON.stringify(config));
+            }
+        } catch (err: any) {
+            this.log.error(`setParam: ${err}`);
+            this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+            this.setApiCon(false);
+        }
+    }
+
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
      */
@@ -736,15 +799,27 @@ class Ankersolix2 extends utils.Adapter {
     /**
      * Is called if a subscribed state changes
      */
-    //private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-    //    if (state) {
-    //        // The state was changed
-    //        this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-    //    } else {
-    //        // The state was deleted
-    //        this.log.info(`state ${id} deleted`);
-    //    }
-    // }
+    private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+        if (id === `${this.config.HomeLoadID}` && this.config.EnableControl && this.isAdmin) {
+            this.log.info(`HomeLoadID state changed: ${id} - ${JSON.stringify(state)}`);
+            const value = state?.val;
+            if (typeof value !== 'number') {
+                this.log.warn(`HomeLoadID state value is not a number: ${value}`);
+            } else {
+                //this.log.info(`HomeLoadID state value: ${this.rundeAufZehner(wert)}`);
+                this.setParam(value);
+            }
+        }
+        /*
+        if (state) {
+            //        // The state was changed
+            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+        } else {
+            //        // The state was deleted
+            this.log.info(`state ${id} deleted`);
+        }
+            */
+    }
 
     // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
     // /**
