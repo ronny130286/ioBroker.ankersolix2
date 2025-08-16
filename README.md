@@ -48,7 +48,7 @@ If your updating from v1.x to 2.x, you have to reinsert your password again! If 
 4. select you site id witch you want control.
 5. click save and restart adapter
 
-$${\color{red}Note: The adapter overwrites the settings in the app. If you want to use the app again, you must deactivate the adapter or the control function.$$
+Note: The adapter overwrites the settings in the app. If you want to use the app again, you must deactivate the adapter or the control function.
 
 ## Helps
 
@@ -61,6 +61,7 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
 ### 2.3.0 (2025-08-16)
 
 - (ronny130286) you can use now same account in app and adapter
