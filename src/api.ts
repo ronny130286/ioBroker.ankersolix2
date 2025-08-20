@@ -452,6 +452,10 @@ export class SolixApi {
                 const data = {};
                 return authFetch<Record<string, never>>('power_service/v1/app/get_relate_and_bind_devices', data);
             },
+            getSiteDetails: async (siteId: string) => {
+                const data = { site_id: siteId };
+                return authFetch<Solarbank>('/power_service/v1/site/get_site_detail', data);
+            },
         };
     }
 

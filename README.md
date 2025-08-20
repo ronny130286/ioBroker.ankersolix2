@@ -44,8 +44,11 @@ If your updating from v1.x to 2.x, you have to reinsert your password again! If 
 
 1. You need to login in your admin account
 2. go to adapter settings, tab control and activet the control
-3. select a datapoint witch you want use to control. It can be a manuel data point witch set by a script or you a smartmeter data point. (Important: it must be a numerical value)
-4. select you site id witch you want control.
+3. select you site id witch you want control.
+4. Control Opitons
+   4.1. select a datapoint witch you want use to control. It can be a manuel data point witch set by a script or you a smartmeter data point. (Important: it must be a numerical value)
+   4.2. you can set a custom powerplan, if you to trigger the powerplan again, you can control is the datapoint ankersolix2.x.control.SetPowerplan (set true and ack)
+   4.3. you can enable ac loading. If its enabled, you can control it with the datapoint ankersolix2.x.control.ACLoading\ (set true and ack = activ (time now + 12h), set false and ack = inactiv, userdefine powerplan will select)
 5. click save and restart adapter
 
 Note: The adapter overwrites the settings in the app. If you want to use the app again, you must deactivate the adapter or the control function.
@@ -55,12 +58,20 @@ Note: The adapter overwrites the settings in the app. If you want to use the app
 If you have errors like 401, than please check you credentials.
 If you have erros again and cant login, stop the adapter and delete the session.data under the iobroker-data/ankersolix2.0 (e.g. /opt/iobroker/iobroker-data/ankersolix2/), after this start adapter again.
 
+## You want to support me?
+
+[!["Buy Me A Coffee"](https://cdn.buymeacoffee.com/buttons/v2/default-red.png)](https://www.buymeacoffee.com/ronny130286)
+
 ## Changelog
 
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ronny130286) add Powerplan and AC Loading (for AC devices)
 
 ### 2.3.0 (2025-08-16)
 

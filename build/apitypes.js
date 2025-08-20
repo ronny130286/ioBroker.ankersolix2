@@ -18,6 +18,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var apitypes_exports = {};
 __export(apitypes_exports, {
+  ACLoadCodes: () => ACLoadCodes,
   DeviceCapacity: () => DeviceCapacity,
   InverterOutput: () => InverterOutput,
   ParamType: () => ParamType
@@ -28,6 +29,11 @@ var ParamType = /* @__PURE__ */ ((ParamType2) => {
   ParamType2["SB2_SCHEDULE"] = "6";
   return ParamType2;
 })(ParamType || {});
+var ACLoadCodes = /* @__PURE__ */ ((ACLoadCodes2) => {
+  ACLoadCodes2["A17C2"] = "A17C2";
+  ACLoadCodes2["A17C5"] = "A17C5";
+  return ACLoadCodes2;
+})(ACLoadCodes || {});
 const InverterOutput = {
   A5143: [600, 800],
   A17C1: [350, 600, 800, 1e3],
@@ -95,6 +101,7 @@ const DeviceCapacity = {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  ACLoadCodes,
   DeviceCapacity,
   InverterOutput,
   ParamType

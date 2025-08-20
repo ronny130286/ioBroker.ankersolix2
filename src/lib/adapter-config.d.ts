@@ -23,7 +23,11 @@ declare global {
             BatteryBP2700Count: number;
             HomeLoadID: string;
             ControlSiteID: string;
-            EnableControl: boolean;
+            EnableControlDP: boolean;
+            EnableCustomPowerPlan: boolean;
+            PowerPlan: [];
+            EnableACLoading: boolean;
+            PowerPlanAtReload: boolean;
         }
     }
 }

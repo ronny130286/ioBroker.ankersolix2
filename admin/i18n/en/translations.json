@@ -19,5 +19,15 @@
     "Select the Site device, that will be used to control.": "Select the Site device, that will be used to control.",
     "Control": "Control",
     "Options": "Options",
-    "Enable control": "Enable control"
+    "Enable control": "Enable control over datapoint",
+    "Weekday (0,1,2,3,4,5,6)": "Weekday (0,1,2,3,4,5,6)",
+    "Power-on time (HH:MM)": "Power-on time (HH:MM)",
+    "Power-off time (HH:MM)": "Power-off time (HH:MM)",
+    "Power (watts)": "Power (watts)",
+    "Enable Custom Power Plan": "Enable Custom Power Plan",
+    "Custom Power Plan": "Custom Power Plan",
+    "Enable AC Loading, only for ac devices, if enabled, you can control it with the Datepoint: ankersolix2.x.control.ACLoading": "Enable AC Loading, only for ac devices, if enabled, you can control it with the Datepoint: ankersolix2.x.control.ACLoading",
+    "Set Power Plan at Reload": "Set Power Plan at Reload",
+    "If its checked, the power plan will be set at reload the adapter": "If its checked, the power plan will be set at reload the adapter",
+    "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true.": "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true."
 }

@@ -7,8 +7,8 @@
 import * as utils from '@iobroker/adapter-core';
 import fs, { promises as pfs } from 'fs';
 import { SolixApi, type LoginResultResponse } from './api';
-import { DeviceCapacity, type EnergyConfig } from './apitypes';
-
+import { DeviceCapacity, type CRPRange, type CustomRatePlan, type EnergyConfig } from './apitypes';
+import { MyFunc } from './func';
 // Load your modules here, e.g.:
 
 class Ankersolix2 extends utils.Adapter {
@@ -21,6 +21,7 @@ class Ankersolix2 extends utils.Adapter {
     private sleep: any;
     private isAdmin: boolean = false;
     private loggedInApi: any;
+    private myfunc: MyFunc;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -35,6 +36,7 @@ class Ankersolix2 extends utils.Adapter {
         this.sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         this.api = null;
         this.apiConnection = false;
+        this.myfunc = new MyFunc(this);
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
@@ -47,14 +49,24 @@ class Ankersolix2 extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         // Initialize your adapter here
-        if (
-            typeof this.config.HomeLoadID === 'string' &&
-            this.config.HomeLoadID.trim() !== '' &&
-            this.config.EnableControl
-        ) {
-            //this.log.debug(`HomeLoadID: ${this.config.HomeLoadID}`);
 
-            this.subscribeForeignStates(`${this.config.HomeLoadID}`);
+        this.loginData = await this.loginAPI();
+
+        if (typeof this.config.HomeLoadID === 'string' && this.config.HomeLoadID.trim() !== '') {
+            if (this.config.EnableControlDP) {
+                this.subscribeForeignStates(`${this.config.HomeLoadID}`);
+            }
+
+            if (this.config.EnableACLoading) {
+                this.subscribeForeignStates(`${this.namespace}.control.ACLoading`);
+            }
+
+            if (this.config.EnableCustomPowerPlan && this.config.PowerPlan?.length > 0) {
+                this.subscribeForeignStates(`${this.namespace}.control.SetPowerplan`);
+                if (this.config.PowerPlanAtReload) {
+                    this.setPowerplan();
+                }
+            }
         }
 
         if (!this.config.Username || !this.config.Password) {
@@ -82,8 +94,6 @@ class Ankersolix2 extends utils.Adapter {
             return;
         }
 
-        this.loginData = await this.loginAPI();
-
         this.refreshDate();
 
         if (this.config.AnalysisGrid || this.config.AnalysisHomeUsage || this.config.AnalysisSolarproduction) {
@@ -108,7 +118,7 @@ class Ankersolix2 extends utils.Adapter {
         if (login) {
             let newneed = false;
             //check if login token not expired
-            if (!this.isLoginValid(login)) {
+            if (!this.myfunc.isLoginValid(login)) {
                 this.log.debug('loginAPI: token expired');
                 newneed = true;
             }
@@ -181,7 +191,7 @@ class Ankersolix2 extends utils.Adapter {
     async refreshDate(): Promise<void> {
         let refresh = this.config.POLL_INTERVAL;
         try {
-            if (!this.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
+            if (!this.myfunc.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
                 this.loginData = await this.loginAPI();
             }
 
@@ -217,7 +227,7 @@ class Ankersolix2 extends utils.Adapter {
 
     async refreshAnalysis(): Promise<void> {
         try {
-            if (!this.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
+            if (!this.myfunc.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
                 this.loginData = await this.loginAPI();
             }
             if (this.loginData) {
@@ -441,39 +451,12 @@ class Ankersolix2 extends utils.Adapter {
         this.log.debug('Published Analysis Data.');
     }
 
-    whatIsIt(obj: any): 'boolean' | 'number' | 'string' | 'array' | 'object' | 'null' | 'undefined' | undefined {
-        if (obj === null) {
-            return 'null';
-        }
-        if (obj === undefined) {
-            return 'undefined';
-        }
-        if (Array.isArray(obj)) {
-            return 'array';
-        }
-        if (typeof obj === 'string') {
-            return 'string';
-        }
-        if (typeof obj === 'boolean') {
-            return 'boolean';
-        }
-        if (typeof obj === 'number') {
-            return 'number';
-        }
-        if (obj != null && typeof obj === 'object') {
-            return 'object';
-        }
-    }
-    /**
-     * @param key
-     * @param jOb
-     */
     parseObjects(key: string, jOb: any): void {
         //this.log.debug(`parseObjects : ${JSON.stringify(jOb)}`);
         Object.entries(JSON.parse(JSON.stringify(jOb))).forEach(entries => {
             const [id, value] = entries;
 
-            const type = this.whatIsIt(value);
+            const type = this.myfunc.whatIsIt(value);
 
             if (type === 'array') {
                 this.isArray(`${key}.${id}`, value);
@@ -520,9 +503,9 @@ class Ankersolix2 extends utils.Adapter {
                 if ('device_sn' in array[item]) {
                     i = array[item].device_sn;
                 }
-                if (this.whatIsIt(array[item]) === 'object') {
+                if (this.myfunc.whatIsIt(array[item]) === 'object') {
                     this.isObject(`${key}.${i}`, array[item]);
-                } else if (this.whatIsIt(array[item]) === 'string') {
+                } else if (this.myfunc.whatIsIt(array[item]) === 'string') {
                     this.isString(`${key}.${i}`, array[item]);
                 }
 
@@ -581,7 +564,7 @@ class Ankersolix2 extends utils.Adapter {
 
         Object.entries(value).forEach(subentries => {
             const [objkey, objvalue] = subentries;
-            const type = this.whatIsIt(objvalue);
+            const type = this.myfunc.whatIsIt(objvalue);
 
             if (type === 'array') {
                 this.isArray(`${key}.${objkey}`, objvalue);
@@ -600,7 +583,7 @@ class Ankersolix2 extends utils.Adapter {
         let parmRole = role;
         let parmUnit = unit ? unit : '';
 
-        const valType = this.whatIsIt(value);
+        const valType = this.myfunc.whatIsIt(value);
 
         if (valType === 'boolean') {
             parmType = 'boolean';
@@ -678,7 +661,7 @@ class Ankersolix2 extends utils.Adapter {
             newObj = {
                 type: type,
                 common: {
-                    name: this.name2id(name),
+                    name: this.myfunc.name2id(name),
                     type: commontype,
                     role: role,
                     read: true,
@@ -697,42 +680,135 @@ class Ankersolix2 extends utils.Adapter {
                 native: {},
             };
         }
-        await this.extendObject(this.name2id(path), newObj);
+        await this.extendObject(this.myfunc.name2id(path), newObj);
     }
 
-    isLoginValid(loginData: LoginResultResponse | null, now: Date = new Date()): boolean {
-        if (loginData != null) {
-            return new Date(loginData.token_expires_at * 1000).getTime() > now.getTime();
-        }
-        return false;
-    }
-
-    name2id(pName: string): string {
-        return (pName || '').replace(this.FORBIDDEN_CHARS, '_');
-    }
-
-    /**
-     * Set api connection status
-     *
-     * @param status
-     */
     async setApiCon(status: boolean): Promise<void> {
         this.apiConnection = status;
         this.setStateChangedAsync('info.apiconnection', { val: status, ack: true });
     }
 
-    rundeAufZehner(value: number, max: number = 800): number {
-        const val = Math.round(value / 10) * 10;
-        if (val > max) {
-            //max 800W Einspeisung
-            return max;
+    async setPowerplan(): Promise<void> {
+        try {
+            if (!this.myfunc.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
+                this.loginData = await this.loginAPI();
+            }
+            if (this.loginData) {
+                const powerplan: EnergyConfig = {
+                    mode_type: 3, //3 = Benutzerdefiniert Modus
+                    custom_rate_plan: [] as CustomRatePlan[],
+                    blend_plan: null,
+                    use_time: null,
+                    manual_backup: null,
+                    reserved_soc: 10,
+                    ai_ems: { enable: false, status: 3 },
+                    time_slot: null,
+                    schedule_mode: null,
+                    dynamic_price: null,
+                    /* Wird zum setzen der Powerplan noch nicht benötigt*/
+                    default_home_load: 200,
+                    max_load: 800,
+                    min_load: 0,
+                    step: 10,
+                };
+
+                const planMap = new Map<string, CustomRatePlan>();
+
+                for (const item of this.config.PowerPlan as any) {
+                    const ranges: CRPRange = {
+                        start_time: item.start_time,
+                        end_time: item.end_time,
+                        power: this.myfunc ? this.myfunc.rundeAufZehner(item.power) : item.power,
+                    };
+
+                    if (planMap.has(item.week)) {
+                        planMap.get(item.week)?.ranges.push(ranges);
+                    } else {
+                        planMap.set(item.week, {
+                            index: 0,
+                            week: item.week.split(',').map(Number),
+                            ranges: [ranges],
+                        });
+                    }
+                }
+                const custom_rate_plan: CustomRatePlan[] = Array.from(planMap.values()).map((plan, i) => ({
+                    ...plan,
+                    index: i,
+                }));
+
+                powerplan.custom_rate_plan = custom_rate_plan;
+                const siteID = this.config.ControlSiteID.split('.')[2];
+                //this.log.debug(`createPowerplan: ${JSON.stringify(powerplan)}`);
+                await this.loggedInApi.setSiteDeviceParam('6', siteID, JSON.stringify(powerplan));
+            }
+        } catch (err: any) {
+            this.log.error(`setParam: ${err}`);
+            this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+            this.setApiCon(false);
         }
-        return val;
+    }
+
+    async setACLoading(status: boolean): Promise<void> {
+        try {
+            if (!this.myfunc.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
+                this.loginData = await this.loginAPI();
+            }
+            if (this.loginData) {
+                const siteID = this.config.ControlSiteID.split('.')[2];
+
+                //prüfen ob ein AC Gerät vorhanden ist
+                const siteDetails = await this.loggedInApi.getSiteDetails(siteID);
+                this.sleep(30); //Wartezeit zwischen Anfragen
+
+                const acdevice = siteDetails.data.solarbank_list.find((device: any) =>
+                    this.myfunc.isACLoading(device.device_pn),
+                );
+
+                if (acdevice) {
+                    const rawResponse = await this.loggedInApi.getSiteDeviceParam('6', siteID);
+                    const rawData = rawResponse.data.param_data;
+
+                    const getpowerplan: EnergyConfig = JSON.parse(rawData);
+                    let start_time: number;
+                    let end_time: number;
+
+                    if (status) {
+                        start_time = Math.floor(Date.now() / 1000); // aktuelle Zeit in Sekunden
+                        end_time = start_time + 43200; // +12h ebenfalls in Sekunden
+                    } else {
+                        start_time = 0;
+                        end_time = 0;
+                    }
+
+                    const manuel_backup = {
+                        ranges: [
+                            {
+                                start_time: start_time,
+                                end_time: end_time,
+                            },
+                        ],
+                        switch: status,
+                    };
+                    getpowerplan.mode_type = 3; //3 = Benutzerdefiniert Modus
+                    getpowerplan.manual_backup = manuel_backup;
+
+                    //this.log.debug(`SetAC - Powerplan: ${JSON.stringify(getpowerplan)}`);
+
+                    await this.loggedInApi.setSiteDeviceParam('6', siteID, JSON.stringify(getpowerplan));
+                } else {
+                    this.log.warn(`setACLoading: No AC Device found in Site ${siteID}}`);
+                }
+            }
+        } catch (err: any) {
+            this.log.error(`setACLoading: ${err}`);
+            this.log.debug(`Error Object: ${JSON.stringify(err)}`);
+            this.setApiCon(false);
+        }
     }
 
     async setParam(value: number): Promise<void> {
         try {
-            if (!this.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
+            if (!this.myfunc.isLoginValid(this.loginData) || this.loginData?.email != this.config.Username) {
                 this.loginData = await this.loginAPI();
             }
             if (this.loginData) {
@@ -740,7 +816,7 @@ class Ankersolix2 extends utils.Adapter {
 
                 const siteID = this.config.ControlSiteID.split('.')[2];
                 const { data: powerLimit } = await this.loggedInApi.getPowerLimit(siteID);
-                const roundedValue = this.rundeAufZehner(value, powerLimit.max_power_limit);
+                const roundedValue = this.myfunc.rundeAufZehner(value, powerLimit.max_power_limit);
 
                 /**/
                 const jsonstring =
@@ -804,7 +880,7 @@ class Ankersolix2 extends utils.Adapter {
      * Is called if a subscribed state changes
      */
     private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-        if (id === `${this.config.HomeLoadID}` && this.config.EnableControl && this.isAdmin) {
+        if (id === `${this.config.HomeLoadID}` && this.config.EnableControlDP && this.isAdmin) {
             this.log.info(`HomeLoadID state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'number') {
@@ -812,6 +888,24 @@ class Ankersolix2 extends utils.Adapter {
             } else {
                 //this.log.info(`HomeLoadID state value: ${this.rundeAufZehner(wert)}`);
                 this.setParam(value);
+            }
+        }
+        if (id === `${this.namespace}.control.ACLoading` && this.isAdmin) {
+            this.log.info(`setACLoading state changed: ${id} - ${JSON.stringify(state)}`);
+            const value = state?.val;
+            if (typeof value !== 'boolean') {
+                this.log.warn(`setACLoading state value is not a boolean: ${value}`);
+            } else {
+                this.setACLoading(value);
+            }
+        }
+        if (id === `${this.namespace}.control.SetPowerplan` && this.isAdmin) {
+            this.log.info(`setPowerplan state changed: ${id} - ${JSON.stringify(state)}`);
+            const value = state?.val;
+            if (typeof value !== 'boolean') {
+                this.log.warn(`setPowerplan state value is not a boolean: ${value}`);
+            } else {
+                this.setPowerplan();
             }
         }
         /*

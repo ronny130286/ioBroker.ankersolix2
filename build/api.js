@@ -187,6 +187,10 @@ class SolixApi {
       bind_device: async () => {
         const data = {};
         return authFetch("power_service/v1/app/get_relate_and_bind_devices", data);
+      },
+      getSiteDetails: async (siteId) => {
+        const data = { site_id: siteId };
+        return authFetch("/power_service/v1/site/get_site_detail", data);
       }
     };
   }

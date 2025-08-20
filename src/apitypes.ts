@@ -1,29 +1,30 @@
-interface AiEms {
+export interface AiEms {
     enable: boolean;
     status: number;
 }
 
-interface Range {
+export interface CRPRange {
     start_time: string;
     end_time: string;
     power: number;
 }
-interface CustomRatePlan {
+export interface CustomRatePlan {
     index: number;
     week: number[];
-    ranges: Range[];
+    ranges: CRPRange[];
 }
 export interface EnergyConfig {
     mode_type: number;
     custom_rate_plan: CustomRatePlan[];
-    blend_plan: any;
-    use_time: any;
+    blend_plan: null;
+    use_time: null;
     manual_backup: any;
-    reserved_soc: number;
-    dynamic_price: any;
-    ai_ems: AiEms;
-    time_slot: any;
-    schedule_mode: any;
+    reserved_soc: 10;
+    ai_ems: { enable: false; status: 3 };
+    time_slot: null;
+    schedule_mode: null;
+    dynamic_price: null;
+    /* Wird zum setzen der Powerplan noch nicht benötigt*/
     default_home_load: number;
     max_load: number;
     min_load: number;
@@ -45,6 +46,11 @@ export interface PowerLimit {
 export enum ParamType {
     SB1_SCHEDULE = '4',
     SB2_SCHEDULE = '6',
+}
+
+export enum ACLoadCodes {
+    A17C2 = 'A17C2',
+    A17C5 = 'A17C5',
 }
 
 export const InverterOutput: Record<string, number[]> = {

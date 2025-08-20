@@ -342,7 +342,18 @@
             "type": "panel",
             "label": "Control",
             "items": {
-                "EnableControl": {
+                "ControlSiteID": {
+                    "type": "objectId",
+                    "label": "Select the Site device, that will be used to control.",
+                    "types": ["folder"],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "newLine": true
+                },
+                "EnableControlDP": {
                     "type": "checkbox",
                     "label": "Enable control",
                     "default": false,
@@ -356,6 +367,7 @@
                 "HomeLoadID": {
                     "type": "objectId",
                     "label": "Select a data point that, f.e. indicates the house's consumption.",
+                    "hidden": "!data.EnableControlDP",
                     "xs": 12,
                     "sm": 12,
                     "md": 12,
@@ -363,16 +375,118 @@
                     "xl": 12,
                     "newLine": true
                 },
-                "ControlSiteID": {
-                    "type": "objectId",
-                    "label": "Select the Site device, that will be used to control.",
-                    "types": ["folder"],
+                "PowerPlanHdr": {
+                    "type": "header",
+                    "text": {
+                        "en": "Power Plan Options",
+                        "de": "Energiesparplanoptionen",
+                        "ru": "Параметры плана электропитания",
+                        "pt": "Opções de plano de energia",
+                        "nl": "Opties voor energiebeheerschema's",
+                        "fr": "Options de plan d'alimentation",
+                        "it": "Opzioni del piano energetico",
+                        "es": "Opciones del plan de energía",
+                        "pl": "Opcje planu zasilania",
+                        "uk": "Варіанти плану живлення",
+                        "zh-cn": "电源计划选项"
+                    },
+                    "size": 2
+                },
+                "EnableCustomPowerPlan": {
+                    "type": "checkbox",
+                    "label": "Enable Custom Power Plan",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "PowerPlan": {
+                    "type": "table",
+                    "label": "Custom Power Plan",
+                    "hidden": "!data.EnableCustomPowerPlan",
                     "xs": 12,
                     "sm": 12,
                     "md": 12,
-                    "lg": 12,
-                    "xl": 12,
+                    "lg": 8,
+                    "xl": 8,
+                    "newLine": true,
+                    "showSecondAddAt": 10,
+                    "useCardFor": ["xs", "sm", "md", "md", "lg", "xl"],
+                    "compact": true,
+                    "items": [
+                        {
+                            "type": "number",
+                            "attr": "power",
+                            "title": "Power (watts)",
+                            "tooltip": "Power in watts",
+                            "min": 10,
+                            "step": 10,
+                            "max": 2000
+                        },
+                        {
+                            "type": "text",
+                            "attr": "week",
+                            "title": "Weekday (0,1,2,3,4,5,6)",
+                            "default": ""
+                        },
+                        {
+                            "type": "text",
+                            "attr": "start_time",
+                            "title": "Power-on time (HH:MM)",
+                            "default": ""
+                        },
+                        {
+                            "type": "text",
+                            "attr": "end_time",
+                            "title": "Switch-off time (HH:MM)",
+                            "default": ""
+                        }
+                    ]
+                },
+                "PowerPlanAtReload": {
+                    "type": "checkbox",
+                    "label": "Set Power Plan at Reload",
+                    "tooltip": "If its checked, the power plan will be set at reload the adapter.",
+                    "validator": "!!data.PowerPlanAtReload",
+                    "validatorErrorText": "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true.",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4,
+                    "hidden": "!data.EnableCustomPowerPlan",
                     "newLine": true
+                },
+                "ACHdr": {
+                    "type": "header",
+                    "text": {
+                        "en": "AC Loading Options",
+                        "de": "AC-Ladeoptionen",
+                        "ru": "Варианты загрузки переменного тока",
+                        "pt": "Opções de carregamento CA",
+                        "nl": "AC-laadopties",
+                        "fr": "Options de chargement CA",
+                        "it": "Opzioni di caricamento CA",
+                        "es": "Opciones de carga de CA",
+                        "pl": "Opcje ładowania AC",
+                        "uk": "Варіанти завантаження змінного струму",
+                        "zh-cn": "交流负载选项"
+                    },
+                    "size": 2
+                },
+                "EnableACLoading": {
+                    "type": "checkbox",
+                    "label": "Enable AC Loading, only for ac devices, if enabled, you can control it with the Datepoint: ankersolix2.x.control.ACLoading",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         }
