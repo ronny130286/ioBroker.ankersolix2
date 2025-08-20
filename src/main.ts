@@ -50,6 +50,41 @@ class Ankersolix2 extends utils.Adapter {
     private async onReady(): Promise<void> {
         // Initialize your adapter here
 
+        if (!this.config.Username || !this.config.Password) {
+            this.log.error(
+                `User name and/or user password empty - please check instance configuration of ${this.namespace}`,
+            );
+            return;
+        }
+
+        if (!this.config.POLL_INTERVAL && (this.config.POLL_INTERVAL < 10 || this.config.POLL_INTERVAL > 3600)) {
+            this.log.error(
+                `The poll intervall must be between 10 and 3600 secounds - please check instance configuration of ${this.namespace}`,
+            );
+            return;
+        }
+
+        if (!this.config.API_Server) {
+            this.log.error(`API Server empty - please check instance configuration of ${this.namespace}`);
+            return;
+        }
+
+        if (!this.config.COUNTRY && !this.config.COUNTRY2) {
+            this.log.error(`Country empty - please check instance configuration of ${this.namespace}`);
+            return;
+        }
+
+        try {
+            // create directory to store fetch data
+            if (!fs.existsSync(utils.getAbsoluteInstanceDataDir(this))) {
+                fs.mkdirSync(utils.getAbsoluteInstanceDataDir(this));
+                this.log.debug(`Folder created: ${this.storeData}`);
+            }
+        } catch (err: any) {
+            this.log.error(`Could not create storage directory (${utils.getAbsoluteInstanceDataDir(this)}): ${err}`);
+            return;
+        }
+
         this.loginData = await this.loginAPI();
 
         if (typeof this.config.HomeLoadID === 'string' && this.config.HomeLoadID.trim() !== '') {
@@ -67,31 +102,6 @@ class Ankersolix2 extends utils.Adapter {
                     this.setPowerplan();
                 }
             }
-        }
-
-        if (!this.config.Username || !this.config.Password) {
-            this.log.error(
-                `User name and/or user password empty - please check instance configuration of ${this.namespace}`,
-            );
-            return;
-        }
-
-        if (!this.config.POLL_INTERVAL && (this.config.POLL_INTERVAL < 10 || this.config.POLL_INTERVAL > 3600)) {
-            this.log.error(
-                `The poll intervall must be between 10 and 3600 secounds - please check instance configuration of ${this.namespace}`,
-            );
-            return;
-        }
-
-        try {
-            // create directory to store fetch data
-            if (!fs.existsSync(utils.getAbsoluteInstanceDataDir(this))) {
-                fs.mkdirSync(utils.getAbsoluteInstanceDataDir(this));
-                this.log.debug(`Folder created: ${this.storeData}`);
-            }
-        } catch (err: any) {
-            this.log.error(`Could not create storage directory (${utils.getAbsoluteInstanceDataDir(this)}): ${err}`);
-            return;
         }
 
         this.refreshDate();
