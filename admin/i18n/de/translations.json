@@ -15,7 +15,7 @@
     "week": "Woche",
     "Which additional batteries are installed? Do not specify more than installed!": "Welche zusätzlichen Batterien sind installiert? Bitte nicht mehr angeben als installiert!",
     "Option for Grid to Home": "Optionen für Netz zum Haus",
-    "Select a data point that, f.e. indicates the house's consumption.": "Datenpunkt auswählen, der bspw. den Verbauch vom Haus angibt. Eine Änderung des Datsenpunktes wird an die Solarbank weitergegeben.",
+    "Select a data point that, f.e. indicates the house's consumption.": "Datenpunkt auswählen, der bspw. den Verbauch vom Haus angibt. Eine Änderung des Datenpunktes wird an die Solarbank weitergegeben.",
     "Select the Site device, that will be used to control.": "Wählen Sie eine Site aus, die gesteuert werden soll.",
     "Control": "Steuern",
     "Options": "Optionen",
