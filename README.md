@@ -58,6 +58,11 @@ Note: The adapter overwrites the settings in the app. If you want to use the app
 If you have errors like 401, than please check you credentials.
 If you have erros again and cant login, stop the adapter and delete the session.data under the iobroker-data/ankersolix2.0 (e.g. /opt/iobroker/iobroker-data/ankersolix2/), after this start adapter again.
 
+## Doku
+
+- de: [zur Dokumentation](docs/de/README.md)
+- en: [for documentation](docs/en/README.md)
+
 ## You want to support me?
 
 [!["Buy Me A Coffee"](https://cdn.buymeacoffee.com/buttons/v2/default-red.png)](https://www.buymeacoffee.com/ronny130286)
@@ -71,6 +76,7 @@ If you have erros again and cant login, stop the adapter and delete the session.
 
 ### **WORK IN PROGRESS**
 
+- (ronny130286) add timeplan (schedule) and userdefine energyplan
 - (ronny130286) add Powerplan and AC Loading (for AC devices)
 
 ### 2.3.0 (2025-08-16)
