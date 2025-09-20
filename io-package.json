@@ -121,8 +121,16 @@
             "uk": "Інтеграція Anker Solix 2",
             "zh-cn": "集成 Anker Solix 2"
         },
-        "authors": ["ronny130286 <ronnymatthei@gmx.de>"],
-        "keywords": ["Anker", "Solix", "Solarbank", "Solarbank 2", "IoT"],
+        "authors": [
+            "ronny130286 <ronnymatthei@gmx.de>"
+        ],
+        "keywords": [
+            "Anker",
+            "Solix",
+            "Solarbank",
+            "Solarbank 2",
+            "IoT"
+        ],
         "licenseInformation": {
             "type": "free",
             "license": "MIT"
@@ -136,6 +144,7 @@
         "tier": 3,
         "mode": "daemon",
         "type": "iot-systems",
+        "messagebox": true,
         "compact": true,
         "connectionType": "cloud",
         "dataSource": "poll",
@@ -158,8 +167,12 @@
         "Username": "",
         "API_Server": "https://ankerpower-api-eu.anker.com"
     },
-    "encryptedNative": ["Password"],
-    "protectedNative": ["Password"],
+    "encryptedNative": [
+        "Password"
+    ],
+    "protectedNative": [
+        "Password"
+    ],
     "objects": [],
     "instanceObjects": [
         {
@@ -212,7 +225,6 @@
             },
             "native": {}
         },
-
         {
             "_id": "control.SetPowerplan",
             "type": "state",

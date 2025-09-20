@@ -28,6 +28,8 @@ declare global {
             PowerPlan: [];
             EnableACLoading: boolean;
             PowerPlanAtReload: boolean;
+            TimePlan: [];
+            EnableTimePlan: boolean;
         }
     }
 }

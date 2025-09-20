@@ -13,6 +13,11 @@ export interface CustomRatePlan {
     week: number[];
     ranges: CRPRange[];
 }
+export interface CustomRatePlanAdmin {
+    index: number;
+    week: string;
+    ranges: CRPRange[];
+}
 export interface EnergyConfig {
     mode_type: number;
     custom_rate_plan: CustomRatePlan[];
@@ -91,3 +96,22 @@ export const DeviceCapacity: Record<string, number> = {
     A1790_1: 3840, // SOLIX BP3800 Expansion Battery for F3800
     A5220: 5000, // SOLIX X1 Battery module
 };
+
+export type SolarbankJob = {
+    start_time: string;
+    mode_type: number;
+};
+
+export enum SolarbankModeType {
+    unknown = 0,
+    smartmeter = 1,
+    smartplugs = 2,
+    manual = 3,
+    backup = 4,
+    use_time = 5,
+    smart_learning = 6,
+    smart = 7,
+    time_slot = 8,
+    //nicht von Anker
+    controlbyadapter = 9,
+}

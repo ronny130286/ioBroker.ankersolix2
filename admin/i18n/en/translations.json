@@ -29,5 +29,10 @@
     "Enable AC Loading, only for ac devices, if enabled, you can control it with the Datepoint: ankersolix2.x.control.ACLoading": "Enable AC Loading, only for ac devices, if enabled, you can control it with the Datepoint: ankersolix2.x.control.ACLoading",
     "Set Power Plan at Reload": "Set Power Plan at Reload",
     "If its checked, the power plan will be set at reload the adapter": "If its checked, the power plan will be set at reload the adapter",
-    "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true.": "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true."
+    "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true.": "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true.",
+    "Custom mode": "Custom mode",
+    "Control by adapter": "Control by adapter",
+    "Own consumption": "Own consumption",
+    "Charging with mains power": "Charging with mains power",
+    "Overlapping at day %s0: %s1 < %s2": "Overlapping at day %s0: %s1 < %s2"
 }

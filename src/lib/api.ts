@@ -1,14 +1,13 @@
 import axios from 'axios';
 import { type ECDH, createCipheriv, createECDH, createHash } from 'crypto';
+import { type Ankersolix2 } from '../main';
 import { ParamType, type PowerLimit } from './apitypes';
-import type { Logger } from './utils';
 
 export interface Options {
     username: string;
     password: string;
     server: string;
     country: string;
-    log?: Logger;
 }
 
 export interface LoginRequest {
@@ -272,14 +271,14 @@ export class SolixApi {
 
     private ecdh: ECDH = createECDH('prime256v1');
 
-    private readonly log: Logger;
+    private readonly log: ioBroker.Log;
 
     private readonly server: string;
 
-    constructor(options: Options) {
+    constructor(options: Options, adapter: Ankersolix2) {
         this.username = options.username;
         this.password = options.password;
-        this.log = options.log ?? console;
+        this.log = adapter.log;
         this.server = options.server;
         this.country = options.country.toUpperCase();
         this.timezone = this.getTimezoneGMTString();
@@ -308,7 +307,6 @@ export class SolixApi {
     }
 
     private async axios(endpoint: string, data?: any, headers?: Record<string, string>): Promise<axios.AxiosResponse> {
-        //this.log.debug(JSON.stringify(data));
         const urlBuilder = new URL(endpoint, this.server);
         const url = urlBuilder.href;
 
@@ -325,7 +323,7 @@ export class SolixApi {
                 ['Os-Type']: 'android',
                 ...headers,
             },
-            timeout: 10000,
+            timeout: 45000,
         });
     }
 

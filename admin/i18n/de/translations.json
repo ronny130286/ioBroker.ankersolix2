@@ -29,5 +29,10 @@
     "Enable AC Loading, only for ac devices, if enabled, you can control it with the Datepoint: ankersolix2.x.control.ACLoading": "AC-Laden aktivieren, nur für AC-Geräte. Wenn aktiviert, können Sie es mit dem Datenpunkt: ankersolix2.x.control.ACLoading steuern.",
     "Set Power Plan at Reload": "setze Plan beim Neuladen",
     "If its checked, the power plan will be set at reload the adapter": "Wenn diese Option aktiviert ist, wird der Energiesparplan beim Neuladen des Adapters eingestellt",
-    "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true.": "Um den Energiesparplan zu aktivieren, müssen Sie den Datenpunkt: ankersolix2.x.control.SetPowerplan auf true setzen."
+    "To active the power plan, you must control the datapoint: ankersolix2.x.control.SetPowerplan to true.": "Um den Energiesparplan zu aktivieren, müssen Sie den Datenpunkt: ankersolix2.x.control.SetPowerplan auf true setzen.",
+    "Custom mode": "Benutzerdefiniertes Modus",
+    "Control by adapter": "Gesteuert durch Adapter",
+    "Own consumption": "Eigener Verbrauch",
+    "Charging with mains power": "Ladung mit Stromnetz",
+    "Overlapping at day %s0: %s1 < %s2": "Überschneidung am Tag %s0: %s1 < %s2"
 }

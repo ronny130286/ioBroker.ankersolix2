@@ -7,6 +7,23 @@
             "type": "panel",
             "label": "Options",
             "items": {
+                "_AccountHdr": {
+                    "type": "header",
+                    "text": {
+                        "en": "Login data",
+                        "de": "Login-Daten",
+                        "ru": "Данные для входа",
+                        "pt": "Dados de login",
+                        "nl": "Inloggegevens",
+                        "fr": "Données de connexion",
+                        "it": "Dati di accesso",
+                        "es": "Datos de inicio de sesión",
+                        "pl": "Dane logowania",
+                        "uk": "Дані для входу",
+                        "zh-cn": "登录数据"
+                    },
+                    "size": 2
+                },
                 "Username": {
                     "newLine": true,
                     "type": "text",
@@ -155,6 +172,64 @@
                     "max": 3600,
                     "label": "Polltime in secounds"
                 },
+                "_BatteryHdr": {
+                    "type": "header",
+                    "text": {
+                        "en": "Battery Options",
+                        "de": "Batterieoptionen",
+                        "ru": "Варианты аккумуляторов",
+                        "pt": "Opções de bateria",
+                        "nl": "Batterijopties",
+                        "fr": "Options de batterie",
+                        "it": "Opzioni della batteria",
+                        "es": "Opciones de batería",
+                        "pl": "Opcje baterii",
+                        "uk": "Варіанти акумуляторів",
+                        "zh-cn": "电池选项"
+                    },
+                    "size": 2
+                },
+                "BatteryTxt1": {
+                    "type": "staticText",
+                    "text": "Which additional batteries are installed? Do not specify more than installed!",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "BatteryBP1600Count": {
+                    "type": "number",
+                    "label": "Anker BP1600",
+                    "default": 0,
+                    "min": 0,
+                    "max": 5,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 3,
+                    "newLine": true
+                },
+                "BatteryBP2700Count": {
+                    "type": "number",
+                    "label": "Anker BP2700",
+                    "default": 0,
+                    "min": 0,
+                    "max": 5,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 3
+                }
+            }
+        },
+        "_analysisoption": {
+            "type": "panel",
+            "label": "Analysis Option",
+            "items": {
                 "AnalysisHdr": {
                     "type": "header",
                     "text": "Analysis Option",
@@ -278,63 +353,6 @@
                     "md": 4,
                     "lg": 2,
                     "xl": 2
-                },
-                "BatteryHdr": {
-                    "type": "header",
-                    "text": "Battery Option",
-                    "size": 2
-                },
-                "BatteryTxt1": {
-                    "type": "staticText",
-                    "text": "Which additional batteries are installed? Do not specify more than installed!",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 6,
-                    "xl": 6
-                },
-                "BatteryBP1600": {
-                    "type": "staticText",
-                    "text": "Anker BP1600",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 6,
-                    "xl": 6
-                },
-                "BatteryBP1600Count": {
-                    "type": "number",
-                    "default": 0,
-                    "min": 0,
-                    "max": 5,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 3,
-                    "xl": 3
-                },
-                "BatteryBP2700": {
-                    "type": "staticText",
-                    "text": "Anker BP2700",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 6,
-                    "xl": 6
-                },
-                "BatteryBP2700Count": {
-                    "type": "number",
-                    "default": 0,
-                    "min": 0,
-                    "max": 5,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 3,
-                    "xl": 3
                 }
             }
         },
@@ -342,6 +360,11 @@
             "type": "panel",
             "label": "Control",
             "items": {
+                "_ControlHdr": {
+                    "type": "header",
+                    "text": "Control",
+                    "size": 2
+                },
                 "ControlSiteID": {
                     "type": "objectId",
                     "label": "Select the Site device, that will be used to control.",
@@ -375,7 +398,54 @@
                     "xl": 12,
                     "newLine": true
                 },
-                "PowerPlanHdr": {
+                "_ACHdr": {
+                    "type": "header",
+                    "text": {
+                        "en": "AC Loading Options",
+                        "de": "AC-Ladeoptionen",
+                        "ru": "Варианты загрузки переменного тока",
+                        "pt": "Opções de carregamento CA",
+                        "nl": "AC-laadopties",
+                        "fr": "Options de chargement CA",
+                        "it": "Opzioni di caricamento CA",
+                        "es": "Opciones de carga de CA",
+                        "pl": "Opcje ładowania AC",
+                        "uk": "Варіанти завантаження змінного струму",
+                        "zh-cn": "交流负载选项"
+                    },
+                    "size": 2
+                },
+                "EnableACLoading": {
+                    "type": "checkbox",
+                    "label": "Enable AC Loading, only for ac devices, if enabled, you can control it with the Datepoint: ankersolix2.x.control.ACLoading",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                }
+            }
+        },
+        "_powerplan": {
+            "type": "panel",
+            "label": {
+                "en": "Power Plan",
+                "de": "Energieplan",
+                "ru": "План электропитания",
+                "pt": "Plano de energia",
+                "nl": "Energieplan",
+                "fr": "Plan d'alimentation",
+                "it": "Piano di alimentazione",
+                "es": "Plan de energía",
+                "pl": "Plan zasilania",
+                "uk": "План живлення",
+                "zh-cn": "电源计划"
+            },
+            "hidden": "!data.ControlSiteID",
+            "items": {
+                "_PowerPlanHdr": {
                     "type": "header",
                     "text": {
                         "en": "Power Plan Options",
@@ -403,46 +473,109 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "getDataFromCloud": {
+                    "type": "sendTo",
+                    "label": {
+                        "en": "Get Data from Cloud",
+                        "de": "Daten aus der Cloud abrufen",
+                        "ru": "Получить данные из облака",
+                        "pt": "Obter dados da nuvem",
+                        "nl": "Gegevens uit de cloud halen",
+                        "fr": "Récupérer des données depuis le Cloud",
+                        "it": "Ottieni dati dal cloud",
+                        "es": "Obtener datos de la nube",
+                        "pl": "Pobierz dane z chmury",
+                        "uk": "Отримання даних з хмари",
+                        "zh-cn": "从云端获取数据"
+                    },
+                    "variant": "outlined",
+                    "showProcess": true,
+                    "command": "getDataFromCloud",
+                    "useNative": true,
+                    "hidden": "!data.EnableCustomPowerPlan",
+                    "jsonData": "{ \"data\": \"${getDataFromCloud}\"}",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "sendDataFromCloud": {
+                    "type": "sendTo",
+                    "label": {
+                        "en": "Sedn Data to Cloud",
+                        "de": "Daten in die Cloud senden",
+                        "ru": "Передача данных в облако",
+                        "pt": "Dados Sedn para a Nuvem",
+                        "nl": "Sedn-gegevens naar de cloud",
+                        "fr": "Transfert de données Sedn vers le cloud",
+                        "it": "Invia dati al cloud",
+                        "es": "Enviar datos a la nube",
+                        "pl": "Sedn Data do chmury",
+                        "uk": "Передавання даних у хмару",
+                        "zh-cn": "数据上云"
+                    },
+                    "variant": "outlined",
+                    "showProcess": true,
+                    "command": "sendDataToCloud",
+                    "useNative": true,
+                    "hidden": "!data.EnableCustomPowerPlan",
+                    "disabled": "if (data.PowerPlan.length <= 0) return true; for (let i = 0; i < data.PowerPlan.length; i++) { const plan = data.PowerPlan[i]; if (!plan.week || !plan.start_time  || isNaN(plan.power) ) return true; };  return false;",
+                    "jsonData": "{\"table\": ${JSON.stringify(data.PowerPlan)}}",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "PowerPlan": {
                     "type": "table",
                     "label": "Custom Power Plan",
                     "hidden": "!data.EnableCustomPowerPlan",
+                    "newLine": true,
+                    "showSecondAddAt": 10,
+                    "compact": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 12,
-                    "lg": 8,
-                    "xl": 8,
-                    "newLine": true,
-                    "showSecondAddAt": 10,
-                    "useCardFor": ["xs", "sm", "md", "md", "lg", "xl"],
-                    "compact": true,
+                    "lg": 12,
+                    "xl": 12,
                     "items": [
-                        {
-                            "type": "number",
-                            "attr": "power",
-                            "title": "Power (watts)",
-                            "tooltip": "Power in watts",
-                            "min": 10,
-                            "step": 10,
-                            "max": 2000
-                        },
                         {
                             "type": "text",
                             "attr": "week",
                             "title": "Weekday (0,1,2,3,4,5,6)",
+                            "validator": "typeof data.week === 'string' && data.week.search(/^([0-6](,[0-6])*)$/g) !== -1",
                             "default": ""
                         },
                         {
                             "type": "text",
                             "attr": "start_time",
                             "title": "Power-on time (HH:MM)",
+                            "validator": "typeof data.start_time === 'string' && (data.start_time.search(/^((([01][0-9])|(2[0-3])):[0-5][0-9]|24:00)$/g) !== -1) ",
+                            "validatorNoSaveOnError": true,
+                            "validatorErrorText": "Format beachten HH:MM, richitg: 06:00 - falsch: 6:00",
                             "default": ""
                         },
                         {
                             "type": "text",
                             "attr": "end_time",
-                            "title": "Switch-off time (HH:MM)",
+                            "title": "Power-off time (HH:MM)",
+                            "validator": "typeof data.end_time === 'string' && (data.end_time.search(/^((([00][0-9])|(2[0-3])):[0-5][0-9]|24:00)$/g) !== -1) || ((parseInt(data.start_time.split(':')[0]) * 60 + parseInt(data.start_time.split(':')[1])) < (parseInt(data.end_time.split(':')[0]) * 60 + parseInt(data.end_time.split(':')[1])))",
+                            "validatorNoSaveOnError": true,
+                            "validatorErrorText": "Format beachten HH:MM, richitg: 06:00 - falsch: 6:00",
                             "default": ""
+                        },
+                        {
+                            "type": "number",
+                            "attr": "power",
+                            "title": "Power (watts)",
+                            "tooltip": "Power in watts",
+                            "validator": "!isNaN(data.power)",
+                            "validatorErrorText": "Darf nicht leer sein!",
+                            "min": 0,
+                            "step": 10,
+                            "max": 2000
                         }
                     ]
                 },
@@ -459,27 +592,58 @@
                     "xl": 4,
                     "hidden": "!data.EnableCustomPowerPlan",
                     "newLine": true
-                },
-                "ACHdr": {
+                }
+            }
+        },
+        "_timeplan": {
+            "type": "panel",
+            "label": {
+                "en": "userdefine timeplan",
+                "de": "benutzerdefinierter Zeitplan",
+                "ru": "определяемый пользователем временной план",
+                "pt": "cronograma definido pelo usuário",
+                "nl": "gebruikergedefinieerde tijdsplan",
+                "fr": "calendrier défini par l'utilisateur",
+                "it": "piano temporale definito dall'utente",
+                "es": "plan de tiempo definido por el usuario",
+                "pl": "plan czasowy zdefiniowany przez użytkownika",
+                "uk": "визначений користувачем часовий план",
+                "zh-cn": "用户定义时间计划"
+            },
+            "hidden": "!data.ControlSiteID",
+            "items": {
+                "TimePlanHdr": {
                     "type": "header",
                     "text": {
-                        "en": "AC Loading Options",
-                        "de": "AC-Ladeoptionen",
-                        "ru": "Варианты загрузки переменного тока",
-                        "pt": "Opções de carregamento CA",
-                        "nl": "AC-laadopties",
-                        "fr": "Options de chargement CA",
-                        "it": "Opzioni di caricamento CA",
-                        "es": "Opciones de carga de CA",
-                        "pl": "Opcje ładowania AC",
-                        "uk": "Варіанти завантаження змінного струму",
-                        "zh-cn": "交流负载选项"
+                        "en": "Custom Time Plan",
+                        "de": "Benutzerdefinierter Zeitplan",
+                        "ru": "Индивидуальный план времени",
+                        "pt": "Plano de tempo personalizado",
+                        "nl": "Aangepast tijdsplan",
+                        "fr": "Plan horaire personnalisé",
+                        "it": "Piano temporale personalizzato",
+                        "es": "Plan de tiempo personalizado",
+                        "pl": "Niestandardowy plan czasowy",
+                        "uk": "Індивідуальний план часу",
+                        "zh-cn": "自定义时间计划"
                     },
                     "size": 2
                 },
-                "EnableACLoading": {
+                "EnableTimePlan": {
                     "type": "checkbox",
-                    "label": "Enable AC Loading, only for ac devices, if enabled, you can control it with the Datepoint: ankersolix2.x.control.ACLoading",
+                    "label": {
+                        "en": "Enable Timeplan",
+                        "de": "Zeitplan aktivieren",
+                        "ru": "Включить план времени",
+                        "pt": "Habilitar plano de tempo",
+                        "nl": "Tijdplan inschakelen",
+                        "fr": "Activer le calendrier",
+                        "it": "Abilita Timeplan",
+                        "es": "Habilitar plan de tiempo",
+                        "pl": "Włącz plan czasowy",
+                        "uk": "Увімкнути розклад",
+                        "zh-cn": "启用时间计划"
+                    },
                     "default": false,
                     "newLine": true,
                     "xs": 12,
@@ -487,6 +651,96 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "showTimePlan": {
+                    "type": "sendTo",
+                    "label": {
+                        "en": "Show Time Plan",
+                        "de": "Zeitplan anzeigen",
+                        "ru": "Показать план времени",
+                        "pt": "Plano de horário do show",
+                        "nl": "Tijdsplan weergeven",
+                        "fr": "Programme du spectacle",
+                        "it": "Mostra il piano orario",
+                        "es": "Plan de la hora del espectáculo",
+                        "pl": "Pokaż plan czasowy",
+                        "uk": "Показати план розкладу",
+                        "zh-cn": "演出时间计划"
+                    },
+                    "variant": "outlined",
+                    "showProcess": true,
+                    "command": "showTimePlan",
+                    "useNative": true,
+                    "hidden": "!data.EnableTimePlan || true",
+                    "jsonData": "{ \"data\": \"${showTimePlan}\"}",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "TimePlan": {
+                    "type": "table",
+                    "label": {
+                        "en": "Timeplan",
+                        "de": "Zeitplan",
+                        "ru": "План времени",
+                        "pt": "Cronograma",
+                        "nl": "Tijdsplan",
+                        "fr": "Calendrier",
+                        "it": "Cronologia",
+                        "es": "Plan de tiempo",
+                        "pl": "Plan czasowy",
+                        "uk": "Часовий план",
+                        "zh-cn": "时间计划"
+                    },
+                    "hidden": "!data.EnableTimePlan",
+                    "newLine": true,
+                    "showSecondAddAt": 10,
+                    "compact": true,
+                    "uniqueColumns": ["start_time"],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "items": [
+                        {
+                            "type": "text",
+                            "attr": "start_time",
+                            "label": "Time",
+                            "title": "Time to enable (HH:MM)",
+                            "validator": "typeof data.start_time === 'string' && (data.start_time.search(/^((([01][0-9])|(2[0-3])):[0-5][0-9]|24:00)$/g) !== -1) ",
+                            "validatorNoSaveOnError": true,
+                            "validatorErrorText": "Format beachten HH:MM, richitg: 06:00 - falsch: 6:00",
+                            "default": ""
+                        },
+                        {
+                            "type": "selectSendTo",
+                            "label": {
+                                "en": "Select Modus",
+                                "de": "Modus auswählen",
+                                "ru": "Выбрать модус",
+                                "pt": "Selecione o modo",
+                                "nl": "Selecteer modus",
+                                "fr": "Sélectionnez le mode",
+                                "it": "Seleziona Modalità",
+                                "es": "Seleccionar modo",
+                                "pl": "Wybierz tryb",
+                                "uk": "Виберіть режим",
+                                "zh-cn": "选择模式"
+                            },
+                            "attr": "mode_type",
+                            "command": "getModilist",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 12,
+                            "lg": 12,
+                            "xl": 12,
+                            "newLine": true,
+                            "defaultFunc": "data.mode_type || ''"
+                        }
+                    ]
                 }
             }
         }

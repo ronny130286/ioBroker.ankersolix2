@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/utils.ts"],
-  "sourcesContent": ["export interface Logger {\n    //silly(msg: string): void;\n    debug(msg: string): void;\n    info(msg: string): void;\n    error(msg: string): void;\n    warn(msg: string): void;\n}\n"],
-  "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
-  "names": []
-}
