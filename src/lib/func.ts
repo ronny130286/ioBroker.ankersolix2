@@ -23,6 +23,10 @@ export class MyFunc {
      */
 
     public rundeAufZehner(value: number, max: number = 800): number {
+        //wenn negativ dann 0
+        if (value < 0) {
+            return 0;
+        }
         const val = Math.round(value / 10) * 10;
         if (val > max) {
             //max 800W Einspeisung
