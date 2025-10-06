@@ -706,17 +706,18 @@ export class Ankersolix2 extends Adapter {
         }
 
         if (
-            key.includes('_power') &&
-            !key.includes('display') &&
-            !key.includes('battery') &&
-            !key.includes('feature_switch')
+            (key.includes('_power') &&
+                !key.includes('display') &&
+                !key.includes('battery_power') &&
+                !key.includes('feature_switch')) ||
+            key.includes('grid_to_battery_power')
         ) {
             parmType = 'number';
             value = +value;
             parmUnit = 'W';
         }
 
-        if (key.includes('battery_power')) {
+        if (key.includes('battery_power') && !key.includes('grid_to_battery_power')) {
             //Battery_power Level in %
             parmRole = 'value.fill';
             parmUnit = '%';
@@ -727,6 +728,11 @@ export class Ankersolix2 extends Adapter {
             } else {
                 value = +value;
             }
+        }
+        if (key.includes('retain_load')) {
+            parmType = 'number';
+            parmUnit = 'W';
+            value = parseFloat(value.replace(/[^\d.]/g, ''));
         }
 
         const name = key.split('.').pop();
