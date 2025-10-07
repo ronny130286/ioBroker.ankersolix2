@@ -19,6 +19,10 @@ class MyFunc {
      * @returns
      */
     rundeAufZehner(value, max = 800) {
+        //wenn negativ dann 0
+        if (value < 0) {
+            return 0;
+        }
         const val = Math.round(value / 10) * 10;
         if (val > max) {
             //max 800W Einspeisung
@@ -230,6 +234,15 @@ class MyFunc {
             }
             return match; // Fallback
         });
+    }
+    getTimeDifference(start, end) {
+        const [startH, startM] = start.split(':').map(Number);
+        const [endH, endM] = end.split(':').map(Number);
+        const startMinutes = startH * 60 + startM;
+        const endMinutes = endH * 60 + endM;
+        // Wenn über Mitternacht
+        const diff = endMinutes >= startMinutes ? endMinutes - startMinutes : 24 * 60 - startMinutes + endMinutes;
+        return diff;
     }
 }
 exports.MyFunc = MyFunc;

@@ -286,4 +286,17 @@ export class MyFunc {
             },
         );
     }
+
+    public getTimeDifference(start: string, end: string): number {
+        const [startH, startM] = start.split(':').map(Number);
+        const [endH, endM] = end.split(':').map(Number);
+
+        const startMinutes = startH * 60 + startM;
+        const endMinutes = endH * 60 + endM;
+
+        // Wenn über Mitternacht
+        const diff = endMinutes >= startMinutes ? endMinutes - startMinutes : 24 * 60 - startMinutes + endMinutes;
+
+        return diff;
+    }
 }

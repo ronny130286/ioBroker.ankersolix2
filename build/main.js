@@ -607,15 +607,16 @@ class Ankersolix2 extends adapter_core_1.Adapter {
                     break;
             }
         }
-        if (key.includes('_power') &&
+        if ((key.includes('_power') &&
             !key.includes('display') &&
-            !key.includes('battery') &&
-            !key.includes('feature_switch')) {
+            !key.includes('battery_power') &&
+            !key.includes('feature_switch')) ||
+            key.includes('grid_to_battery_power')) {
             parmType = 'number';
             value = +value;
             parmUnit = 'W';
         }
-        if (key.includes('battery_power')) {
+        if (key.includes('battery_power') && !key.includes('grid_to_battery_power')) {
             //Battery_power Level in %
             parmRole = 'value.fill';
             parmUnit = '%';
@@ -626,6 +627,11 @@ class Ankersolix2 extends adapter_core_1.Adapter {
             else {
                 value = +value;
             }
+        }
+        if (key.includes('retain_load')) {
+            parmType = 'number';
+            parmUnit = 'W';
+            value = parseFloat(value.replace(/[^\d.]/g, ''));
         }
         const name = key.split('.').pop();
         await this.CreateOrUpdate(key, name, 'state', parmType, parmRole, false, parmUnit);

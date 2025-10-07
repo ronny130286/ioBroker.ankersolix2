@@ -70,7 +70,8 @@
         "check": "tsc --noEmit",
         "lint": "eslint -c eslint.config.mjs .",
         "translate": "translate-adapter",
-        "release": "release-script"
+        "release": "release-script",
+        "repochecker": "npx @iobroker/repochecker ronny130286/ioBroker.ankersolix2"
     },
     "bugs": {
         "url": "https://github.com/ronny130286/ioBroker.ankersolix2/issues"

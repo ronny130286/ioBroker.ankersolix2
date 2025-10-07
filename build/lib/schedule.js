@@ -49,19 +49,19 @@ class MySchedule {
         this.adapter.setHomeLoadID(false);
         switch (mode) {
             case apitypes_1.SolarbankModeType.manual:
-                this.log.info(`Solarbank ist im benutzerdefinierten Modus`);
+                //this.log.info(`Solarbank ist im benutzerdefinierten Modus`);
                 this.adapter.setPowerPlan({ modus: apitypes_1.SolarbankModeType.manual });
                 break;
             case apitypes_1.SolarbankModeType.smartmeter:
-                this.log.info(`Solarbank ist im Eigenbedarf Modus`);
+                //this.log.info(`Solarbank ist im Eigenbedarf Modus`);
                 this.adapter.setPowerPlan({ modus: apitypes_1.SolarbankModeType.smartmeter });
                 break;
             case apitypes_1.SolarbankModeType.backup:
-                this.log.info(`Solarbank ist AC Loading`);
+                //this.log.info(`Solarbank ist AC Loading`);
                 this.adapter.setACLoading(true);
                 break;
             case apitypes_1.SolarbankModeType.controlbyadapter:
-                this.log.info(`Solarbank wird durch den Adapter gesteuert`);
+                //this.log.info(`Solarbank wird durch den Adapter gesteuert`);
                 this.adapter.setHomeLoadID(true, true);
                 break;
             default:

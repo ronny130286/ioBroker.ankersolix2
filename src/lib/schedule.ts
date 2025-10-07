@@ -69,6 +69,7 @@ export class MySchedule {
                 break;
             case SolarbankModeType.backup:
                 //this.log.info(`Solarbank ist AC Loading`);
+
                 this.adapter.setACLoading(true);
                 break;
             case SolarbankModeType.controlbyadapter:
