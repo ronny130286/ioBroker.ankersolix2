@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "2.4.0",
+    "version": "2.4.1",
     "news": {
+      "2.4.1": {
+        "en": "fix 2 data points",
+        "de": "2 datenpunkte beheben",
+        "ru": "фиксировать 2 точки данных",
+        "pt": "corrigir 2 pontos de dados",
+        "nl": "fix 2 gegevenspunten",
+        "fr": "fixer 2 points de données",
+        "it": "correzione 2 punti dati",
+        "es": "fijar 2 puntos de datos",
+        "pl": "naprawić 2 punkty danych",
+        "uk": "виправлено 2 точки даних",
+        "zh-cn": "固定 2 个数据点"
+      },
       "2.4.0": {
         "en": "add timeplan (schedule) and userdefine energyplan\nadd Powerplan and AC Loading (for AC devices)",
         "de": "Zeitplan hinzufügen (Schedule) und benutzerdefinierten Energieplan erstellen\nHinzufügen von \"Powerplan\" und \"AC-Last\" (für AC-Geräte)",
@@ -80,19 +93,6 @@
         "pl": "reorganizowana opcja analizy (teraz wybierana w konsoli adminowej)\ndodać energię akumulatora do urządzeń stałych\naktualizacja pakietów",
         "uk": "реорганізований варіант аналізу (нижчий вибір в адмінконсолі)\nдодавати енергію акумулятора для пристроїв солі\nоновлення пакетів",
         "zh-cn": "重组分析选项( 现可在管理控制台中选择)\n在 solix 设备中添加电池能量\n更新软件包"
-      },
-      "2.0.0": {
-        "en": "update packages\ndecrypt password in adminui\nadd more language codes\nreorganized some DP",
-        "de": "update-pakete\npasswort decrypt in adminui\nweitere sprachcodes hinzufügen\nreorganisiert einige DP",
-        "ru": "обновление пакетов\nрасшифровать пароль в adminui\nдобавьте больше языковых кодов\nреорганизовано несколько ДП",
-        "pt": "pacotes de atualização\ndescriptografar senha em adminui\nadicionar mais códigos de idioma\nreorganizado alguns DP",
-        "nl": "pakketten bijwerken\nwachtwoord ontcijferen in adminui\nmeer taalcodes toevoegen\ngereorganiseerd sommige DP",
-        "fr": "mettre à jour les paquets\ndéchiffrer le mot de passe dans adminui\najouter plus de codes linguistiques\nréorganisation de certains PDD",
-        "it": "pacchetti di aggiornamento\ndecrypt password in adminui\naggiungere altri codici linguistici\nriorganizzazione di alcuni DP",
-        "es": "actualizar paquetes\ndescifrar contraseña en adminui\nañadir más códigos de idioma\nreorganizar algunos DP",
-        "pl": "aktualizacja pakietów\ndeszyfrowanie hasła w adminui\ndodaj więcej kodów językowych\nreorganizacja niektórych DP",
-        "uk": "оновлення пакетів\nдешифрувати пароль в адміні\nдодати більше мовних кодів\nреорганізовано деякі ДП",
-        "zh-cn": "更新软件包\n解密管理员密码\n添加更多语言代码\n重组一些DP"
       }
     },
     "titleLang": {

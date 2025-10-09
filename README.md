@@ -73,8 +73,7 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 2.4.1 (2025-10-09)
 
 - (ronny130286) fix 2 data points
 
