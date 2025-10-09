@@ -73,6 +73,11 @@ If you have erros again and cant login, stop the adapter and delete the session.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ronny130286) fix 2 data points
+
 ### 2.4.0 (2025-09-20)
 
 - (ronny130286) add timeplan (schedule) and userdefine energyplan
