@@ -158,6 +158,14 @@ export class Ankersolix2 extends Adapter {
             errors.push('Country missing');
         }
 
+        const controlMaxPowerOutput = config?.ControlMaxPowerOutput;
+        if (
+            controlMaxPowerOutput !== undefined &&
+            (typeof controlMaxPowerOutput !== 'number' || controlMaxPowerOutput < 0 || controlMaxPowerOutput > 800)
+        ) {
+            errors.push('Maximum power output for adapter control must be between 0 and 800 watts');
+        }
+
         if (errors.length > 0) {
             errors.forEach(err => this.log.error(`${err} - please check instance configuration of ${this.namespace}`));
             return false;
@@ -919,7 +927,10 @@ export class Ankersolix2 extends Adapter {
 
                 const siteID = this.config.ControlSiteID.split('.')[2];
                 const { data: powerLimit } = await this.loggedInApi.getPowerLimit(siteID);
-                const roundedValue = this.myfunc.rundeAufZehner(value, powerLimit.max_power_limit);
+                const configuredMaxPower =
+                    typeof this.config.ControlMaxPowerOutput === 'number' ? this.config.ControlMaxPowerOutput : 800;
+                const effectiveMaxPower = Math.min(configuredMaxPower, powerLimit.max_power_limit);
+                const roundedValue = this.myfunc.rundeAufZehner(value, effectiveMaxPower);
 
                 /**/
                 const jsonstring =

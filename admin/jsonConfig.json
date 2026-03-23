@@ -398,6 +398,22 @@
                     "xl": 12,
                     "newLine": true
                 },
+                "ControlMaxPowerOutput": {
+                    "type": "number",
+                    "label": "Maximum power output for adapter control (W)",
+                    "tooltip": "Limits the output set by the adapter, even if the source datapoint reports a higher demand.",
+                    "default": 800,
+                    "min": 0,
+                    "max": 800,
+                    "step": 10,
+                    "hidden": "!data.EnableControlDP",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4,
+                    "newLine": true
+                },
                 "_ACHdr": {
                     "type": "header",
                     "text": {
