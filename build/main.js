@@ -798,13 +798,32 @@ class Ankersolix2 extends adapter_core_1.Adapter {
                 const siteID = this.config.ControlSiteID.split('.')[2];
                 const { data: powerLimit } = await this.loggedInApi.getPowerLimit(siteID);
                 const configuredMaxPower = typeof this.config.ControlMaxPowerOutput === 'number' ? this.config.ControlMaxPowerOutput : 800;
-                const effectiveMaxPower = Math.min(configuredMaxPower, powerLimit.max_power_limit);
-                const roundedValue = this.myfunc.rundeAufZehner(value, effectiveMaxPower);
-                /**/
-                const jsonstring = '{"mode_type":3,"custom_rate_plan":[{"index":0,"week":[0,1,2,3,4,5,6],"ranges":[{"start_time":"00:00","end_time":"24:00","power":400}]}],"blend_plan":null,"default_home_load":200,"max_load":800,"min_load":0,"step":10}';
-                const config = JSON.parse(jsonstring);
+                const cappedInputValue = Math.min(Math.max(value, 0), configuredMaxPower);
+                const deviceMaxPower = typeof powerLimit.max_power_limit === 'number' ? powerLimit.max_power_limit : powerLimit.all_power_limit;
+                const effectiveMaxPower = Math.min(configuredMaxPower, deviceMaxPower);
+                const targetPower = this.myfunc.rundeAufZehner(cappedInputValue, effectiveMaxPower);
+                const rawResponse = await this.loggedInApi.getSiteDeviceParam('6', siteID);
+                const rawData = rawResponse.data.param_data;
+                const config = JSON.parse(rawData);
                 config.mode_type = 3; //3 = Benutzerdefiniert Modus
-                config.custom_rate_plan[0].ranges[0].power = roundedValue; //
+                config.custom_rate_plan = [
+                    {
+                        index: 0,
+                        week: [0, 1, 2, 3, 4, 5, 6],
+                        ranges: [
+                            {
+                                start_time: '00:00',
+                                end_time: '24:00',
+                                power: targetPower,
+                            },
+                        ],
+                    },
+                ];
+                config.default_home_load = targetPower;
+                config.max_load = targetPower;
+                config.min_load = 0;
+                config.step = 10;
+                this.log.debug(`setControlByAdapter: input=${value} cappedInput=${cappedInputValue} configuredMax=${configuredMaxPower} deviceMax=${deviceMaxPower} target=${targetPower}`);
                 await this.loggedInApi.setSiteDeviceParam('6', siteID, JSON.stringify(config));
             }
         }
