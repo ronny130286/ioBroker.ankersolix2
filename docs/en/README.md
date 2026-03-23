@@ -46,6 +46,10 @@ Please deselect any unnecessary data to reduce the frequency of requests.
   If configured, the adapter monitors the data point for changes.  
   When the value changes, the adapter sets the Solarbank to custom mode with 24/7 operation  
   and uses the power value from the data point.  
+  The option "Maximum power output for adapter control (W)" can be used to apply an additional limit to this value.  
+
+- If the value in the data point is higher than the configured limit, only the capped value is transferred to the Anker Cloud.  
+
   Warning: All manually configured custom schedules will be overwritten.  
   See the section "Energy Plan" for a workaround.
 
