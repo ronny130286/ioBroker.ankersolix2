@@ -930,8 +930,12 @@ export class Ankersolix2 extends Adapter {
                 const configuredMaxPower =
                     typeof this.config.ControlMaxPowerOutput === 'number' ? this.config.ControlMaxPowerOutput : 800;
                 const cappedInputValue = value > configuredMaxPower ? configuredMaxPower : value;
-                const deviceMaxPower =
+                const deviceMaxPowerCandidate =
                     typeof powerLimit.max_power_limit === 'number' ? powerLimit.max_power_limit : powerLimit.all_power_limit;
+                const deviceMaxPower =
+                    typeof deviceMaxPowerCandidate === 'number' && deviceMaxPowerCandidate > 0
+                        ? deviceMaxPowerCandidate
+                        : configuredMaxPower;
                 const normalizedInputValue = Math.max(cappedInputValue, 0);
                 const targetPower = this.myfunc.rundeAufZehner(normalizedInputValue, deviceMaxPower);
                 const jsonstring =
@@ -943,7 +947,7 @@ export class Ankersolix2 extends Adapter {
                 config.custom_rate_plan[0].ranges[0].power = targetPower;
 
                 this.log.debug(
-                    `setControlByAdapter: input=${value} cappedInput=${cappedInputValue} normalizedInput=${normalizedInputValue} configuredMax=${configuredMaxPower} deviceMax=${deviceMaxPower} target=${targetPower}`,
+                    `setControlByAdapter: input=${value} cappedInput=${cappedInputValue} normalizedInput=${normalizedInputValue} configuredMax=${configuredMaxPower} deviceMaxCandidate=${deviceMaxPowerCandidate} deviceMax=${deviceMaxPower} target=${targetPower}`,
                 );
 
                 await this.loggedInApi.setSiteDeviceParam('6', siteID, JSON.stringify(config));
