@@ -16,6 +16,8 @@
     "Which additional batteries are installed? Do not specify more than installed!": "安装了哪些其他电池？不要指定超过安装的更多！",
     "Option for Grid to Home": "网格回家的选项",
     "Select a data point that, f.e. indicates the house's consumption.": "选择一个数据点，F.E。表示房屋的消费。数据点的更改将传递给SolarBank。",
+    "Maximum power output for adapter control (W)": "Maximum power output for adapter control (W)",
+    "Limits the output set by the adapter, even if the source datapoint reports a higher demand.": "Limits the output set by the adapter, even if the source datapoint reports a higher demand.",
     "Select the Site device, that will be used to control.": "选择将用于控制的站点设备。",
     "Control": "控制",
     "Options": "选项",

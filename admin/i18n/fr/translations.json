@@ -16,6 +16,8 @@
     "Which additional batteries are installed? Do not specify more than installed!": "Quelles batteries supplémentaires sont installées? Ne spécifiez pas plus qu'installé!",
     "Option for Grid to Home": "Option pour la grille à la maison",
     "Select a data point that, f.e. indicates the house's consumption.": "Sélectionnez un point de données qui, F.E. indique la consommation de la maison. Un changement dans le point de données est transmis à la banque solaire.",
+    "Maximum power output for adapter control (W)": "Maximum power output for adapter control (W)",
+    "Limits the output set by the adapter, even if the source datapoint reports a higher demand.": "Limits the output set by the adapter, even if the source datapoint reports a higher demand.",
     "Select the Site device, that will be used to control.": "Sélectionnez le périphérique du site, qui sera utilisé pour contrôler.",
     "Control": "Contrôle",
     "Options": "Options",

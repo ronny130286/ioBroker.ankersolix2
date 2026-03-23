@@ -16,6 +16,8 @@
     "Which additional batteries are installed? Do not specify more than installed!": "Які додаткові батареї встановлені? Не вказуйте більше, ніж встановлено!",
     "Option for Grid to Home": "Варіант для сітки до дому",
     "Select a data point that, f.e. indicates the house's consumption.": "Виберіть точку даних, яка, F.E. вказує на споживання будинку. Зміна точки даних передається в Solarbank.",
+    "Maximum power output for adapter control (W)": "Maximum power output for adapter control (W)",
+    "Limits the output set by the adapter, even if the source datapoint reports a higher demand.": "Limits the output set by the adapter, even if the source datapoint reports a higher demand.",
     "Select the Site device, that will be used to control.": "Виберіть пристрій сайту, який буде використовуватися для управління.",
     "Control": "КОНТРОЛЬ",
     "Options": "Варіанти",
