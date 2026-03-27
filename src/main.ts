@@ -130,8 +130,13 @@ export class Ankersolix2 extends Adapter {
             this.subscribeForeignStates(`${this.config.HomeLoadID}`);
             if (timeplan) {
                 const state = await this.getForeignStateAsync(`${this.config.HomeLoadID}`);
-                const value = state ? (state.val as number) : 0;
-                this.setForeignState(`${this.config.HomeLoadID}`, { val: value, ack: true });
+                const value = state?.val;
+
+                if (typeof value === 'number') {
+                    await this.setControlByAdapter(value);
+                } else {
+                    this.log.warn(`HomeLoadID timeplan value is not a number: ${value}`);
+                }
             }
             return;
         }
@@ -1098,7 +1103,14 @@ export class Ankersolix2 extends Adapter {
      * Is called if a subscribed state changes
      */
     private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+        if (!state) {
+            return;
+        }
+
         if (id === `${this.config.HomeLoadID}` && this.config.EnableControlDP && this.isAdmin) {
+            if (!state.ack) {
+                return;
+            }
             //this.log.info(`HomeLoadID state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'number') {
@@ -1109,6 +1121,9 @@ export class Ankersolix2 extends Adapter {
             }
         }
         if (id === `${this.namespace}.control.ACLoading` && this.isAdmin) {
+            if (state.ack) {
+                return;
+            }
             //this.log.info(`setACLoading state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'boolean') {
@@ -1118,6 +1133,9 @@ export class Ankersolix2 extends Adapter {
             }
         }
         if (id === `${this.namespace}.control.SetPowerplan` && this.isAdmin) {
+            if (state.ack) {
+                return;
+            }
             //this.log.info(`setPowerplan state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'boolean') {

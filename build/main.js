@@ -143,8 +143,13 @@ class Ankersolix2 extends adapter_core_1.Adapter {
             this.subscribeForeignStates(`${this.config.HomeLoadID}`);
             if (timeplan) {
                 const state = await this.getForeignStateAsync(`${this.config.HomeLoadID}`);
-                const value = state ? state.val : 0;
-                this.setForeignState(`${this.config.HomeLoadID}`, { val: value, ack: true });
+                const value = state?.val;
+                if (typeof value === 'number') {
+                    await this.setControlByAdapter(value);
+                }
+                else {
+                    this.log.warn(`HomeLoadID timeplan value is not a number: ${value}`);
+                }
             }
             return;
         }
@@ -944,7 +949,13 @@ class Ankersolix2 extends adapter_core_1.Adapter {
      * Is called if a subscribed state changes
      */
     onStateChange(id, state) {
+        if (!state) {
+            return;
+        }
         if (id === `${this.config.HomeLoadID}` && this.config.EnableControlDP && this.isAdmin) {
+            if (!state.ack) {
+                return;
+            }
             //this.log.info(`HomeLoadID state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'number') {
@@ -956,6 +967,9 @@ class Ankersolix2 extends adapter_core_1.Adapter {
             }
         }
         if (id === `${this.namespace}.control.ACLoading` && this.isAdmin) {
+            if (state.ack) {
+                return;
+            }
             //this.log.info(`setACLoading state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'boolean') {
@@ -966,6 +980,9 @@ class Ankersolix2 extends adapter_core_1.Adapter {
             }
         }
         if (id === `${this.namespace}.control.SetPowerplan` && this.isAdmin) {
+            if (state.ack) {
+                return;
+            }
             //this.log.info(`setPowerplan state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'boolean') {
