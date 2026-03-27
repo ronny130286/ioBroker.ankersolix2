@@ -16,6 +16,8 @@
     "Which additional batteries are installed? Do not specify more than installed!": "Welke extra batterijen zijn geïnstalleerd? Geef niet meer op dan geïnstalleerd!",
     "Option for Grid to Home": "Optie voor grid naar huis",
     "Select a data point that, f.e. indicates the house's consumption.": "Selecteer een gegevenspunt dat, F.E. geeft het consumptie van het huis aan. Een wijziging in het gegevenspunt wordt doorgegeven aan de Solarbank.",
+    "Maximum power output for adapter control (W)": "Maximum power output for adapter control (W)",
+    "Limits the output set by the adapter, even if the source datapoint reports a higher demand.": "Limits the output set by the adapter, even if the source datapoint reports a higher demand.",
     "Select the Site device, that will be used to control.": "Selecteer het Site -apparaat, dat wordt gebruikt om te bedienen.",
     "Control": "Controle",
     "Options": "Opties",

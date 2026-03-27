@@ -38,9 +38,14 @@ Nicht benötigte Daten bitte abwählen, da dies die Anfragehäufigkeit reduziert
 
 - Bei der zu steuernden Site wir die Solarbank angegeben die gesteuert werden soll.
   Hier wird nur die Site-ID ausgewählt und nicht die Solarbank an sich.K
-  Keine Sorge sollte man die Solarbank ausgewählt haben wird trotzen nur die Site-ID verwendet.
+  Keine Sorge sollte man die Solarbank ausgewählt haben wird trotzen nur die Site-ID verwendet.  
+
 - Steuern über einen selbstgewählten Datenpunkt, diese ist freiwählbar und ist er eingestellt überwacht der Adapter den Datenpunkt auf Änderung.
   Ändert sich der Wert, stell der Adapter die Solarbank auf den benutzerdefinierten Modus ein mit 24/7 und den Powerwert aus dem Datenpunkt.
+  Über die Option "Maximale Ausgangsleistung für die Adaptersteuerung (W)" kann dieser Wert zusätzlich begrenzt werden.  
+
+- Ist der Wert im Datenpunkt höher als das eingestellte Limit, wird nur der begrenzte Wert an die Anker Cloud übertragen.  
+
   Vorsicht: alle selbst eingestellen benutzdefinierten Zeilpläne werde überschrieben, Abhilfe wird im Punkt Energieplan beschrieben.
 
 ### Energieplan

@@ -130,8 +130,13 @@ export class Ankersolix2 extends Adapter {
             this.subscribeForeignStates(`${this.config.HomeLoadID}`);
             if (timeplan) {
                 const state = await this.getForeignStateAsync(`${this.config.HomeLoadID}`);
-                const value = state ? (state.val as number) : 0;
-                this.setForeignState(`${this.config.HomeLoadID}`, { val: value, ack: true });
+                const value = state?.val;
+
+                if (typeof value === 'number') {
+                    await this.setControlByAdapter(value);
+                } else {
+                    this.log.warn(`HomeLoadID timeplan value is not a number: ${value}`);
+                }
             }
             return;
         }
@@ -156,6 +161,14 @@ export class Ankersolix2 extends Adapter {
 
         if (!config.COUNTRY && !config.COUNTRY2) {
             errors.push('Country missing');
+        }
+
+        const controlMaxPowerOutput = config?.ControlMaxPowerOutput;
+        if (
+            controlMaxPowerOutput !== undefined &&
+            (typeof controlMaxPowerOutput !== 'number' || controlMaxPowerOutput < 0 || controlMaxPowerOutput > 800)
+        ) {
+            errors.push('Maximum power output for adapter control must be between 0 and 800 watts');
         }
 
         if (errors.length > 0) {
@@ -919,15 +932,28 @@ export class Ankersolix2 extends Adapter {
 
                 const siteID = this.config.ControlSiteID.split('.')[2];
                 const { data: powerLimit } = await this.loggedInApi.getPowerLimit(siteID);
-                const roundedValue = this.myfunc.rundeAufZehner(value, powerLimit.max_power_limit);
-
-                /**/
+                const configuredMaxPower =
+                    typeof this.config.ControlMaxPowerOutput === 'number' ? this.config.ControlMaxPowerOutput : 800;
+                const cappedInputValue = value > configuredMaxPower ? configuredMaxPower : value;
+                const deviceMaxPowerCandidate =
+                    typeof powerLimit.max_power_limit === 'number' ? powerLimit.max_power_limit : powerLimit.all_power_limit;
+                const deviceMaxPower =
+                    typeof deviceMaxPowerCandidate === 'number' && deviceMaxPowerCandidate > 0
+                        ? deviceMaxPowerCandidate
+                        : configuredMaxPower;
+                const normalizedInputValue = Math.max(cappedInputValue, 0);
+                const targetPower = this.myfunc.rundeAufZehner(normalizedInputValue, deviceMaxPower);
                 const jsonstring =
                     '{"mode_type":3,"custom_rate_plan":[{"index":0,"week":[0,1,2,3,4,5,6],"ranges":[{"start_time":"00:00","end_time":"24:00","power":400}]}],"blend_plan":null,"default_home_load":200,"max_load":800,"min_load":0,"step":10}';
                 const config: EnergyConfig = JSON.parse(jsonstring);
 
                 config.mode_type = 3; //3 = Benutzerdefiniert Modus
-                config.custom_rate_plan[0].ranges[0].power = roundedValue; //
+                config.default_home_load = targetPower;
+                config.custom_rate_plan[0].ranges[0].power = targetPower;
+
+                this.log.debug(
+                    `setControlByAdapter: input=${value} cappedInput=${cappedInputValue} normalizedInput=${normalizedInputValue} configuredMax=${configuredMaxPower} deviceMaxCandidate=${deviceMaxPowerCandidate} deviceMax=${deviceMaxPower} target=${targetPower}`,
+                );
 
                 await this.loggedInApi.setSiteDeviceParam('6', siteID, JSON.stringify(config));
             }
@@ -1077,7 +1103,14 @@ export class Ankersolix2 extends Adapter {
      * Is called if a subscribed state changes
      */
     private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+        if (!state) {
+            return;
+        }
+
         if (id === `${this.config.HomeLoadID}` && this.config.EnableControlDP && this.isAdmin) {
+            if (!state.ack) {
+                return;
+            }
             //this.log.info(`HomeLoadID state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'number') {
@@ -1088,6 +1121,9 @@ export class Ankersolix2 extends Adapter {
             }
         }
         if (id === `${this.namespace}.control.ACLoading` && this.isAdmin) {
+            if (state.ack) {
+                return;
+            }
             //this.log.info(`setACLoading state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'boolean') {
@@ -1097,6 +1133,9 @@ export class Ankersolix2 extends Adapter {
             }
         }
         if (id === `${this.namespace}.control.SetPowerplan` && this.isAdmin) {
+            if (state.ack) {
+                return;
+            }
             //this.log.info(`setPowerplan state changed: ${id} - ${JSON.stringify(state)}`);
             const value = state?.val;
             if (typeof value !== 'boolean') {

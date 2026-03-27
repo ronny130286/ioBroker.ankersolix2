@@ -22,6 +22,7 @@ declare global {
             BatteryBP1600Count: number;
             BatteryBP2700Count: number;
             HomeLoadID: string;
+            ControlMaxPowerOutput: number;
             ControlSiteID: string;
             EnableControlDP: boolean;
             EnableCustomPowerPlan: boolean;

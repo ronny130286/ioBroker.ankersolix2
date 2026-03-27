@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "ankersolix2",
-    "version": "2.4.1",
+    "version": "2.4.2",
     "news": {
       "2.4.1": {
         "en": "fix 2 data points",
@@ -165,7 +165,8 @@
   "native": {
     "Password": "",
     "Username": "",
-    "API_Server": "https://ankerpower-api-eu.anker.com"
+    "API_Server": "https://ankerpower-api-eu.anker.com",
+    "ControlMaxPowerOutput": 800
   },
   "encryptedNative": [
     "Password"
