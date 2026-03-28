@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { type ECDH, createCipheriv, createECDH, createHash } from 'crypto';
+import { type ECDH, createCipheriv, createECDH, createHash } from 'node:crypto';
 import { type Ankersolix2 } from '../main';
 import { ParamType, type PowerLimit } from './apitypes';
 

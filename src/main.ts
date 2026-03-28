@@ -6,7 +6,7 @@
 // you need to create an adapter
 //import * as utils from '@iobroker/adapter-core';
 import { Adapter, getAbsoluteInstanceDataDir, type AdapterOptions } from '@iobroker/adapter-core';
-import fs, { promises as pfs } from 'fs';
+import fs, { promises as pfs } from 'node:fs';
 import { SolixApi, type LoginResultResponse } from './lib/api';
 import {
     DeviceCapacity,
