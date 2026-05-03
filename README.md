@@ -149,6 +149,8 @@ If you have erros again and cant login, stop the adapter and delete the session.
 
 - (ronny130286) initial release
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 
 MIT License
