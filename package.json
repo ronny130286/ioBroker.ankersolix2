@@ -24,7 +24,7 @@
         "node": ">= 20"
     },
     "dependencies": {
-        "@iobroker/adapter-core": "^3.3.2",
+        "@iobroker/adapter-core": "^3.4.1",
         "axios": "^1.14.0",
         "dotenv": "^17.4.2",
         "node-schedule": "^2.1.1"
