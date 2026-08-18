@@ -74,6 +74,9 @@ If you have erros again and cant login, stop the adapter and delete the session.
     ### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22 now
+
 ### 2.4.1 (2025-10-09)
 
 - (ronny130286) fix 2 data points
