@@ -34,6 +34,8 @@ export class Ankersolix2 extends Adapter {
     public myfunc: any;
     private mySchedule: MySchedule | undefined;
     public myTranslate: MyTranslate;
+    /** Last object definition written per id, so unchanged ones are not written again */
+    private writtenObjects = new Map<string, string>();
 
     public constructor(options: Partial<AdapterOptions> = {}) {
         super({
@@ -791,7 +793,20 @@ export class Ankersolix2 extends Adapter {
                 native: {},
             };
         }
-        await this.extendObject(this.myfunc.name2id(path), newObj);
+        const id = this.myfunc.name2id(path);
+
+        // CreateOrUpdate runs for every value of every poll cycle, but object definitions
+        // hardly ever change. Writing them back unconditionally means one object write per
+        // datapoint per cycle - on a 60s interval with ~500 datapoints that is roughly
+        // 700.000 writes a day for objects that stay exactly the same.
+        // Remember what was last written and skip the write while it is unchanged.
+        const definition = JSON.stringify(newObj);
+        if (this.writtenObjects.get(id) === definition) {
+            return;
+        }
+
+        await this.extendObject(id, newObj);
+        this.writtenObjects.set(id, definition);
     }
 
     async setApiCon(status: boolean): Promise<void> {
