@@ -26,7 +26,7 @@
     "dependencies": {
         "@iobroker/adapter-core": "^3.3.2",
         "axios": "^1.14.0",
-        "dotenv": "^17.4.2",
+        "dotenv": "^18.0.7",
         "node-schedule": "^2.1.1"
     },
     "devDependencies": {
